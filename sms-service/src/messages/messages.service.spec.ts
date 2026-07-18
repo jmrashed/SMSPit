@@ -103,6 +103,15 @@ describe('MessagesService', () => {
     expect(call.where.createdAt).toBeDefined();
   });
 
+  it('applies an open-ended created_before filter alone', async () => {
+    repository.findAndCount.mockResolvedValue([[], 0]);
+
+    await service.findAll({ limit: 20, offset: 0, created_before: '2026-01-31T00:00:00.000Z' });
+
+    const call = repository.findAndCount.mock.calls[0][0];
+    expect(call.where.createdAt).toBeDefined();
+  });
+
   it('returns a message by id', async () => {
     const entity = { id: 'sms_abc123' } as Message;
     repository.findOneBy.mockResolvedValue(entity);

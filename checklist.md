@@ -96,10 +96,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement filtering by `to` and `from`
   - [x] Implement filtering by date range
   - [x] Add tests covering combined filters
-- [ ] **Day 19: Write unit tests for message endpoints**
-  - [ ] Test the capture endpoint
-  - [ ] Test the list/detail/delete endpoints
-  - [ ] Set up test coverage reporting
+- [x] **Day 19: Write unit tests for message endpoints**
+  - [x] Test the capture endpoint
+  - [x] Test the list/detail/delete endpoints
+  - [x] Set up test coverage reporting
 - [ ] **Day 20: Write integration tests**
   - [ ] Set up a test database container for CI
   - [ ] Write an integration test for capture → list → detail

@@ -1,4 +1,4 @@
-import { ArgumentsHost, BadRequestException, NotFoundException } from '@nestjs/common';
+import { ArgumentsHost, BadRequestException, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { HttpExceptionFilter } from './http-exception.filter';
 
 function createMockHost() {
@@ -38,6 +38,19 @@ describe('HttpExceptionFilter', () => {
       code: 'BAD_REQUEST',
       message: 'Validation failed',
       details: ['to should not be empty', 'to must be a string'],
+    });
+  });
+
+  it('formats an HttpException whose response body is a plain string', () => {
+    const { host, status, json } = createMockHost();
+
+    filter.catch(new HttpException('teapot', HttpStatus.I_AM_A_TEAPOT), host);
+
+    expect(status).toHaveBeenCalledWith(418);
+    expect(json).toHaveBeenCalledWith({
+      code: 'I_AM_A_TEAPOT',
+      message: 'teapot',
+      details: null,
     });
   });
 
