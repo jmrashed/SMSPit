@@ -47,10 +47,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Run `nest new sms-service`
   - [x] Set up the `messages` module structure
   - [x] Configure environment variables and `.env.example`
-- [ ] **Day 8: Scaffold `dashboard` (React)**
-  - [ ] Scaffold the project (Vite or equivalent)
-  - [ ] Set up folder structure (`components`, `pages`, `api`, `hooks`)
-  - [ ] Configure a base API client with env-based base URL
+- [x] **Day 8: Scaffold `dashboard` (React)**
+  - [x] Scaffold the project (Vite or equivalent)
+  - [x] Set up folder structure (`components`, `pages`, `api`, `hooks`)
+  - [x] Configure a base API client with env-based base URL
 - [ ] **Day 9: Write local dev setup docs and script**
   - [ ] Write `scripts/setup.sh` (installs deps, copies `.env.example`)
   - [ ] Document manual setup steps in `docs/`
