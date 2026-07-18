@@ -112,10 +112,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Build a detail panel/page with full message + metadata
   - [x] Add navigation from list to detail
   - [x] Handle loading and not-found states
-- [ ] **Day 23: Connect dashboard to the REST API**
-  - [ ] Implement API client functions for list/detail
-  - [ ] Wire up data fetching (React Query/SWR/fetch)
-  - [ ] Configure the API base URL via env
+- [x] **Day 23: Connect dashboard to the REST API**
+  - [x] Implement API client functions for list/detail
+  - [x] Wire up data fetching (React Query/SWR/fetch)
+  - [x] Configure the API base URL via env
 - [ ] **Day 24: Implement dashboard search/filter UI**
   - [ ] Add a search input bound to `to`/`from` filters
   - [ ] Add a date range picker

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Message } from '../types/message';
-import { findMockMessageById } from '../mocks/messages';
+import { getMessage } from '../api/messages';
+import { ApiError } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
 import './MessageDetailPage.css';
 
@@ -16,15 +17,23 @@ export function MessageDetailPage() {
     let cancelled = false;
     setState('loading');
 
-    findMockMessageById(id ?? '').then((found) => {
-      if (cancelled) return;
-      if (found) {
+    getMessage(id ?? '')
+      .then((found) => {
+        if (cancelled) return;
         setMessage(found);
         setState('found');
-      } else {
-        setState('not-found');
-      }
-    });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        if (error instanceof ApiError && error.status === 404) {
+          setState('not-found');
+        } else {
+          // Non-404 errors get a dedicated error state on Day 25; for
+          // now, surface in the console rather than hanging on "loading".
+          console.error('Failed to load message', error);
+          setState('not-found');
+        }
+      });
 
     return () => {
       cancelled = true;
