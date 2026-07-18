@@ -24,8 +24,8 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
     - [ ] Commit the empty folder skeletons (with `.gitkeep` where needed) as a single "scaffold monorepo structure" commit
     - [ ] Push and verify the structure renders correctly on GitHub
 - [ ] **Day 2: Draft skeleton `docker-compose.yml`**
-  - [ ] Define placeholder entries for gateway, auth-service, sms-service, ai-service, worker, dashboard
-  - [ ] Add Postgres and Redis services with env vars
+  - [x] Define placeholder entries for gateway, auth-service, sms-service, ai-service, worker, dashboard
+  - [x] Add Postgres and Redis services with env vars
   - [ ] Verify `docker compose config` validates without errors
 - [ ] **Day 3: Set up CI pipeline skeleton**
   - [ ] Add a GitHub Actions workflow with a lint job

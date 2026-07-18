@@ -1,0 +1,106 @@
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "${GATEWAY_PORT}:8080"
+    depends_on:
+      - auth-service
+      - sms-service
+    networks:
+      - smspit
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "${AUTH_SERVICE_PORT}:8000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - smspit
+
+  sms-service:
+    build: ./sms-service
+    ports:
+      - "${SMS_SERVICE_PORT}:3000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - smspit
+
+  ai-service:
+    build: ./ai-service
+    ports:
+      - "${AI_SERVICE_PORT}:8001"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+    networks:
+      - smspit
+
+  worker:
+    build: ./worker
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AI_SERVICE_URL: http://ai-service:8001
+    depends_on:
+      - redis
+      - ai-service
+    networks:
+      - smspit
+
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "${DASHBOARD_PORT}:5173"
+    depends_on:
+      - gateway
+    networks:
+      - smspit
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - smspit
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - smspit
+
+networks:
+  smspit:
+    driver: bridge
+
+volumes:
+  postgres_data:
