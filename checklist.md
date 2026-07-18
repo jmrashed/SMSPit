@@ -6,23 +6,23 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
 
 ## Phase 0 — Foundation (Days 1–10)
 
-- [ ] **Day 1: Initialize monorepo structure**
-  - [ ] Create top-level folders per the Project Structure section in README
-    - [ ] `gateway/`, `auth-service/`, `sms-service/`, `ai-service/`, `worker/`, `dashboard/`
-    - [ ] `proto/`, `docs/`, `docker/`, `deployments/`, `scripts/`
-  - [ ] Add `.gitignore` covering Go, Node, PHP, Python, and React
-    - [ ] Go: `bin/`, `*.exe`, vendor dirs
-    - [ ] Node/React: `node_modules/`, `dist/`, `build/`, `.env`
-    - [ ] PHP/Laravel: `vendor/`, `.env`, `storage/*.key`
-    - [ ] Python: `__pycache__/`, `.venv/`, `*.pyc`
-    - [ ] Common: `.DS_Store`, editor/IDE folders, log files
-  - [ ] Add `.editorconfig` and a stub `README.md` per service folder
-    - [ ] Set `.editorconfig` rules (indent size/style, charset, trailing newline) per language
-    - [ ] Add a one-paragraph stub `README.md` in each service folder stating its purpose and status ("not yet implemented")
-  - [ ] Initialize git repo hygiene for the new structure
-    - [ ] Confirm `LICENSE` and root `README.md` remain at repo root
-    - [ ] Commit the empty folder skeletons (with `.gitkeep` where needed) as a single "scaffold monorepo structure" commit
-    - [ ] Push and verify the structure renders correctly on GitHub
+- [x] **Day 1: Initialize monorepo structure**
+  - [x] Create top-level folders per the Project Structure section in README
+    - [x] `gateway/`, `auth-service/`, `sms-service/`, `ai-service/`, `worker/`, `dashboard/`
+    - [x] `proto/`, `docs/`, `docker/`, `deployments/`, `scripts/`
+  - [x] Add `.gitignore` covering Go, Node, PHP, Python, and React
+    - [x] Go: `bin/`, `*.exe`, vendor dirs
+    - [x] Node/React: `node_modules/`, `dist/`, `build/`, `.env`
+    - [x] PHP/Laravel: `vendor/`, `.env`, `storage/*.key`
+    - [x] Python: `__pycache__/`, `.venv/`, `*.pyc`
+    - [x] Common: `.DS_Store`, editor/IDE folders, log files
+  - [x] Add `.editorconfig` and a stub `README.md` per service folder
+    - [x] Set `.editorconfig` rules (indent size/style, charset, trailing newline) per language
+    - [x] Add a one-paragraph stub `README.md` in each service folder stating its purpose and status ("not yet implemented")
+  - [x] Initialize git repo hygiene for the new structure
+    - [x] Confirm `LICENSE` and root `README.md` remain at repo root
+    - [x] Commit the empty folder skeletons (with `.gitkeep` where needed) as a single "scaffold monorepo structure" commit
+    - [x] Push and verify the structure renders correctly on GitHub
 - [ ] **Day 2: Draft skeleton `docker-compose.yml`**
   - [x] Define placeholder entries for gateway, auth-service, sms-service, ai-service, worker, dashboard
   - [x] Add Postgres and Redis services with env vars
