@@ -1,0 +1,6 @@
+{
+  "Exclude": [
+    "auth-service/phpunit.xml",
+    "auth-service/resources/views/welcome.blade.php"
+  ]
+}
