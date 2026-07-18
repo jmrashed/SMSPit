@@ -39,10 +39,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Draft `messages` table columns (`id`, `to`, `from`, `body`, `status`, `created_at`)
   - [x] Write the initial migration file
   - [x] Add indexes on `to`, `from`, and `created_at` for search
-- [ ] **Day 6: Design Redis usage**
-  - [ ] Decide pub/sub channel naming convention for live updates
-  - [ ] Document caching strategy (if any) needed for v0.1
-  - [ ] Note the decision to defer NATS/Kafka to a later phase
+- [x] **Day 6: Design Redis usage**
+  - [x] Decide pub/sub channel naming convention for live updates
+  - [x] Document caching strategy (if any) needed for v0.1
+  - [x] Note the decision to defer NATS/Kafka to a later phase
 - [ ] **Day 7: Scaffold `sms-service` (NestJS)**
   - [ ] Run `nest new sms-service`
   - [ ] Set up the `messages` module structure
