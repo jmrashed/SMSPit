@@ -64,10 +64,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
 
 ## Phase 1 — v0.1: SMS Capture, Dashboard, Search, REST API, Docker (Days 11–30)
 
-- [ ] **Day 11: Implement `POST /api/v1/messages`**
-  - [ ] Define DTO/validation for the incoming SMS payload
-  - [ ] Implement controller + service method to persist the message
-  - [ ] Return the captured message with a generated `id`
+- [x] **Day 11: Implement `POST /api/v1/messages`**
+  - [x] Define DTO/validation for the incoming SMS payload
+  - [x] Implement controller + service method to persist the message
+  - [x] Return the captured message with a generated `id`
 - [ ] **Day 12: Implement message storage layer**
   - [ ] Implement the Postgres repository/entity for messages
   - [ ] Configure connection pooling
