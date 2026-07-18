@@ -28,8 +28,8 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add Postgres and Redis services with env vars
   - [ ] Verify `docker compose config` validates without errors
 - [ ] **Day 3: Set up CI pipeline skeleton**
-  - [ ] Add a GitHub Actions workflow with a lint job
-  - [ ] Add a placeholder test job (no-op until services exist)
+  - [x] Add a GitHub Actions workflow with a lint job
+  - [x] Add a placeholder test job (no-op until services exist)
   - [ ] Confirm the workflow triggers on push/PR to `main`
 - [ ] **Day 4: Define shared API/proto contracts**
   - [ ] Create `proto/sms/v1/message.proto` with core message fields
