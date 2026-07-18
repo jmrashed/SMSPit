@@ -1,14 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { MessagesController } from './messages.controller';
 import { MessagesService } from './messages.service';
 import { Message, MessageStatus } from './entities/message.entity';
 
 describe('MessagesController', () => {
   let controller: MessagesController;
-  let service: { create: jest.Mock; findAll: jest.Mock };
+  let service: { create: jest.Mock; findAll: jest.Mock; findOne: jest.Mock };
 
   beforeEach(async () => {
-    service = { create: jest.fn(), findAll: jest.fn() };
+    service = { create: jest.fn(), findAll: jest.fn(), findOne: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MessagesController],
@@ -84,5 +85,28 @@ describe('MessagesController', () => {
     const result = await controller.findAll();
 
     expect(result).toEqual({ messages: [], total: 0 });
+  });
+
+  it('returns a single message by id', async () => {
+    const entity: Message = {
+      id: 'sms_abc123',
+      to: '+8801700000000',
+      from: 'SMSPit',
+      body: 'Your OTP is 845231',
+      status: MessageStatus.CAPTURED,
+      createdAt: new Date('2026-07-19T00:00:00.000Z'),
+    };
+    service.findOne.mockResolvedValue(entity);
+
+    const result = await controller.findOne('sms_abc123');
+
+    expect(service.findOne).toHaveBeenCalledWith('sms_abc123');
+    expect(result.id).toBe('sms_abc123');
+  });
+
+  it('propagates NotFoundException from the service for an unknown id', async () => {
+    service.findOne.mockRejectedValue(new NotFoundException('Message sms_missing not found'));
+
+    await expect(controller.findOne('sms_missing')).rejects.toThrow(NotFoundException);
   });
 });

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MessagesService } from './messages.service';
@@ -6,10 +7,10 @@ import { Message, MessageStatus } from './entities/message.entity';
 
 describe('MessagesService', () => {
   let service: MessagesService;
-  let repository: { create: jest.Mock; save: jest.Mock; find: jest.Mock };
+  let repository: { create: jest.Mock; save: jest.Mock; find: jest.Mock; findOneBy: jest.Mock };
 
   beforeEach(async () => {
-    repository = { create: jest.fn(), save: jest.fn(), find: jest.fn() };
+    repository = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOneBy: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [MessagesService, { provide: getRepositoryToken(Message), useValue: repository }],
@@ -40,5 +41,21 @@ describe('MessagesService', () => {
     await service.findAll();
 
     expect(repository.find).toHaveBeenCalledWith({ order: { createdAt: 'DESC' } });
+  });
+
+  it('returns a message by id', async () => {
+    const entity = { id: 'sms_abc123' } as Message;
+    repository.findOneBy.mockResolvedValue(entity);
+
+    const result = await service.findOne('sms_abc123');
+
+    expect(repository.findOneBy).toHaveBeenCalledWith({ id: 'sms_abc123' });
+    expect(result).toBe(entity);
+  });
+
+  it('throws NotFoundException when the message does not exist', async () => {
+    repository.findOneBy.mockResolvedValue(null);
+
+    await expect(service.findOne('sms_missing')).rejects.toThrow(NotFoundException);
   });
 });

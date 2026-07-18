@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
 import { Repository } from 'typeorm';
@@ -7,6 +7,8 @@ import { Message, MessageStatus } from './entities/message.entity';
 
 @Injectable()
 export class MessagesService {
+  private readonly logger = new Logger(MessagesService.name);
+
   constructor(
     @InjectRepository(Message)
     private readonly messagesRepository: Repository<Message>,
@@ -27,5 +29,17 @@ export class MessagesService {
 
   async findAll(): Promise<Message[]> {
     return this.messagesRepository.find({ order: { createdAt: 'DESC' } });
+  }
+
+  async findOne(id: string): Promise<Message> {
+    this.logger.log(`Looking up message ${id}`);
+    const message = await this.messagesRepository.findOneBy({ id });
+
+    if (!message) {
+      this.logger.warn(`Message ${id} not found`);
+      throw new NotFoundException(`Message ${id} not found`);
+    }
+
+    return message;
   }
 }

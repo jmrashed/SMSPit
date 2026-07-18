@@ -76,10 +76,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement the list endpoint, sorted by `created_at desc`
   - [x] Return a consistent response envelope
   - [x] Handle the empty-result case
-- [ ] **Day 14: Implement `GET /api/v1/messages/{id}`**
-  - [ ] Implement the detail endpoint
-  - [ ] Handle the not-found (404) case
-  - [ ] Add request logging for lookups
+- [x] **Day 14: Implement `GET /api/v1/messages/{id}`**
+  - [x] Implement the detail endpoint
+  - [x] Handle the not-found (404) case
+  - [x] Add request logging for lookups
 - [ ] **Day 15: Implement `DELETE /api/v1/messages`**
   - [ ] Implement the bulk-delete endpoint
   - [ ] Guard against accidental full wipe (confirmation param)

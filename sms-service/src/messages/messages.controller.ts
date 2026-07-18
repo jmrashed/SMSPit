@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageResponseDto } from './dto/message-response.dto';
 import { MessageListResponseDto } from './dto/message-list-response.dto';
@@ -19,5 +19,11 @@ export class MessagesController {
   async findAll(): Promise<MessageListResponseDto> {
     const messages = await this.messagesService.findAll();
     return MessageListResponseDto.fromEntities(messages);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<MessageResponseDto> {
+    const message = await this.messagesService.findOne(id);
+    return MessageResponseDto.fromEntity(message);
   }
 }
