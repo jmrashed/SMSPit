@@ -76,4 +76,31 @@ describeIfDb('Message repository (integration)', () => {
       ),
     ).rejects.toThrow();
   });
+
+  it('returns rows ordered by created_at descending', async () => {
+    await repository.save(
+      repository.create({
+        id: 'sms_repo_order_older',
+        to: '+8801700000003',
+        from: 'SMSPit',
+        body: 'older',
+        status: MessageStatus.CAPTURED,
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      }),
+    );
+    await repository.save(
+      repository.create({
+        id: 'sms_repo_order_newer',
+        to: '+8801700000003',
+        from: 'SMSPit',
+        body: 'newer',
+        status: MessageStatus.CAPTURED,
+        createdAt: new Date('2026-01-02T00:00:00.000Z'),
+      }),
+    );
+
+    const rows = await repository.find({ order: { createdAt: 'DESC' } });
+
+    expect(rows.map((row) => row.id)).toEqual(['sms_repo_order_newer', 'sms_repo_order_older']);
+  });
 });

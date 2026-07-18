@@ -6,10 +6,10 @@ import { Message, MessageStatus } from './entities/message.entity';
 
 describe('MessagesService', () => {
   let service: MessagesService;
-  let repository: { create: jest.Mock; save: jest.Mock };
+  let repository: { create: jest.Mock; save: jest.Mock; find: jest.Mock };
 
   beforeEach(async () => {
-    repository = { create: jest.fn(), save: jest.fn() };
+    repository = { create: jest.fn(), save: jest.fn(), find: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [MessagesService, { provide: getRepositoryToken(Message), useValue: repository }],
@@ -32,5 +32,13 @@ describe('MessagesService', () => {
     expect(result.body).toBe('Your OTP is 845231');
     expect(result.status).toBe(MessageStatus.CAPTURED);
     expect(repository.save).toHaveBeenCalledWith(result);
+  });
+
+  it('lists messages ordered by createdAt descending', async () => {
+    repository.find.mockResolvedValue([]);
+
+    await service.findAll();
+
+    expect(repository.find).toHaveBeenCalledWith({ order: { createdAt: 'DESC' } });
   });
 });

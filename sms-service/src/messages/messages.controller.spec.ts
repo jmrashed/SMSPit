@@ -5,10 +5,10 @@ import { Message, MessageStatus } from './entities/message.entity';
 
 describe('MessagesController', () => {
   let controller: MessagesController;
-  let service: { create: jest.Mock };
+  let service: { create: jest.Mock; findAll: jest.Mock };
 
   beforeEach(async () => {
-    service = { create: jest.fn() };
+    service = { create: jest.fn(), findAll: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MessagesController],
@@ -48,5 +48,41 @@ describe('MessagesController', () => {
       status: 'captured',
       created_at: '2026-07-19T00:00:00.000Z',
     });
+  });
+
+  it('lists messages newest-first inside a { messages, total } envelope', async () => {
+    const newer: Message = {
+      id: 'sms_newer',
+      to: '+8801700000000',
+      from: 'SMSPit',
+      body: 'newer',
+      status: MessageStatus.CAPTURED,
+      createdAt: new Date('2026-07-19T01:00:00.000Z'),
+    };
+    service.findAll.mockResolvedValue([newer]);
+
+    const result = await controller.findAll();
+
+    expect(result).toEqual({
+      messages: [
+        {
+          id: 'sms_newer',
+          to: '+8801700000000',
+          from: 'SMSPit',
+          message: 'newer',
+          status: 'captured',
+          created_at: '2026-07-19T01:00:00.000Z',
+        },
+      ],
+      total: 1,
+    });
+  });
+
+  it('returns an empty list when there are no messages', async () => {
+    service.findAll.mockResolvedValue([]);
+
+    const result = await controller.findAll();
+
+    expect(result).toEqual({ messages: [], total: 0 });
   });
 });

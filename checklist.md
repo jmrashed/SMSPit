@@ -72,10 +72,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement the Postgres repository/entity for messages
   - [x] Configure connection pooling
   - [x] Write a repository-level unit test against a test DB
-- [ ] **Day 13: Implement `GET /api/v1/messages` (list)**
-  - [ ] Implement the list endpoint, sorted by `created_at desc`
-  - [ ] Return a consistent response envelope
-  - [ ] Handle the empty-result case
+- [x] **Day 13: Implement `GET /api/v1/messages` (list)**
+  - [x] Implement the list endpoint, sorted by `created_at desc`
+  - [x] Return a consistent response envelope
+  - [x] Handle the empty-result case
 - [ ] **Day 14: Implement `GET /api/v1/messages/{id}`**
   - [ ] Implement the detail endpoint
   - [ ] Handle the not-found (404) case

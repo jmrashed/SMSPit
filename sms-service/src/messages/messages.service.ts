@@ -24,4 +24,8 @@ export class MessagesService {
 
     return this.messagesRepository.save(message);
   }
+
+  async findAll(): Promise<Message[]> {
+    return this.messagesRepository.find({ order: { createdAt: 'DESC' } });
+  }
 }
