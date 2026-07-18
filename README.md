@@ -10,7 +10,7 @@
   <a href="https://github.com/jmrashed/SMSPit/issues"><img src="https://img.shields.io/github/issues/jmrashed/SMSPit" alt="Issues"></a>
 </p>
 
-> **Status: Early scaffolding / pre-alpha.** SMSPit is under active planning — the repository layout and service skeletons exist, but the services themselves are not implemented yet. Most sections below describe the intended product and roadmap, not what's runnable today. Follow progress in [checklist.md](checklist.md).
+> **Status: Early scaffolding / pre-alpha.** SMSPit is under active planning — the repository layout and service skeletons exist, but the services themselves are not implemented yet. Most sections below describe the intended product and roadmap, not what's runnable today. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
 
 ---
 
