@@ -43,10 +43,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Decide pub/sub channel naming convention for live updates
   - [x] Document caching strategy (if any) needed for v0.1
   - [x] Note the decision to defer NATS/Kafka to a later phase
-- [ ] **Day 7: Scaffold `sms-service` (NestJS)**
-  - [ ] Run `nest new sms-service`
-  - [ ] Set up the `messages` module structure
-  - [ ] Configure environment variables and `.env.example`
+- [x] **Day 7: Scaffold `sms-service` (NestJS)**
+  - [x] Run `nest new sms-service`
+  - [x] Set up the `messages` module structure
+  - [x] Configure environment variables and `.env.example`
 - [ ] **Day 8: Scaffold `dashboard` (React)**
   - [ ] Scaffold the project (Vite or equivalent)
   - [ ] Set up folder structure (`components`, `pages`, `api`, `hooks`)
