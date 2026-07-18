@@ -1,0 +1,446 @@
+# SMSPit — 100-Day Build Checklist
+
+Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release, following the phases already defined in the [README](README.md#roadmap). Each day has a main task plus sub-tasks for a clearer, more actionable path. Check off items as you complete them.
+
+---
+
+## Phase 0 — Foundation (Days 1–10)
+
+- [ ] **Day 1: Initialize monorepo structure**
+  - [ ] Create top-level folders per the Project Structure section in README
+    - [ ] `gateway/`, `auth-service/`, `sms-service/`, `ai-service/`, `worker/`, `dashboard/`
+    - [ ] `proto/`, `docs/`, `docker/`, `deployments/`, `scripts/`
+  - [ ] Add `.gitignore` covering Go, Node, PHP, Python, and React
+    - [ ] Go: `bin/`, `*.exe`, vendor dirs
+    - [ ] Node/React: `node_modules/`, `dist/`, `build/`, `.env`
+    - [ ] PHP/Laravel: `vendor/`, `.env`, `storage/*.key`
+    - [ ] Python: `__pycache__/`, `.venv/`, `*.pyc`
+    - [ ] Common: `.DS_Store`, editor/IDE folders, log files
+  - [ ] Add `.editorconfig` and a stub `README.md` per service folder
+    - [ ] Set `.editorconfig` rules (indent size/style, charset, trailing newline) per language
+    - [ ] Add a one-paragraph stub `README.md` in each service folder stating its purpose and status ("not yet implemented")
+  - [ ] Initialize git repo hygiene for the new structure
+    - [ ] Confirm `LICENSE` and root `README.md` remain at repo root
+    - [ ] Commit the empty folder skeletons (with `.gitkeep` where needed) as a single "scaffold monorepo structure" commit
+    - [ ] Push and verify the structure renders correctly on GitHub
+- [ ] **Day 2: Draft skeleton `docker-compose.yml`**
+  - [ ] Define placeholder entries for gateway, auth-service, sms-service, ai-service, worker, dashboard
+  - [ ] Add Postgres and Redis services with env vars
+  - [ ] Verify `docker compose config` validates without errors
+- [ ] **Day 3: Set up CI pipeline skeleton**
+  - [ ] Add a GitHub Actions workflow with a lint job
+  - [ ] Add a placeholder test job (no-op until services exist)
+  - [ ] Confirm the workflow triggers on push/PR to `main`
+- [ ] **Day 4: Define shared API/proto contracts**
+  - [ ] Create `proto/sms/v1/message.proto` with core message fields
+  - [ ] Document the REST ↔ proto field mapping
+  - [ ] Scope the contract to only what v0.1 needs
+- [ ] **Day 5: Design PostgreSQL schema for messages**
+  - [ ] Draft `messages` table columns (`id`, `to`, `from`, `body`, `status`, `created_at`)
+  - [ ] Write the initial migration file
+  - [ ] Add indexes on `to`, `from`, and `created_at` for search
+- [ ] **Day 6: Design Redis usage**
+  - [ ] Decide pub/sub channel naming convention for live updates
+  - [ ] Document caching strategy (if any) needed for v0.1
+  - [ ] Note the decision to defer NATS/Kafka to a later phase
+- [ ] **Day 7: Scaffold `sms-service` (NestJS)**
+  - [ ] Run `nest new sms-service`
+  - [ ] Set up the `messages` module structure
+  - [ ] Configure environment variables and `.env.example`
+- [ ] **Day 8: Scaffold `dashboard` (React)**
+  - [ ] Scaffold the project (Vite or equivalent)
+  - [ ] Set up folder structure (`components`, `pages`, `api`, `hooks`)
+  - [ ] Configure a base API client with env-based base URL
+- [ ] **Day 9: Write local dev setup docs and script**
+  - [ ] Write `scripts/setup.sh` (installs deps, copies `.env.example`)
+  - [ ] Document manual setup steps in `docs/`
+  - [ ] Test the setup script against a clean clone
+- [ ] **Day 10: Write architecture decision record (ADR)**
+  - [ ] Document why Go/Laravel/NestJS/FastAPI/React were chosen
+  - [ ] List trade-offs considered and rejected alternatives
+  - [ ] Store as `docs/adr/0001-tech-stack.md`
+
+---
+
+## Phase 1 — v0.1: SMS Capture, Dashboard, Search, REST API, Docker (Days 11–30)
+
+- [ ] **Day 11: Implement `POST /api/v1/messages`**
+  - [ ] Define DTO/validation for the incoming SMS payload
+  - [ ] Implement controller + service method to persist the message
+  - [ ] Return the captured message with a generated `id`
+- [ ] **Day 12: Implement message storage layer**
+  - [ ] Implement the Postgres repository/entity for messages
+  - [ ] Configure connection pooling
+  - [ ] Write a repository-level unit test against a test DB
+- [ ] **Day 13: Implement `GET /api/v1/messages` (list)**
+  - [ ] Implement the list endpoint, sorted by `created_at desc`
+  - [ ] Return a consistent response envelope
+  - [ ] Handle the empty-result case
+- [ ] **Day 14: Implement `GET /api/v1/messages/{id}`**
+  - [ ] Implement the detail endpoint
+  - [ ] Handle the not-found (404) case
+  - [ ] Add request logging for lookups
+- [ ] **Day 15: Implement `DELETE /api/v1/messages`**
+  - [ ] Implement the bulk-delete endpoint
+  - [ ] Guard against accidental full wipe (confirmation param)
+  - [ ] Add an audit log entry on delete
+- [ ] **Day 16: Add validation and error-handling middleware**
+  - [ ] Add a global exception filter/middleware
+  - [ ] Standardize the error response shape (`code`, `message`, `details`)
+  - [ ] Add tests for invalid-payload responses
+- [ ] **Day 17: Add pagination to the list endpoint**
+  - [ ] Add `limit`/`offset` (or cursor) params
+  - [ ] Include pagination metadata in the response
+  - [ ] Add tests for pagination boundaries
+- [ ] **Day 18: Implement search/filter query params**
+  - [ ] Implement filtering by `to` and `from`
+  - [ ] Implement filtering by date range
+  - [ ] Add tests covering combined filters
+- [ ] **Day 19: Write unit tests for message endpoints**
+  - [ ] Test the capture endpoint
+  - [ ] Test the list/detail/delete endpoints
+  - [ ] Set up test coverage reporting
+- [ ] **Day 20: Write integration tests**
+  - [ ] Set up a test database container for CI
+  - [ ] Write an integration test for capture → list → detail
+  - [ ] Wire integration tests into the CI pipeline
+- [ ] **Day 21: Build dashboard inbox page**
+  - [ ] Build the message list component/table
+  - [ ] Add status badges (e.g. "Captured")
+  - [ ] Add a basic responsive layout
+- [ ] **Day 22: Build dashboard message detail view**
+  - [ ] Build a detail panel/page with full message + metadata
+  - [ ] Add navigation from list to detail
+  - [ ] Handle loading and not-found states
+- [ ] **Day 23: Connect dashboard to the REST API**
+  - [ ] Implement API client functions for list/detail
+  - [ ] Wire up data fetching (React Query/SWR/fetch)
+  - [ ] Configure the API base URL via env
+- [ ] **Day 24: Implement dashboard search/filter UI**
+  - [ ] Add a search input bound to `to`/`from` filters
+  - [ ] Add a date range picker
+  - [ ] Debounce the search input
+- [ ] **Day 25: Add loading, empty, and error states**
+  - [ ] Add a skeleton/spinner for loading
+  - [ ] Add an empty-state message when there are no messages
+  - [ ] Add an error banner with a retry action
+- [ ] **Day 26: Write `Dockerfile` for `sms-service`**
+  - [ ] Write a multi-stage Dockerfile (build + runtime)
+  - [ ] Verify the image builds and runs locally
+  - [ ] Minimize image size (slim base, prune dev deps)
+- [ ] **Day 27: Write `Dockerfile` for `dashboard`**
+  - [ ] Write a multi-stage Dockerfile (build + static serve)
+  - [ ] Verify the production build serves correctly
+  - [ ] Configure env injection for the API base URL
+- [ ] **Day 28: Wire services into `docker-compose.yml`**
+  - [ ] Replace placeholders with real build contexts
+  - [ ] Configure `depends_on` and networks
+  - [ ] Set environment variables for DB connection
+- [ ] **Day 29: Run end-to-end smoke test**
+  - [ ] Run `docker compose up -d` from a clean state
+  - [ ] Send a test SMS via curl/Postman and verify capture
+  - [ ] Verify the dashboard displays the captured message
+- [ ] **Day 30: Tag and release v0.1**
+  - [ ] Update `CHANGELOG.md` with v0.1 notes
+  - [ ] Tag the release (`v0.1.0`)
+  - [ ] Update the README status notice to reflect v0.1 availability
+
+---
+
+## Phase 2 — v0.2: Authentication, API Keys, Replay, Statistics, WebSocket (Days 31–50)
+
+- [ ] **Day 31: Scaffold `auth-service` (Laravel)**
+  - [ ] Run `laravel new auth-service`
+  - [ ] Configure `.env` and database connection
+  - [ ] Set up the base routing structure
+- [ ] **Day 32: Design `auth-service` schema**
+  - [ ] Create the `users` migration
+  - [ ] Create the `api_keys` migration (key, hashed secret, owner, scopes)
+  - [ ] Run migrations locally and verify the schema
+- [ ] **Day 33: Implement API key generation endpoint**
+  - [ ] Implement `POST /api-keys`
+  - [ ] Generate a secure random key and hash it before storage
+  - [ ] Return the plaintext key once, never retrievable again
+- [ ] **Day 34: Implement API key validation middleware**
+  - [ ] Implement middleware to validate the `Authorization` header
+  - [ ] Look up the key hash against the DB
+  - [ ] Return 401 on invalid/missing key
+- [ ] **Day 35: Integrate API key auth into `sms-service`**
+  - [ ] Call auth-service (or a shared lib) to validate keys per request
+  - [ ] Add an auth guard to protected endpoints
+  - [ ] Add tests for authorized vs. unauthorized requests
+- [ ] **Day 36: Write tests for the API key flow**
+  - [ ] Test key generation
+  - [ ] Test key validation success/failure paths
+  - [ ] Test key revocation (if implemented)
+- [ ] **Day 37: Scaffold `gateway` (Go)**
+  - [ ] Initialize the Go module and base HTTP server
+  - [ ] Set up a routing library (chi/gin/echo)
+  - [ ] Add a health check endpoint
+- [ ] **Day 38: Implement gateway routing**
+  - [ ] Configure reverse-proxy rules to sms-service and auth-service
+  - [ ] Add path-based routing rules
+  - [ ] Test routing locally against running services
+- [ ] **Day 39: Enforce authentication at the gateway**
+  - [ ] Add middleware to validate the API key before proxying
+  - [ ] Pass validated identity downstream via headers
+  - [ ] Add tests for gateway auth rejection
+- [ ] **Day 40: Implement replay endpoint**
+  - [ ] Implement `POST /api/v1/messages/{id}/replay`
+  - [ ] Re-trigger the capture pipeline with the original payload
+  - [ ] Store the replay as a linked/new message entry
+- [ ] **Day 41: Write tests for replay**
+  - [ ] Test the successful replay flow
+  - [ ] Test replay of a nonexistent message (404)
+  - [ ] Test the replay audit trail entry
+- [ ] **Day 42: Add replay UI to the dashboard**
+  - [ ] Add a replay button on the message detail view
+  - [ ] Show a confirmation and success/failure toast
+  - [ ] Refresh the list after replay
+- [ ] **Day 43: Implement statistics endpoint**
+  - [ ] Implement `GET /api/v1/statistics`
+  - [ ] Aggregate counts by status/day
+  - [ ] Add caching if aggregation is expensive
+- [ ] **Day 44: Build dashboard statistics page**
+  - [ ] Build an overview page with key metric cards
+  - [ ] Add a simple chart for message volume over time
+  - [ ] Wire it to the statistics endpoint
+- [ ] **Day 45: Set up a WebSocket server**
+  - [ ] Add a WebSocket gateway/module in sms-service
+  - [ ] Emit an event on new message capture
+  - [ ] Add connection auth (API key/session)
+- [ ] **Day 46: Integrate WebSocket client in the dashboard**
+  - [ ] Connect on inbox page mount
+  - [ ] Update the message list in real time on new events
+  - [ ] Handle reconnect/backoff on disconnect
+- [ ] **Day 47: Build API key management UI**
+  - [ ] Build a page to list/create/revoke API keys
+  - [ ] Show key metadata (created date, last used)
+  - [ ] Add copy-to-clipboard for a newly generated key
+- [ ] **Day 48: Write Dockerfiles for `auth-service` and `gateway`**
+  - [ ] Write the Dockerfile for auth-service (PHP-FPM/Laravel)
+  - [ ] Write the Dockerfile for gateway (Go binary)
+  - [ ] Verify both build and run standalone
+- [ ] **Day 49: Update `docker-compose.yml`**
+  - [ ] Add auth-service and gateway services
+  - [ ] Configure the network so gateway can reach both services
+  - [ ] Verify WebSocket passthrough works through the gateway
+- [ ] **Day 50: Tag and release v0.2**
+  - [ ] Update `CHANGELOG.md`
+  - [ ] Tag the release (`v0.2.0`)
+  - [ ] Update README/docs to reflect auth & replay features
+
+---
+
+## Phase 3 — v0.3: Provider Emulation, Teams, Organizations, Templates, Export (Days 51–65)
+
+- [ ] **Day 51: Define provider-compatible endpoint spec**
+  - [ ] Finalize SMSPit's own native request/response contract (`/api/v1/messages`)
+  - [ ] Document the mapping from each third-party provider format to SMSPit's internal format
+  - [ ] Decide the URL path convention for compatibility endpoints
+- [ ] **Day 52: Implement MessageBird-compatible adapter**
+  - [ ] Review the MessageBird API payload format
+  - [ ] Implement an endpoint accepting MessageBird-style payloads and translate to the internal capture call
+  - [ ] Add a test comparing against the real MessageBird SDK request shape
+- [ ] **Day 53: Implement Vonage-compatible adapter**
+  - [ ] Review the Vonage API payload format
+  - [ ] Implement the adapter endpoint and translation
+  - [ ] Add tests
+- [ ] **Day 54: Implement AWS SNS-compatible adapter**
+  - [ ] Review the SNS publish payload format
+  - [ ] Implement the adapter endpoint and translation
+  - [ ] Add tests
+- [ ] **Day 55: Write tests for provider adapters**
+  - [ ] Add coverage for malformed provider payloads
+  - [ ] Add coverage for each adapter's success path
+  - [ ] Document supported vs. unsupported provider fields
+- [ ] **Day 56: Design multi-tenant data model**
+  - [ ] Design `organizations` and `teams` tables
+  - [ ] Define the org/team/user/api_key relationships
+  - [ ] Write the migration for the org/team schema
+- [ ] **Day 57: Implement organizations CRUD**
+  - [ ] Implement create/list/update/delete endpoints
+  - [ ] Add authorization checks (org admins only)
+  - [ ] Add tests
+- [ ] **Day 58: Implement teams CRUD**
+  - [ ] Implement create/list team endpoints within an org
+  - [ ] Implement add/remove member endpoints
+  - [ ] Add tests
+- [ ] **Day 59: Scope messages/API keys to organization**
+  - [ ] Add `org_id` foreign key to messages and API keys
+  - [ ] Update all queries to filter by org context
+  - [ ] Add tests verifying cross-org data isolation
+- [ ] **Day 60: Build org/team switcher UI**
+  - [ ] Add an org selector dropdown in the dashboard header
+  - [ ] Persist the selected org in session/local storage
+  - [ ] Refetch data on org switch
+- [ ] **Day 61: Implement message templates CRUD**
+  - [ ] Design the `templates` table (name, body, variables)
+  - [ ] Implement CRUD endpoints
+  - [ ] Add tests
+- [ ] **Day 62: Build template picker UI**
+  - [ ] Build a template list/select UI
+  - [ ] Support inserting a template into the compose/replay flow
+  - [ ] Add a create/edit template form
+- [ ] **Day 63: Implement export endpoint**
+  - [ ] Implement an export endpoint supporting CSV and JSON
+  - [ ] Stream large exports instead of loading fully into memory
+  - [ ] Add tests for both formats
+- [ ] **Day 64: Build export UI**
+  - [ ] Add an export button with a format selector
+  - [ ] Trigger a file download from the API response
+  - [ ] Show a progress/loading indicator for large exports
+- [ ] **Day 65: Tag and release v0.3**
+  - [ ] Update `CHANGELOG.md`
+  - [ ] Tag the release (`v0.3.0`)
+  - [ ] Update README with provider compatibility & multi-tenancy notes
+
+---
+
+## Phase 4 — v0.4: AI OTP Detection, Classification, Spam Detection, Test Data Generator (Days 66–80)
+
+- [ ] **Day 66: Scaffold `ai-service` (FastAPI)**
+  - [ ] Initialize the FastAPI project structure
+  - [ ] Set up base routing and a health check
+  - [ ] Configure `.env` and dependency management
+- [ ] **Day 67: Implement OTP detection endpoint**
+  - [ ] Implement regex-based OTP extraction as a baseline
+  - [ ] Expose `POST /detect-otp`
+  - [ ] Add tests with sample OTP messages
+- [ ] **Day 68: Integrate OTP detection into ingestion**
+  - [ ] Call ai-service from sms-service on message capture
+  - [ ] Store the detected OTP value on the message record
+  - [ ] Handle ai-service downtime gracefully (non-blocking)
+- [ ] **Day 69: Highlight OTP in the dashboard**
+  - [ ] Display the detected OTP prominently on message detail
+  - [ ] Add copy-to-clipboard for the OTP value
+  - [ ] Add a visual badge on the list view for OTP messages
+- [ ] **Day 70: Implement classification endpoint**
+  - [ ] Implement rule-based or ML classification (transactional/marketing/OTP)
+  - [ ] Expose `POST /classify`
+  - [ ] Add tests
+- [ ] **Day 71: Show classification tags in the dashboard**
+  - [ ] Display the classification badge on list and detail views
+  - [ ] Add a filter by classification type
+  - [ ] Verify tag colors are accessible/consistent
+- [ ] **Day 72: Implement spam detection endpoint**
+  - [ ] Implement spam scoring logic/model
+  - [ ] Expose `POST /detect-spam`
+  - [ ] Add tests with spam and legitimate samples
+- [ ] **Day 73: Flag spam in the dashboard**
+  - [ ] Add a visual indicator for flagged spam messages
+  - [ ] Add a filter to show/hide spam
+  - [ ] Add a manual override (mark as not spam)
+- [ ] **Day 74: Implement AI test-data generator endpoint**
+  - [ ] Implement generation of synthetic SMS samples (OTP, marketing, etc.)
+  - [ ] Support configurable count/type params
+  - [ ] Add tests
+- [ ] **Day 75: Build "generate test data" UI**
+  - [ ] Add a button/form in the dashboard to trigger generation
+  - [ ] Show generated messages appearing in the inbox
+  - [ ] Add safeguards against accidental mass generation in production
+- [ ] **Day 76: Write tests for `ai-service`**
+  - [ ] Add unit tests for each endpoint
+  - [ ] Add coverage reporting
+  - [ ] Add tests for edge cases (empty/very long messages)
+- [ ] **Day 77: Scaffold `worker` (Go)**
+  - [ ] Initialize the Go module for the worker
+  - [ ] Set up the base job consumer loop
+  - [ ] Add graceful shutdown handling
+- [ ] **Day 78: Wire worker to the queue**
+  - [ ] Choose and configure the queue (Redis Streams/NATS/Kafka)
+  - [ ] Implement job publishing from sms-service on capture
+  - [ ] Implement worker consumption calling ai-service for async processing
+- [ ] **Day 79: Write Dockerfiles for `ai-service` and `worker`**
+  - [ ] Write the Dockerfile for ai-service (Python base)
+  - [ ] Write the Dockerfile for worker (Go binary)
+  - [ ] Update `docker-compose.yml` with the new services and queue
+- [ ] **Day 80: Tag and release v0.4**
+  - [ ] Update `CHANGELOG.md`
+  - [ ] Tag the release (`v0.4.0`)
+  - [ ] Update README with the AI features overview
+
+---
+
+## Phase 5 — v1.0: Kubernetes, Observability, Multi-tenancy, SDKs, Launch (Days 81–100)
+
+- [ ] **Day 81: Write Kubernetes manifests**
+  - [ ] Write Deployment + Service manifests for each microservice
+  - [ ] Write ConfigMap/Secret manifests for env vars
+  - [ ] Validate manifests with `kubectl apply --dry-run`
+- [ ] **Day 82: Write Helm chart**
+  - [ ] Scaffold the chart structure (`Chart.yaml`, `values.yaml`, `templates/`)
+  - [ ] Parameterize replica counts, images, resource limits
+  - [ ] Test `helm install` against a local cluster (kind/minikube)
+- [ ] **Day 83: Set up OpenTelemetry tracing**
+  - [ ] Add OTel SDK/instrumentation to each service
+  - [ ] Configure the trace exporter (OTLP) to a collector
+  - [ ] Verify traces flow end-to-end across gateway → services
+- [ ] **Day 84: Set up Prometheus metrics**
+  - [ ] Expose a `/metrics` endpoint on each service
+  - [ ] Instrument key counters/histograms (request count, latency)
+  - [ ] Configure the Prometheus scrape config
+- [ ] **Day 85: Build Grafana dashboards**
+  - [ ] Connect Grafana to the Prometheus datasource
+  - [ ] Build panels for request rate, latency, error rate
+  - [ ] Build a panel for message volume/OTP detection rate
+- [ ] **Day 86: Harden multi-tenancy**
+  - [ ] Audit all queries/endpoints for missing org scoping
+  - [ ] Implement per-org rate limiting
+  - [ ] Add an automated test suite for tenant isolation
+- [ ] **Day 87: Security review**
+  - [ ] Review secrets management (env vars vs. vault)
+  - [ ] Implement API key rotation
+  - [ ] Review and add input sanitization across all endpoints
+- [ ] **Day 88: Load testing**
+  - [ ] Write load test scripts (k6/Locust) for sms-service and gateway
+  - [ ] Run load tests and record baseline throughput/latency
+  - [ ] Identify and address any bottlenecks found
+- [ ] **Day 89: Build PHP SDK**
+  - [ ] Scaffold the SDK package structure
+  - [ ] Implement client methods for send/list/replay
+  - [ ] Add a usage example and tests
+- [ ] **Day 90: Build Go SDK**
+  - [ ] Scaffold the SDK package structure
+  - [ ] Implement client methods for send/list/replay
+  - [ ] Add a usage example and tests
+- [ ] **Day 91: Build Node.js SDK**
+  - [ ] Scaffold the SDK package structure
+  - [ ] Implement client methods for send/list/replay
+  - [ ] Add a usage example and tests
+- [ ] **Day 92: Build Python SDK**
+  - [ ] Scaffold the SDK package structure
+  - [ ] Implement client methods for send/list/replay
+  - [ ] Add a usage example and tests
+- [ ] **Day 93: Write SDK docs**
+  - [ ] Write a README/usage guide for each SDK
+  - [ ] Add code examples for common flows (send, replay, webhook)
+  - [ ] Publish SDKs to their package registries (or mark as pending)
+- [ ] **Day 94: Write OpenAPI reference & docs site**
+  - [ ] Generate/write a full OpenAPI spec covering all endpoints
+  - [ ] Set up a docs site (static site or Swagger UI) to render it
+  - [ ] Review docs for accuracy against implemented endpoints
+- [ ] **Day 95: Extend CI/CD pipeline**
+  - [ ] Build and test all services on every PR
+  - [ ] Add a CD step to build and push Docker images on tag
+  - [ ] Add a deployment step to a staging environment
+- [ ] **Day 96: Publish Docker images**
+  - [ ] Set up a container registry (GHCR/Docker Hub)
+  - [ ] Tag and push images for all services
+  - [ ] Verify images pull and run correctly from the registry
+- [ ] **Day 97: Write production deployment guide**
+  - [ ] Document docker-compose production deployment steps
+  - [ ] Document Kubernetes/Helm production deployment steps
+  - [ ] Include an environment variable reference and scaling notes
+- [ ] **Day 98: Run a full end-to-end QA pass**
+  - [ ] Manually verify every feature listed in README against the running system
+  - [ ] Log and fix any bugs found
+  - [ ] Re-run the automated test suite across all services
+- [ ] **Day 99: Update docs for v1.0**
+  - [ ] Update README to remove "planned" framing where features are now live
+  - [ ] Finalize `CONTRIBUTING.md`
+  - [ ] Write a `CHANGELOG.md` entry summarizing the v0.1–v1.0 journey
+- [ ] **Day 100: Tag and release v1.0**
+  - [ ] Final version bump across all services
+  - [ ] Tag `v1.0.0` and publish GitHub release notes
+  - [ ] Announce the release
