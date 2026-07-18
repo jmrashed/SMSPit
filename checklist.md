@@ -84,10 +84,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement the bulk-delete endpoint
   - [x] Guard against accidental full wipe (confirmation param)
   - [x] Add an audit log entry on delete
-- [ ] **Day 16: Add validation and error-handling middleware**
-  - [ ] Add a global exception filter/middleware
-  - [ ] Standardize the error response shape (`code`, `message`, `details`)
-  - [ ] Add tests for invalid-payload responses
+- [x] **Day 16: Add validation and error-handling middleware**
+  - [x] Add a global exception filter/middleware
+  - [x] Standardize the error response shape (`code`, `message`, `details`)
+  - [x] Add tests for invalid-payload responses
 - [ ] **Day 17: Add pagination to the list endpoint**
   - [ ] Add `limit`/`offset` (or cursor) params
   - [ ] Include pagination metadata in the response
