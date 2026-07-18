@@ -104,10 +104,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Set up a test database container for CI
   - [x] Write an integration test for capture → list → detail
   - [x] Wire integration tests into the CI pipeline
-- [ ] **Day 21: Build dashboard inbox page**
-  - [ ] Build the message list component/table
-  - [ ] Add status badges (e.g. "Captured")
-  - [ ] Add a basic responsive layout
+- [x] **Day 21: Build dashboard inbox page**
+  - [x] Build the message list component/table
+  - [x] Add status badges (e.g. "Captured")
+  - [x] Add a basic responsive layout
 - [ ] **Day 22: Build dashboard message detail view**
   - [ ] Build a detail panel/page with full message + metadata
   - [ ] Add navigation from list to detail
