@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageResponseDto } from './dto/message-response.dto';
 import { MessageListResponseDto } from './dto/message-list-response.dto';
+import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
 import { DeleteMessagesDto } from './dto/delete-messages.dto';
 import { DeleteMessagesResponseDto } from './dto/delete-messages-response.dto';
 import { MessagesService } from './messages.service';
@@ -18,9 +19,9 @@ export class MessagesController {
   }
 
   @Get()
-  async findAll(): Promise<MessageListResponseDto> {
-    const messages = await this.messagesService.findAll();
-    return MessageListResponseDto.fromEntities(messages);
+  async findAll(@Query() query: ListMessagesQueryDto): Promise<MessageListResponseDto> {
+    const [messages, total] = await this.messagesService.findAll(query);
+    return MessageListResponseDto.fromEntities(messages, total, query.limit, query.offset);
   }
 
   @Get(':id')

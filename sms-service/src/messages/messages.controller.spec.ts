@@ -51,7 +51,7 @@ describe('MessagesController', () => {
     });
   });
 
-  it('lists messages newest-first inside a { messages, total } envelope', async () => {
+  it('lists messages newest-first inside a { messages, total, limit, offset } envelope', async () => {
     const newer: Message = {
       id: 'sms_newer',
       to: '+8801700000000',
@@ -60,10 +60,11 @@ describe('MessagesController', () => {
       status: MessageStatus.CAPTURED,
       createdAt: new Date('2026-07-19T01:00:00.000Z'),
     };
-    service.findAll.mockResolvedValue([newer]);
+    service.findAll.mockResolvedValue([[newer], 1]);
 
-    const result = await controller.findAll();
+    const result = await controller.findAll({ limit: 20, offset: 0 });
 
+    expect(service.findAll).toHaveBeenCalledWith({ limit: 20, offset: 0 });
     expect(result).toEqual({
       messages: [
         {
@@ -76,15 +77,17 @@ describe('MessagesController', () => {
         },
       ],
       total: 1,
+      limit: 20,
+      offset: 0,
     });
   });
 
   it('returns an empty list when there are no messages', async () => {
-    service.findAll.mockResolvedValue([]);
+    service.findAll.mockResolvedValue([[], 0]);
 
-    const result = await controller.findAll();
+    const result = await controller.findAll({ limit: 20, offset: 0 });
 
-    expect(result).toEqual({ messages: [], total: 0 });
+    expect(result).toEqual({ messages: [], total: 0, limit: 20, offset: 0 });
   });
 
   it('returns a single message by id', async () => {

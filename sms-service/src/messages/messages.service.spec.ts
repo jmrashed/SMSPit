@@ -11,6 +11,7 @@ describe('MessagesService', () => {
     create: jest.Mock;
     save: jest.Mock;
     find: jest.Mock;
+    findAndCount: jest.Mock;
     findOneBy: jest.Mock;
     delete: jest.Mock;
     createQueryBuilder: jest.Mock;
@@ -23,6 +24,7 @@ describe('MessagesService', () => {
       create: jest.fn(),
       save: jest.fn(),
       find: jest.fn(),
+      findAndCount: jest.fn(),
       findOneBy: jest.fn(),
       delete: jest.fn(),
       createQueryBuilder: jest.fn(() => ({
@@ -53,12 +55,16 @@ describe('MessagesService', () => {
     expect(repository.save).toHaveBeenCalledWith(result);
   });
 
-  it('lists messages ordered by createdAt descending', async () => {
-    repository.find.mockResolvedValue([]);
+  it('lists messages ordered by createdAt descending with limit/offset applied', async () => {
+    repository.findAndCount.mockResolvedValue([[], 0]);
 
-    await service.findAll();
+    await service.findAll({ limit: 20, offset: 0 });
 
-    expect(repository.find).toHaveBeenCalledWith({ order: { createdAt: 'DESC' } });
+    expect(repository.findAndCount).toHaveBeenCalledWith({
+      order: { createdAt: 'DESC' },
+      take: 20,
+      skip: 0,
+    });
   });
 
   it('returns a message by id', async () => {

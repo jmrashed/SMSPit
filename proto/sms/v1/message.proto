@@ -35,13 +35,15 @@ message SendMessageResponse {
 message ListMessagesRequest {
   string to = 1;    // optional filter
   string from = 2;  // optional filter
-  int32 page = 3;
-  int32 page_size = 4;
+  int32 limit = 3;  // default 20, max 100
+  int32 offset = 4; // default 0
 }
 
 message ListMessagesResponse {
   repeated Message messages = 1;
-  int32 total = 2;
+  int32 total = 2;  // total matching rows, not just this page
+  int32 limit = 3;
+  int32 offset = 4;
 }
 
 // GET /api/v1/messages/{id}

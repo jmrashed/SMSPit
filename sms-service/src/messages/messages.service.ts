@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import { In, Repository } from 'typeorm';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { DeleteMessagesDto } from './dto/delete-messages.dto';
+import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
 import { Message, MessageStatus } from './entities/message.entity';
 
 @Injectable()
@@ -28,8 +29,12 @@ export class MessagesService {
     return this.messagesRepository.save(message);
   }
 
-  async findAll(): Promise<Message[]> {
-    return this.messagesRepository.find({ order: { createdAt: 'DESC' } });
+  async findAll(query: ListMessagesQueryDto): Promise<[Message[], number]> {
+    return this.messagesRepository.findAndCount({
+      order: { createdAt: 'DESC' },
+      take: query.limit,
+      skip: query.offset,
+    });
   }
 
   async findOne(id: string): Promise<Message> {
