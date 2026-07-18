@@ -55,10 +55,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Write `scripts/setup.sh` (installs deps, copies `.env.example`)
   - [x] Document manual setup steps in `docs/`
   - [x] Test the setup script against a clean clone
-- [ ] **Day 10: Write architecture decision record (ADR)**
-  - [ ] Document why Go/Laravel/NestJS/FastAPI/React were chosen
-  - [ ] List trade-offs considered and rejected alternatives
-  - [ ] Store as `docs/adr/0001-tech-stack.md`
+- [x] **Day 10: Write architecture decision record (ADR)**
+  - [x] Document why Go/Laravel/NestJS/FastAPI/React were chosen
+  - [x] List trade-offs considered and rejected alternatives
+  - [x] Store as `docs/adr/0001-tech-stack.md`
 
 ---
 
