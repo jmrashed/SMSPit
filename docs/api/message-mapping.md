@@ -28,4 +28,13 @@ Scope: v0.1 only (capture, list, details, delete, search). Replay and statistics
 
 `GET /api/v1/messages` takes `limit` (default 20, max 100) and `offset` (default 0) query params, matching `ListMessagesRequest.limit`/`.offset`. The response envelope is `{ messages, total, limit, offset }` — `total` is the full matching-row count, not just the current page's size, so clients can compute whether more pages exist.
 
+## List filtering (`?to=&from=&created_after=&created_before=`)
+
+`GET /api/v1/messages` also takes optional filters, matching `ListMessagesRequest`'s `to`/`from`/`created_after`/`created_before`:
+
+- `to`, `from`: exact match against the message's `to`/`from` columns.
+- `created_after`, `created_before`: ISO 8601 datetime strings (REST) vs. Unix epoch seconds (proto's `int64`), inclusive on both ends. Either can be supplied alone (open-ended range) or together (bounded range).
+
+All filters combine with AND when supplied together.
+
 `sms-service` is REST-only in v0.1; the proto contract exists as the shared schema definition (and future gRPC option), not as a currently-served gRPC API.

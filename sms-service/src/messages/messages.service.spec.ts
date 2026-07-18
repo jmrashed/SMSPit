@@ -61,10 +61,46 @@ describe('MessagesService', () => {
     await service.findAll({ limit: 20, offset: 0 });
 
     expect(repository.findAndCount).toHaveBeenCalledWith({
+      where: {},
       order: { createdAt: 'DESC' },
       take: 20,
       skip: 0,
     });
+  });
+
+  it('filters by to/from as an exact-match where clause', async () => {
+    repository.findAndCount.mockResolvedValue([[], 0]);
+
+    await service.findAll({ limit: 20, offset: 0, to: '+8801700000000', from: 'SMSPit' });
+
+    expect(repository.findAndCount).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { to: '+8801700000000', from: 'SMSPit' } }),
+    );
+  });
+
+  it('combines a created_after/created_before range with to/from filters', async () => {
+    repository.findAndCount.mockResolvedValue([[], 0]);
+
+    await service.findAll({
+      limit: 20,
+      offset: 0,
+      to: '+8801700000000',
+      created_after: '2026-01-01T00:00:00.000Z',
+      created_before: '2026-01-31T00:00:00.000Z',
+    });
+
+    const call = repository.findAndCount.mock.calls[0][0];
+    expect(call.where.to).toBe('+8801700000000');
+    expect(call.where.createdAt).toBeDefined();
+  });
+
+  it('applies an open-ended created_after filter alone', async () => {
+    repository.findAndCount.mockResolvedValue([[], 0]);
+
+    await service.findAll({ limit: 20, offset: 0, created_after: '2026-01-01T00:00:00.000Z' });
+
+    const call = repository.findAndCount.mock.calls[0][0];
+    expect(call.where.createdAt).toBeDefined();
   });
 
   it('returns a message by id', async () => {

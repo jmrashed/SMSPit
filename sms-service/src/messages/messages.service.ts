@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
-import { In, Repository } from 'typeorm';
+import { Between, FindOptionsWhere, In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { DeleteMessagesDto } from './dto/delete-messages.dto';
 import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
@@ -30,7 +30,21 @@ export class MessagesService {
   }
 
   async findAll(query: ListMessagesQueryDto): Promise<[Message[], number]> {
+    const where: FindOptionsWhere<Message> = {};
+
+    if (query.to) where.to = query.to;
+    if (query.from) where.from = query.from;
+
+    if (query.created_after && query.created_before) {
+      where.createdAt = Between(new Date(query.created_after), new Date(query.created_before));
+    } else if (query.created_after) {
+      where.createdAt = MoreThanOrEqual(new Date(query.created_after));
+    } else if (query.created_before) {
+      where.createdAt = LessThanOrEqual(new Date(query.created_before));
+    }
+
     return this.messagesRepository.findAndCount({
+      where,
       order: { createdAt: 'DESC' },
       take: query.limit,
       skip: query.offset,

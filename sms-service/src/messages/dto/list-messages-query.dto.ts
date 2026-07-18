@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsISO8601, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class ListMessagesQueryDto {
   @IsOptional()
@@ -15,4 +15,20 @@ export class ListMessagesQueryDto {
   @IsInt()
   @Min(0)
   offset: number = 0;
+
+  @IsOptional()
+  @IsString()
+  to?: string;
+
+  @IsOptional()
+  @IsString()
+  from?: string;
+
+  @IsOptional()
+  @IsISO8601()
+  created_after?: string;
+
+  @IsOptional()
+  @IsISO8601()
+  created_before?: string;
 }

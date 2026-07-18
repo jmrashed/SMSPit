@@ -92,10 +92,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add `limit`/`offset` (or cursor) params
   - [x] Include pagination metadata in the response
   - [x] Add tests for pagination boundaries
-- [ ] **Day 18: Implement search/filter query params**
-  - [ ] Implement filtering by `to` and `from`
-  - [ ] Implement filtering by date range
-  - [ ] Add tests covering combined filters
+- [x] **Day 18: Implement search/filter query params**
+  - [x] Implement filtering by `to` and `from`
+  - [x] Implement filtering by date range
+  - [x] Add tests covering combined filters
 - [ ] **Day 19: Write unit tests for message endpoints**
   - [ ] Test the capture endpoint
   - [ ] Test the list/detail/delete endpoints

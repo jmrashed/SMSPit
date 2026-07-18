@@ -33,10 +33,12 @@ message SendMessageResponse {
 
 // GET /api/v1/messages
 message ListMessagesRequest {
-  string to = 1;    // optional filter
-  string from = 2;  // optional filter
+  string to = 1;    // optional exact-match filter
+  string from = 2;  // optional exact-match filter
   int32 limit = 3;  // default 20, max 100
   int32 offset = 4; // default 0
+  int64 created_after = 5;  // optional, Unix epoch seconds (UTC), inclusive
+  int64 created_before = 6; // optional, Unix epoch seconds (UTC), inclusive
 }
 
 message ListMessagesResponse {
