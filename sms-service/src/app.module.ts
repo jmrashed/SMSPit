@@ -24,6 +24,9 @@ import { Message } from './messages/entities/message.entity';
         // service must never create or alter tables on its own.
         synchronize: false,
         migrationsRun: false,
+        extra: {
+          max: config.get<number>('DB_POOL_SIZE', 10),
+        },
       }),
     }),
     MessagesModule,

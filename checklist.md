@@ -68,10 +68,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Define DTO/validation for the incoming SMS payload
   - [x] Implement controller + service method to persist the message
   - [x] Return the captured message with a generated `id`
-- [ ] **Day 12: Implement message storage layer**
-  - [ ] Implement the Postgres repository/entity for messages
-  - [ ] Configure connection pooling
-  - [ ] Write a repository-level unit test against a test DB
+- [x] **Day 12: Implement message storage layer**
+  - [x] Implement the Postgres repository/entity for messages
+  - [x] Configure connection pooling
+  - [x] Write a repository-level unit test against a test DB
 - [ ] **Day 13: Implement `GET /api/v1/messages` (list)**
   - [ ] Implement the list endpoint, sorted by `created_at desc`
   - [ ] Return a consistent response envelope
