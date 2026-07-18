@@ -116,10 +116,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement API client functions for list/detail
   - [x] Wire up data fetching (React Query/SWR/fetch)
   - [x] Configure the API base URL via env
-- [ ] **Day 24: Implement dashboard search/filter UI**
-  - [ ] Add a search input bound to `to`/`from` filters
-  - [ ] Add a date range picker
-  - [ ] Debounce the search input
+- [x] **Day 24: Implement dashboard search/filter UI**
+  - [x] Add a search input bound to `to`/`from` filters
+  - [x] Add a date range picker
+  - [x] Debounce the search input
 - [ ] **Day 25: Add loading, empty, and error states**
   - [ ] Add a skeleton/spinner for loading
   - [ ] Add an empty-state message when there are no messages
