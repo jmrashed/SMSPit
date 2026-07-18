@@ -51,10 +51,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Scaffold the project (Vite or equivalent)
   - [x] Set up folder structure (`components`, `pages`, `api`, `hooks`)
   - [x] Configure a base API client with env-based base URL
-- [ ] **Day 9: Write local dev setup docs and script**
-  - [ ] Write `scripts/setup.sh` (installs deps, copies `.env.example`)
-  - [ ] Document manual setup steps in `docs/`
-  - [ ] Test the setup script against a clean clone
+- [x] **Day 9: Write local dev setup docs and script**
+  - [x] Write `scripts/setup.sh` (installs deps, copies `.env.example`)
+  - [x] Document manual setup steps in `docs/`
+  - [x] Test the setup script against a clean clone
 - [ ] **Day 10: Write architecture decision record (ADR)**
   - [ ] Document why Go/Laravel/NestJS/FastAPI/React were chosen
   - [ ] List trade-offs considered and rejected alternatives
