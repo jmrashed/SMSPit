@@ -37,7 +37,13 @@ SMSPit is a microservices platform: a Go gateway fronts three backend services (
 
 ## Service boundaries
 
-Each service owns its own data access and is only reachable through its public API — no service reaches into another's database or internals directly. Shared contracts (where needed) live in [`proto/`](../proto/).
+Each service is only reachable through its public API — no service imports or calls into another service's internals directly. Shared contracts (where needed) live in [`proto/`](../proto/).
+
+## Database migrations
+
+SMSPit uses a single shared PostgreSQL instance (not database-per-service). Schema ownership is centralized rather than split per service: **`auth-service` (Laravel) is the sole owner of all migrations**, including tables used by other services (e.g. `messages`, owned at the API level by `sms-service`). Other services connect to the same Postgres instance directly as SQL clients to read/write their own tables, but never run their own migrations or alter schema.
+
+This trades strict per-service schema ownership for one consistent migration history and tooling (`php artisan migrate`), which fits SMSPit's scope as a self-hosted dev/test tool better than coordinating migrations across Laravel, TypeORM/Prisma, and SQLAlchemy independently.
 
 ## Cross-cutting concerns (v1.0)
 

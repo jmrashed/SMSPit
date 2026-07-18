@@ -35,10 +35,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Create `proto/sms/v1/message.proto` with core message fields
   - [x] Document the REST ↔ proto field mapping
   - [x] Scope the contract to only what v0.1 needs
-- [ ] **Day 5: Design PostgreSQL schema for messages**
-  - [ ] Draft `messages` table columns (`id`, `to`, `from`, `body`, `status`, `created_at`)
-  - [ ] Write the initial migration file
-  - [ ] Add indexes on `to`, `from`, and `created_at` for search
+- [x] **Day 5: Design PostgreSQL schema for messages**
+  - [x] Draft `messages` table columns (`id`, `to`, `from`, `body`, `status`, `created_at`)
+  - [x] Write the initial migration file
+  - [x] Add indexes on `to`, `from`, and `created_at` for search
 - [ ] **Day 6: Design Redis usage**
   - [ ] Decide pub/sub channel naming convention for live updates
   - [ ] Document caching strategy (if any) needed for v0.1
