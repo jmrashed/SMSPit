@@ -1,0 +1,47 @@
+# Go
+bin/
+*.exe
+*.test
+*.out
+vendor/
+
+# Node / React
+node_modules/
+dist/
+build/
+.next/
+coverage/
+*.tsbuildinfo
+
+# PHP / Laravel
+vendor/
+storage/*.key
+bootstrap/cache/
+public/hot
+public/storage
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Docker
+*.pid
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
