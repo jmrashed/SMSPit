@@ -108,10 +108,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Build the message list component/table
   - [x] Add status badges (e.g. "Captured")
   - [x] Add a basic responsive layout
-- [ ] **Day 22: Build dashboard message detail view**
-  - [ ] Build a detail panel/page with full message + metadata
-  - [ ] Add navigation from list to detail
-  - [ ] Handle loading and not-found states
+- [x] **Day 22: Build dashboard message detail view**
+  - [x] Build a detail panel/page with full message + metadata
+  - [x] Add navigation from list to detail
+  - [x] Handle loading and not-found states
 - [ ] **Day 23: Connect dashboard to the REST API**
   - [ ] Implement API client functions for list/detail
   - [ ] Wire up data fetching (React Query/SWR/fetch)
