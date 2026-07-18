@@ -3,6 +3,8 @@ import type { Message } from '../types/message';
 import { listMessages } from '../api/messages';
 import { MessageList } from '../components/MessageList';
 import { MessageFilters } from '../components/MessageFilters';
+import { MessageListSkeleton } from '../components/MessageListSkeleton';
+import { ErrorBanner } from '../components/ErrorBanner';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { EMPTY_FILTERS, type MessageFilters as MessageFiltersState } from '../types/filters';
 import './InboxPage.css';
@@ -18,26 +20,36 @@ export function InboxPage() {
   const debouncedFilters = useDebouncedValue(filters, 300);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError(false);
 
     listMessages({
       to: debouncedFilters.to,
       from: debouncedFilters.from,
       created_after: debouncedFilters.createdAfter || undefined,
       created_before: debouncedFilters.createdBefore ? endOfDay(debouncedFilters.createdBefore) : undefined,
-    }).then((response) => {
-      if (cancelled) return;
-      setMessages(response.messages);
-      setLoading(false);
-    });
+    })
+      .then((response) => {
+        if (cancelled) return;
+        setMessages(response.messages);
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        console.error('Failed to load messages', err);
+        setError(true);
+        setLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [debouncedFilters]);
+  }, [debouncedFilters, retryToken]);
 
   return (
     <main className="inbox-page">
@@ -46,7 +58,13 @@ export function InboxPage() {
         <p>Messages captured by SMSPit instead of being delivered.</p>
       </header>
       <MessageFilters filters={filters} onChange={setFilters} />
-      {loading ? <p data-testid="inbox-loading">Loading messages…</p> : <MessageList messages={messages} />}
+      {error && (
+        <ErrorBanner
+          message="Couldn't load messages. Check that sms-service is running."
+          onRetry={() => setRetryToken((t) => t + 1)}
+        />
+      )}
+      {!error && (loading ? <MessageListSkeleton /> : <MessageList messages={messages} />)}
     </main>
   );
 }

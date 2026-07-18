@@ -120,10 +120,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add a search input bound to `to`/`from` filters
   - [x] Add a date range picker
   - [x] Debounce the search input
-- [ ] **Day 25: Add loading, empty, and error states**
-  - [ ] Add a skeleton/spinner for loading
-  - [ ] Add an empty-state message when there are no messages
-  - [ ] Add an error banner with a retry action
+- [x] **Day 25: Add loading, empty, and error states**
+  - [x] Add a skeleton/spinner for loading
+  - [x] Add an empty-state message when there are no messages
+  - [x] Add an error banner with a retry action
 - [ ] **Day 26: Write `Dockerfile` for `sms-service`**
   - [ ] Write a multi-stage Dockerfile (build + runtime)
   - [ ] Verify the image builds and runs locally

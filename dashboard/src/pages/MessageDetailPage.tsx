@@ -4,14 +4,17 @@ import type { Message } from '../types/message';
 import { getMessage } from '../api/messages';
 import { ApiError } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
+import { Spinner } from '../components/Spinner';
+import { ErrorBanner } from '../components/ErrorBanner';
 import './MessageDetailPage.css';
 
-type LoadState = 'loading' | 'found' | 'not-found';
+type LoadState = 'loading' | 'found' | 'not-found' | 'error';
 
 export function MessageDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [state, setState] = useState<LoadState>('loading');
   const [message, setMessage] = useState<Message | null>(null);
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,17 +31,15 @@ export function MessageDetailPage() {
         if (error instanceof ApiError && error.status === 404) {
           setState('not-found');
         } else {
-          // Non-404 errors get a dedicated error state on Day 25; for
-          // now, surface in the console rather than hanging on "loading".
           console.error('Failed to load message', error);
-          setState('not-found');
+          setState('error');
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, retryToken]);
 
   return (
     <main className="message-detail-page">
@@ -46,7 +47,11 @@ export function MessageDetailPage() {
         ← Back to inbox
       </Link>
 
-      {state === 'loading' && <p data-testid="detail-loading">Loading message…</p>}
+      {state === 'loading' && <Spinner label="Loading message…" />}
+
+      {state === 'error' && (
+        <ErrorBanner message="Couldn't load this message." onRetry={() => setRetryToken((t) => t + 1)} />
+      )}
 
       {state === 'not-found' && (
         <div data-testid="detail-not-found">
