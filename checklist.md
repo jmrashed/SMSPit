@@ -31,10 +31,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add a GitHub Actions workflow with a lint job
   - [x] Add a placeholder test job (no-op until services exist)
   - [ ] Confirm the workflow triggers on push/PR to `main`
-- [ ] **Day 4: Define shared API/proto contracts**
-  - [ ] Create `proto/sms/v1/message.proto` with core message fields
-  - [ ] Document the REST ↔ proto field mapping
-  - [ ] Scope the contract to only what v0.1 needs
+- [x] **Day 4: Define shared API/proto contracts**
+  - [x] Create `proto/sms/v1/message.proto` with core message fields
+  - [x] Document the REST ↔ proto field mapping
+  - [x] Scope the contract to only what v0.1 needs
 - [ ] **Day 5: Design PostgreSQL schema for messages**
   - [ ] Draft `messages` table columns (`id`, `to`, `from`, `body`, `status`, `created_at`)
   - [ ] Write the initial migration file

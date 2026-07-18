@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package sms.v1;
+
+// Core captured SMS message, scoped to v0.1 (capture, search, list, details, delete).
+// Replay and statistics fields are deferred to v0.2 per README roadmap.
+message Message {
+  string id = 1;
+  string to = 2;
+  string from = 3;
+  string body = 4;
+  MessageStatus status = 5;
+  int64 created_at = 6; // Unix epoch seconds (UTC)
+}
+
+enum MessageStatus {
+  MESSAGE_STATUS_UNSPECIFIED = 0;
+  MESSAGE_STATUS_CAPTURED = 1;
+  MESSAGE_STATUS_FAILED = 2;
+}
+
+// POST /api/v1/messages
+message SendMessageRequest {
+  string to = 1;
+  string from = 2;
+  string body = 3;
+}
+
+message SendMessageResponse {
+  string id = 1;
+  MessageStatus status = 2;
+}
+
+// GET /api/v1/messages
+message ListMessagesRequest {
+  string to = 1;    // optional filter
+  string from = 2;  // optional filter
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListMessagesResponse {
+  repeated Message messages = 1;
+  int32 total = 2;
+}
+
+// GET /api/v1/messages/{id}
+message GetMessageRequest {
+  string id = 1;
+}
+
+// DELETE /api/v1/messages
+message DeleteMessagesRequest {
+  repeated string ids = 1;
+}
+
+message DeleteMessagesResponse {
+  int32 deleted_count = 1;
+}
