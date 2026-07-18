@@ -1,8 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { DeleteMessagesDto } from './dto/delete-messages.dto';
 import { Message, MessageStatus } from './entities/message.entity';
 
 @Injectable()
@@ -41,5 +42,26 @@ export class MessagesService {
     }
 
     return message;
+  }
+
+  async remove(dto: DeleteMessagesDto): Promise<number> {
+    const hasIds = !!dto.ids && dto.ids.length > 0;
+
+    if (!hasIds && !dto.confirm) {
+      throw new BadRequestException('Deleting all messages requires "confirm": true when "ids" is omitted');
+    }
+
+    const result = hasIds
+      ? await this.messagesRepository.delete({ id: In(dto.ids!) })
+      : await this.messagesRepository.createQueryBuilder().delete().execute();
+
+    const deletedCount = result.affected ?? 0;
+    this.logger.log(
+      hasIds
+        ? `Deleted ${deletedCount} message(s) by id: ${dto.ids!.join(', ')}`
+        : `Deleted ALL messages (${deletedCount}) via confirmed wipe`,
+    );
+
+    return deletedCount;
   }
 }

@@ -6,10 +6,10 @@ import { Message, MessageStatus } from './entities/message.entity';
 
 describe('MessagesController', () => {
   let controller: MessagesController;
-  let service: { create: jest.Mock; findAll: jest.Mock; findOne: jest.Mock };
+  let service: { create: jest.Mock; findAll: jest.Mock; findOne: jest.Mock; remove: jest.Mock };
 
   beforeEach(async () => {
-    service = { create: jest.fn(), findAll: jest.fn(), findOne: jest.fn() };
+    service = { create: jest.fn(), findAll: jest.fn(), findOne: jest.fn(), remove: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MessagesController],
@@ -108,5 +108,14 @@ describe('MessagesController', () => {
     service.findOne.mockRejectedValue(new NotFoundException('Message sms_missing not found'));
 
     await expect(controller.findOne('sms_missing')).rejects.toThrow(NotFoundException);
+  });
+
+  it('returns deleted_count from the service', async () => {
+    service.remove.mockResolvedValue(3);
+
+    const result = await controller.remove({ ids: ['sms_1', 'sms_2', 'sms_3'] });
+
+    expect(service.remove).toHaveBeenCalledWith({ ids: ['sms_1', 'sms_2', 'sms_3'] });
+    expect(result).toEqual({ deleted_count: 3 });
   });
 });

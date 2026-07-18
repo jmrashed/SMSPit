@@ -80,10 +80,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement the detail endpoint
   - [x] Handle the not-found (404) case
   - [x] Add request logging for lookups
-- [ ] **Day 15: Implement `DELETE /api/v1/messages`**
-  - [ ] Implement the bulk-delete endpoint
-  - [ ] Guard against accidental full wipe (confirmation param)
-  - [ ] Add an audit log entry on delete
+- [x] **Day 15: Implement `DELETE /api/v1/messages`**
+  - [x] Implement the bulk-delete endpoint
+  - [x] Guard against accidental full wipe (confirmation param)
+  - [x] Add an audit log entry on delete
 - [ ] **Day 16: Add validation and error-handling middleware**
   - [ ] Add a global exception filter/middleware
   - [ ] Standardize the error response shape (`code`, `message`, `details`)

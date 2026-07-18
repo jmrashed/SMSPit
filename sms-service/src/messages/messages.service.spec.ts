@@ -1,16 +1,34 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In } from 'typeorm';
 import { MessagesService } from './messages.service';
 import { Message, MessageStatus } from './entities/message.entity';
 
 describe('MessagesService', () => {
   let service: MessagesService;
-  let repository: { create: jest.Mock; save: jest.Mock; find: jest.Mock; findOneBy: jest.Mock };
+  let repository: {
+    create: jest.Mock;
+    save: jest.Mock;
+    find: jest.Mock;
+    findOneBy: jest.Mock;
+    delete: jest.Mock;
+    createQueryBuilder: jest.Mock;
+  };
+  let queryBuilderDelete: jest.Mock;
 
   beforeEach(async () => {
-    repository = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOneBy: jest.fn() };
+    queryBuilderDelete = jest.fn();
+    repository = {
+      create: jest.fn(),
+      save: jest.fn(),
+      find: jest.fn(),
+      findOneBy: jest.fn(),
+      delete: jest.fn(),
+      createQueryBuilder: jest.fn(() => ({
+        delete: jest.fn().mockReturnValue({ execute: queryBuilderDelete }),
+      })),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [MessagesService, { provide: getRepositoryToken(Message), useValue: repository }],
@@ -57,5 +75,29 @@ describe('MessagesService', () => {
     repository.findOneBy.mockResolvedValue(null);
 
     await expect(service.findOne('sms_missing')).rejects.toThrow(NotFoundException);
+  });
+
+  it('deletes messages by id without requiring confirmation', async () => {
+    repository.delete.mockResolvedValue({ affected: 2, raw: [] });
+
+    const deletedCount = await service.remove({ ids: ['sms_1', 'sms_2'] });
+
+    expect(repository.delete).toHaveBeenCalledWith({ id: In(['sms_1', 'sms_2']) });
+    expect(deletedCount).toBe(2);
+  });
+
+  it('rejects deleting all messages without confirm: true', async () => {
+    await expect(service.remove({})).rejects.toThrow(BadRequestException);
+    expect(repository.delete).not.toHaveBeenCalled();
+    expect(queryBuilderDelete).not.toHaveBeenCalled();
+  });
+
+  it('deletes all messages when confirm is true and ids is omitted', async () => {
+    queryBuilderDelete.mockResolvedValue({ affected: 5, raw: [] });
+
+    const deletedCount = await service.remove({ confirm: true });
+
+    expect(queryBuilderDelete).toHaveBeenCalled();
+    expect(deletedCount).toBe(5);
   });
 });
