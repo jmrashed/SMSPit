@@ -209,10 +209,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add a WebSocket gateway/module in sms-service
   - [x] Emit an event on new message capture
   - [x] Add connection auth (API key/session)
-- [ ] **Day 46: Integrate WebSocket client in the dashboard**
-  - [ ] Connect on inbox page mount
-  - [ ] Update the message list in real time on new events
-  - [ ] Handle reconnect/backoff on disconnect
+- [x] **Day 46: Integrate WebSocket client in the dashboard**
+  - [x] Connect on inbox page mount
+  - [x] Update the message list in real time on new events
+  - [x] Handle reconnect/backoff on disconnect
 - [ ] **Day 47: Build API key management UI**
   - [ ] Build a page to list/create/revoke API keys
   - [ ] Show key metadata (created date, last used)

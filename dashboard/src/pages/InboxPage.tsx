@@ -7,6 +7,7 @@ import { MessageFilters } from '../components/MessageFilters';
 import { MessageListSkeleton } from '../components/MessageListSkeleton';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { useMessageSocket } from '../hooks/useMessageSocket';
 import { EMPTY_FILTERS, type MessageFilters as MessageFiltersState } from '../types/filters';
 import './InboxPage.css';
 
@@ -51,6 +52,8 @@ export function InboxPage() {
       cancelled = true;
     };
   }, [debouncedFilters, retryToken]);
+
+  useMessageSocket(() => setRetryToken((t) => t + 1));
 
   return (
     <main className="inbox-page">

@@ -28,6 +28,20 @@ export class ApiError extends Error {
   }
 }
 
+// sms-service's WebSocket gateway lives at /ws on the same host as the
+// REST API (see sms-service/src/realtime/realtime.gateway.ts) -- it can't
+// read an Authorization header (browsers don't allow custom headers on the
+// WS handshake), so the key travels as a query param instead.
+export function getWebSocketUrl(): string {
+  const httpUrl = new URL(API_BASE_URL);
+  const wsProtocol = httpUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = new URL(`${wsProtocol}//${httpUrl.host}/ws`);
+  if (API_KEY) {
+    wsUrl.searchParams.set('token', API_KEY);
+  }
+  return wsUrl.toString();
+}
+
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
