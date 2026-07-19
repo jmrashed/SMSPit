@@ -262,10 +262,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement create/list/update/delete endpoints
   - [x] Add authorization checks (org admins only)
   - [x] Add tests
-- [ ] **Day 58: Implement teams CRUD**
-  - [ ] Implement create/list team endpoints within an org
-  - [ ] Implement add/remove member endpoints
-  - [ ] Add tests
+- [x] **Day 58: Implement teams CRUD**
+  - [x] Implement create/list team endpoints within an org
+  - [x] Implement add/remove member endpoints
+  - [x] Add tests
 - [ ] **Day 59: Scope messages/API keys to organization**
   - [ ] Add `org_id` foreign key to messages and API keys
   - [ ] Update all queries to filter by org context
