@@ -70,6 +70,30 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   return response.json() as Promise<T>;
 }
 
+// For file-download endpoints (export): the server streams the response
+// (see sms-service/src/messages/export/) to keep its own memory bounded,
+// but the browser still has to receive the whole thing before it can
+// hand the user a file -- fetch() + Blob is the standard way to do that
+// while still attaching the Authorization header a plain <a href> can't.
+export async function apiFetchBlob(path: string, init?: RequestInit): Promise<{ blob: Blob; filename: string }> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: {
+      ...(API_KEY ? { Authorization: `Bearer ${API_KEY}` } : {}),
+      ...init?.headers,
+    },
+    ...init,
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, `Request to ${path} failed with status ${response.status}`);
+  }
+
+  const disposition = response.headers.get('Content-Disposition') ?? '';
+  const filename = disposition.match(/filename="([^"]+)"/)?.[1] ?? 'export';
+
+  return { blob: await response.blob(), filename };
+}
+
 // api-keys endpoints on auth-service aren't behind the API key guard
 // themselves (see auth-service/routes/api.php) -- generating/listing/
 // revoking keys is how you'd bootstrap the very first key.

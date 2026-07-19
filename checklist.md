@@ -286,10 +286,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement an export endpoint supporting CSV and JSON
   - [x] Stream large exports instead of loading fully into memory
   - [x] Add tests for both formats
-- [ ] **Day 64: Build export UI**
-  - [ ] Add an export button with a format selector
-  - [ ] Trigger a file download from the API response
-  - [ ] Show a progress/loading indicator for large exports
+- [x] **Day 64: Build export UI**
+  - [x] Add an export button with a format selector
+  - [x] Trigger a file download from the API response
+  - [x] Show a progress/loading indicator for large exports
 - [ ] **Day 65: Tag and release v0.3**
   - [ ] Update `CHANGELOG.md`
   - [ ] Tag the release (`v0.3.0`)

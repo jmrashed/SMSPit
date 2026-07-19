@@ -1,5 +1,18 @@
-import { apiFetch } from './client';
+import { apiFetch, apiFetchBlob } from './client';
 import type { Message, MessageListResponse } from '../types/message';
+
+function toQueryString(params: object): string {
+  const query = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params) as [string, string | number | undefined][]) {
+    if (value !== undefined && value !== '') {
+      query.set(key, String(value));
+    }
+  }
+
+  const queryString = query.toString();
+  return queryString ? `?${queryString}` : '';
+}
 
 export interface ListMessagesParams {
   to?: string;
@@ -11,16 +24,21 @@ export interface ListMessagesParams {
 }
 
 export function listMessages(params: ListMessagesParams = {}): Promise<MessageListResponse> {
-  const query = new URLSearchParams();
+  return apiFetch<MessageListResponse>(`/api/v1/messages${toQueryString(params)}`);
+}
 
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== '') {
-      query.set(key, String(value));
-    }
-  }
+export interface ExportMessagesParams {
+  format: 'csv' | 'json';
+  to?: string;
+  from?: string;
+  created_after?: string;
+  created_before?: string;
+}
 
-  const queryString = query.toString();
-  return apiFetch<MessageListResponse>(`/api/v1/messages${queryString ? `?${queryString}` : ''}`);
+// Same filters as listMessages, so exporting reflects whatever the
+// inbox's search/filter bar currently shows.
+export function exportMessages(params: ExportMessagesParams): Promise<{ blob: Blob; filename: string }> {
+  return apiFetchBlob(`/api/v1/messages/export${toQueryString(params)}`);
 }
 
 export function getMessage(id: string): Promise<Message> {

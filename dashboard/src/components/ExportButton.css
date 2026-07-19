@@ -1,0 +1,36 @@
+.export-button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.export-button__format {
+  font: inherit;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.export-button button {
+  font: inherit;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.export-button button:hover:not(:disabled) {
+  background: var(--accent-border);
+}
+
+.export-button button:disabled,
+.export-button__format:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

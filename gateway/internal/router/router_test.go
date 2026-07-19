@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/jmrashed/SMSPit/gateway/config"
@@ -175,6 +176,37 @@ func TestCORSHeaderNotDuplicatedWhenBackendAlsoSetsIt(t *testing.T) {
 	values := rec.Header().Values("Access-Control-Allow-Origin")
 	if len(values) != 1 {
 		t.Fatalf("expected exactly one Access-Control-Allow-Origin header, got %d: %v", len(values), values)
+	}
+}
+
+func TestCORSExposesContentDispositionForDownloads(t *testing.T) {
+	authBackend := validatingAuthBackend(t)
+	defer authBackend.Close()
+
+	smsBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Disposition", `attachment; filename="messages-export.csv"`)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer smsBackend.Close()
+
+	r := New(config.Config{SMSServiceURL: smsBackend.URL, AuthServiceURL: authBackend.URL, CORSOrigin: "*"})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/messages/export", nil)
+	req.Header.Set("Authorization", "Bearer valid")
+	req.Header.Set("Origin", "http://localhost:5173")
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	// Without Access-Control-Expose-Headers, a cross-origin fetch()
+	// can't read Content-Disposition at all (only a fixed "simple
+	// headers" allowlist is readable by default) -- the export UI's
+	// filename would silently fall back to a generic one.
+	exposed := rec.Header().Get("Access-Control-Expose-Headers")
+	if !strings.Contains(exposed, "Content-Disposition") {
+		t.Fatalf("expected Content-Disposition in Access-Control-Expose-Headers, got %q", exposed)
+	}
+	if got := rec.Header().Get("Content-Disposition"); got != `attachment; filename="messages-export.csv"` {
+		t.Fatalf("expected Content-Disposition to pass through unchanged, got %q", got)
 	}
 }
 

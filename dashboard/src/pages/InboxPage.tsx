@@ -9,6 +9,7 @@ import { ErrorBanner } from '../components/ErrorBanner';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useMessageSocket } from '../hooks/useMessageSocket';
 import { OrgSwitcher } from '../components/OrgSwitcher';
+import { ExportButton } from '../components/ExportButton';
 import { EMPTY_FILTERS, type MessageFilters as MessageFiltersState } from '../types/filters';
 import './InboxPage.css';
 
@@ -79,7 +80,17 @@ export function InboxPage() {
         </div>
         <p>Messages captured by SMSPit instead of being delivered.</p>
       </header>
-      <MessageFilters filters={filters} onChange={setFilters} />
+      <div className="inbox-page__toolbar">
+        <MessageFilters filters={filters} onChange={setFilters} />
+        <ExportButton
+          filters={{
+            to: debouncedFilters.to,
+            from: debouncedFilters.from,
+            created_after: debouncedFilters.createdAfter || undefined,
+            created_before: debouncedFilters.createdBefore ? endOfDay(debouncedFilters.createdBefore) : undefined,
+          }}
+        />
+      </div>
       {error && (
         <ErrorBanner
           message="Couldn't load messages. Check that sms-service is running."

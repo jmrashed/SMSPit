@@ -24,9 +24,14 @@ func New(cfg config.Config) http.Handler {
 	// 401 every preflight with no CORS headers on the response, and the
 	// browser would block the real request that follows.
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{cfg.CORSOrigin},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowedOrigins: []string{cfg.CORSOrigin},
+		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
+		// Only "simple" response headers are readable by cross-origin JS
+		// by default -- without this, the export endpoint's filename
+		// (Day 64, proxied through here) falls back to a generic one
+		// since the dashboard can't read Content-Disposition.
+		ExposedHeaders:   []string{"Content-Disposition"},
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))

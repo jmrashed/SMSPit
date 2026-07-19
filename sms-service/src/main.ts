@@ -14,7 +14,11 @@ async function bootstrap() {
   // Dashboard runs on a different origin/port; scope this to specific
   // origins once auth (Day 34+) makes credentialed cross-origin
   // requests a real security concern.
-  app.enableCors({ origin: process.env.CORS_ORIGIN ?? '*' });
+  // exposedHeaders: only "simple" response headers (Content-Type etc.)
+  // are readable by cross-origin JS by default -- without this, the
+  // export endpoint's filename (Day 64) silently falls back to a
+  // generic one since apiFetchBlob can't read Content-Disposition.
+  app.enableCors({ origin: process.env.CORS_ORIGIN ?? '*', exposedHeaders: ['Content-Disposition'] });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
   // Raw `ws` rather than socket.io -- a plain browser WebSocket client

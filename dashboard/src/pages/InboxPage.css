@@ -43,6 +43,14 @@
   text-decoration: underline;
 }
 
+.inbox-page__toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 640px) {
   .inbox-page {
     padding: 16px 12px;
