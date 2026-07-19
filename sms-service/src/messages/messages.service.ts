@@ -6,6 +6,7 @@ import { CreateMessageDto } from './dto/create-message.dto';
 import { DeleteMessagesDto } from './dto/delete-messages.dto';
 import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
 import { Message, MessageStatus } from './entities/message.entity';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 
 @Injectable()
 export class MessagesService {
@@ -14,6 +15,7 @@ export class MessagesService {
   constructor(
     @InjectRepository(Message)
     private readonly messagesRepository: Repository<Message>,
+    private readonly realtimeGateway: RealtimeGateway,
   ) {}
 
   async create(dto: CreateMessageDto): Promise<Message> {
@@ -27,7 +29,10 @@ export class MessagesService {
       createdAt: new Date(),
     });
 
-    return this.messagesRepository.save(message);
+    const saved = await this.messagesRepository.save(message);
+    this.realtimeGateway.broadcastMessageCreated(saved);
+
+    return saved;
   }
 
   async findAll(query: ListMessagesQueryDto): Promise<[Message[], number]> {
@@ -79,6 +84,7 @@ export class MessagesService {
 
     const saved = await this.messagesRepository.save(replay);
     this.logger.log(`Replayed message ${original.id} as ${saved.id}`);
+    this.realtimeGateway.broadcastMessageCreated(saved);
 
     return saved;
   }

@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { In } from 'typeorm';
 import { MessagesService } from './messages.service';
 import { Message, MessageStatus } from './entities/message.entity';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 
 describe('MessagesService', () => {
   let service: MessagesService;
@@ -17,6 +18,7 @@ describe('MessagesService', () => {
     createQueryBuilder: jest.Mock;
   };
   let queryBuilderDelete: jest.Mock;
+  let realtimeGateway: { broadcastMessageCreated: jest.Mock };
 
   beforeEach(async () => {
     queryBuilderDelete = jest.fn();
@@ -31,9 +33,14 @@ describe('MessagesService', () => {
         delete: jest.fn().mockReturnValue({ execute: queryBuilderDelete }),
       })),
     };
+    realtimeGateway = { broadcastMessageCreated: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MessagesService, { provide: getRepositoryToken(Message), useValue: repository }],
+      providers: [
+        MessagesService,
+        { provide: getRepositoryToken(Message), useValue: repository },
+        { provide: RealtimeGateway, useValue: realtimeGateway },
+      ],
     }).compile();
 
     service = module.get(MessagesService);
@@ -53,6 +60,7 @@ describe('MessagesService', () => {
     expect(result.body).toBe('Your OTP is 845231');
     expect(result.status).toBe(MessageStatus.CAPTURED);
     expect(repository.save).toHaveBeenCalledWith(result);
+    expect(realtimeGateway.broadcastMessageCreated).toHaveBeenCalledWith(result);
   });
 
   it('lists messages ordered by createdAt descending with limit/offset applied', async () => {
@@ -152,12 +160,14 @@ describe('MessagesService', () => {
     expect(result.status).toBe(MessageStatus.CAPTURED);
     expect(result.replayedFrom).toBe('sms_abc123');
     expect(repository.save).toHaveBeenCalledWith(result);
+    expect(realtimeGateway.broadcastMessageCreated).toHaveBeenCalledWith(result);
   });
 
   it('throws NotFoundException when replaying a nonexistent message', async () => {
     repository.findOneBy.mockResolvedValue(null);
 
     await expect(service.replay('sms_missing')).rejects.toThrow(NotFoundException);
+    expect(realtimeGateway.broadcastMessageCreated).not.toHaveBeenCalled();
     expect(repository.save).not.toHaveBeenCalled();
   });
 

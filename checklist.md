@@ -205,10 +205,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Build an overview page with key metric cards
   - [x] Add a simple chart for message volume over time
   - [x] Wire it to the statistics endpoint
-- [ ] **Day 45: Set up a WebSocket server**
-  - [ ] Add a WebSocket gateway/module in sms-service
-  - [ ] Emit an event on new message capture
-  - [ ] Add connection auth (API key/session)
+- [x] **Day 45: Set up a WebSocket server**
+  - [x] Add a WebSocket gateway/module in sms-service
+  - [x] Emit an event on new message capture
+  - [x] Add connection auth (API key/session)
 - [ ] **Day 46: Integrate WebSocket client in the dashboard**
   - [ ] Connect on inbox page mount
   - [ ] Update the message list in real time on new events
