@@ -153,10 +153,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Run `laravel new auth-service`
   - [x] Configure `.env` and database connection
   - [x] Set up the base routing structure
-- [ ] **Day 32: Design `auth-service` schema**
-  - [ ] Create the `users` migration
-  - [ ] Create the `api_keys` migration (key, hashed secret, owner, scopes)
-  - [ ] Run migrations locally and verify the schema
+- [x] **Day 32: Design `auth-service` schema**
+  - [x] Create the `users` migration
+  - [x] Create the `api_keys` migration (key, hashed secret, owner, scopes)
+  - [x] Run migrations locally and verify the schema
 - [ ] **Day 33: Implement API key generation endpoint**
   - [ ] Implement `POST /api-keys`
   - [ ] Generate a secure random key and hash it before storage
