@@ -140,10 +140,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [ ] Run `docker compose up -d` from a clean state
   - [ ] Send a test SMS via curl/Postman and verify capture
   - [ ] Verify the dashboard displays the captured message
-- [ ] **Day 30: Tag and release v0.1**
-  - [ ] Update `CHANGELOG.md` with v0.1 notes
-  - [ ] Tag the release (`v0.1.0`)
-  - [ ] Update the README status notice to reflect v0.1 availability
+- [x] **Day 30: Tag and release v0.1**
+  - [x] Update `CHANGELOG.md` with v0.1 notes
+  - [x] Tag the release (`v0.1.0`)
+  - [x] Update the README status notice to reflect v0.1 availability
 
 ---
 
