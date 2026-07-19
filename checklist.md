@@ -197,10 +197,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add a replay button on the message detail view
   - [x] Show a confirmation and success/failure toast
   - [x] Refresh the list after replay
-- [ ] **Day 43: Implement statistics endpoint**
-  - [ ] Implement `GET /api/v1/statistics`
-  - [ ] Aggregate counts by status/day
-  - [ ] Add caching if aggregation is expensive
+- [x] **Day 43: Implement statistics endpoint**
+  - [x] Implement `GET /api/v1/statistics`
+  - [x] Aggregate counts by status/day
+  - [x] Add caching if aggregation is expensive (not needed -- see docs/redis.md#caching-strategy-for-v01)
 - [ ] **Day 44: Build dashboard statistics page**
   - [ ] Build an overview page with key metric cards
   - [ ] Add a simple chart for message volume over time
