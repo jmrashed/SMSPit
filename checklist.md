@@ -270,10 +270,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add `org_id` foreign key to messages and API keys
   - [x] Update all queries to filter by org context
   - [x] Add tests verifying cross-org data isolation
-- [ ] **Day 60: Build org/team switcher UI**
-  - [ ] Add an org selector dropdown in the dashboard header
-  - [ ] Persist the selected org in session/local storage
-  - [ ] Refetch data on org switch
+- [x] **Day 60: Build org/team switcher UI**
+  - [x] Add an org selector dropdown in the dashboard header
+  - [x] Persist the selected org in session/local storage
+  - [x] Refetch data on org switch
 - [ ] **Day 61: Implement message templates CRUD**
   - [ ] Design the `templates` table (name, body, variables)
   - [ ] Implement CRUD endpoints

@@ -8,6 +8,7 @@ import { MessageListSkeleton } from '../components/MessageListSkeleton';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useMessageSocket } from '../hooks/useMessageSocket';
+import { OrgSwitcher } from '../components/OrgSwitcher';
 import { EMPTY_FILTERS, type MessageFilters as MessageFiltersState } from '../types/filters';
 import './InboxPage.css';
 
@@ -61,6 +62,10 @@ export function InboxPage() {
         <div className="inbox-page__header-row">
           <h1>Inbox</h1>
           <div className="inbox-page__nav-links">
+            <OrgSwitcher />
+            <Link to="/organizations" className="inbox-page__stats-link">
+              Organizations
+            </Link>
             <Link to="/statistics" className="inbox-page__stats-link">
               Statistics
             </Link>

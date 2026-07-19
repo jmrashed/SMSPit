@@ -83,3 +83,18 @@ export async function authApiFetch<T>(path: string, init?: RequestInit): Promise
 
   return response.json() as Promise<T>;
 }
+
+// Unlike api-keys, organizations/teams routes (Day 57+) ARE behind the
+// api.key middleware (see auth-service/routes/api.php) -- "acting user"
+// for these is the configured key's owner (see ValidateApiKey's
+// Auth::setUser call), so the same VITE_API_KEY used against sms-service
+// doubles as the dashboard's identity here.
+export async function authenticatedAuthApiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  return authApiFetch<T>(path, {
+    ...init,
+    headers: {
+      ...(API_KEY ? { Authorization: `Bearer ${API_KEY}` } : {}),
+      ...init?.headers,
+    },
+  });
+}
