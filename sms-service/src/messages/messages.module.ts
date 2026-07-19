@@ -10,5 +10,6 @@ import { RealtimeModule } from '../realtime/realtime.module';
   imports: [TypeOrmModule.forFeature([Message]), AuthModule, RealtimeModule],
   controllers: [MessagesController],
   providers: [MessagesService],
+  exports: [MessagesService],
 })
 export class MessagesModule {}

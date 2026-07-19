@@ -234,14 +234,14 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
 
 ## Phase 3 — v0.3: Provider Emulation, Teams, Organizations, Templates, Export (Days 51–65)
 
-- [ ] **Day 51: Define provider-compatible endpoint spec**
-  - [ ] Finalize SMSPit's own native request/response contract (`/api/v1/messages`)
-  - [ ] Document the mapping from each third-party provider format to SMSPit's internal format
-  - [ ] Decide the URL path convention for compatibility endpoints
-- [ ] **Day 52: Implement MessageBird-compatible adapter**
-  - [ ] Review the MessageBird API payload format
-  - [ ] Implement an endpoint accepting MessageBird-style payloads and translate to the internal capture call
-  - [ ] Add a test comparing against the real MessageBird SDK request shape
+- [x] **Day 51: Define provider-compatible endpoint spec**
+  - [x] Finalize SMSPit's own native request/response contract (`/api/v1/messages`)
+  - [x] Document the mapping from each third-party provider format to SMSPit's internal format
+  - [x] Decide the URL path convention for compatibility endpoints
+- [x] **Day 52: Implement MessageBird-compatible adapter**
+  - [x] Review the MessageBird API payload format
+  - [x] Implement an endpoint accepting MessageBird-style payloads and translate to the internal capture call
+  - [x] Add a test comparing against the real MessageBird SDK request shape
 - [ ] **Day 53: Implement Vonage-compatible adapter**
   - [ ] Review the Vonage API payload format
   - [ ] Implement the adapter endpoint and translation

@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MessagesModule } from './messages/messages.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { ProvidersModule } from './providers/providers.module';
 import { Message } from './messages/entities/message.entity';
 
 @Module({
@@ -32,6 +33,7 @@ import { Message } from './messages/entities/message.entity';
     }),
     MessagesModule,
     StatisticsModule,
+    ProvidersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
