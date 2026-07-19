@@ -221,10 +221,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Write the Dockerfile for auth-service (PHP-FPM/Laravel)
   - [x] Write the Dockerfile for gateway (Go binary)
   - [ ] Verify both build and run standalone (no `docker`/`podman` available in this environment -- verified the gateway's exact build+run commands directly with the host Go toolchain, and auth-service's exact `composer install` step directly, but couldn't run either as an actual container; re-verify with `docker build`/`docker run` when Docker is available)
-- [ ] **Day 49: Update `docker-compose.yml`**
-  - [ ] Add auth-service and gateway services
-  - [ ] Configure the network so gateway can reach both services
-  - [ ] Verify WebSocket passthrough works through the gateway
+- [x] **Day 49: Update `docker-compose.yml`**
+  - [x] Add auth-service and gateway services
+  - [x] Configure the network so gateway can reach both services
+  - [x] Verify WebSocket passthrough works through the gateway (no Docker in this environment -- added the missing `/ws` proxy route to the gateway, unit-tested the Upgrade handshake passthrough, and verified live end-to-end with real gateway/sms-service/auth-service processes using the same URLs/ports compose wires up; re-verify with `docker compose up` when Docker is available)
 - [ ] **Day 50: Tag and release v0.2**
   - [ ] Update `CHANGELOG.md`
   - [ ] Tag the release (`v0.2.0`)

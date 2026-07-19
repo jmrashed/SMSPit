@@ -17,7 +17,7 @@ Progress tracks `checklist.md`; check it for the exact day-by-day cutoff, but ro
 - `auth-service/` (Laravel) — users/API-key schema, key generation/list/revoke, and validation middleware (Days 31–35, 47); has its own test suite
 - `gateway/` (Go) — base HTTP server (chi router), health check, path-based reverse-proxy routing to `sms-service` (`/api/v1/*`) and `auth-service` (`/auth/*` → `/api/*`), and API-key auth enforcement on the `/api/v1/*` route (validates against auth-service, forwards identity via `X-Api-Key-Id`/`X-Owner-Id`/`X-Api-Key-Scopes` headers) (Days 37–39)
 - `dashboard/` (React) — inbox, message detail, search/filter, replay, statistics, real-time WebSocket updates, and API key management UI wired to the REST API (Days 21–25, 42–47)
-- `docker-compose.yml` — wires `sms-service`, `dashboard`, Postgres, and Redis (Day 28); `gateway` and `auth-service` are not yet added to it (pending Day 49)
+- `docker-compose.yml` — wires all six v0.2 services (`gateway`, `auth-service`, `sms-service`, `dashboard`, Postgres, Redis) (Days 28, 49); `ai-service` and `worker` are not yet added (pending Day 79). No `docker`/`podman` is available in this working environment, so compose changes are verified by replicating the same URLs/ports as live host processes rather than `docker compose up` -- re-verify for real where Docker exists
 - `ai-service/`, `worker/` — still empty skeletons with stub `README.md`s marked "Not yet implemented" (Phase 4, Days 66+)
 - Placeholder structural folders: `proto/`, `docs/`, `docker/`, `deployments/`, `scripts/`
 

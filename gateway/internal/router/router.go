@@ -33,6 +33,14 @@ func New(cfg config.Config) http.Handler {
 	// key) and the validate endpoint this middleware itself calls.
 	r.Handle("/auth/*", proxy.New(cfg.AuthServiceURL, "/auth", "/api"))
 
+	// sms-service's WebSocket gateway (Day 45) lives at /ws, outside the
+	// /api/v1 prefix. httputil.ReverseProxy hijacks and passes through
+	// Upgrade requests transparently, so the same proxy works unmodified.
+	// Left unguarded like sms-service's own WS gateway: browsers can't
+	// set an Authorization header on a WS handshake, so auth happens via
+	// the ?token= query param at the sms-service layer instead.
+	r.Handle("/ws", proxy.New(cfg.SMSServiceURL, "", ""))
+
 	return r
 }
 
