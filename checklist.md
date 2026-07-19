@@ -266,10 +266,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement create/list team endpoints within an org
   - [x] Implement add/remove member endpoints
   - [x] Add tests
-- [ ] **Day 59: Scope messages/API keys to organization**
-  - [ ] Add `org_id` foreign key to messages and API keys
-  - [ ] Update all queries to filter by org context
-  - [ ] Add tests verifying cross-org data isolation
+- [x] **Day 59: Scope messages/API keys to organization**
+  - [x] Add `org_id` foreign key to messages and API keys
+  - [x] Update all queries to filter by org context
+  - [x] Add tests verifying cross-org data isolation
 - [ ] **Day 60: Build org/team switcher UI**
   - [ ] Add an org selector dropdown in the dashboard header
   - [ ] Persist the selected org in session/local storage

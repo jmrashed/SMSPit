@@ -20,7 +20,7 @@ describe('Providers (e2e)', () => {
       imports: [AppModule],
     })
       .overrideProvider(AuthClient)
-      .useValue({ validateToken: async () => ({ id: 1, name: 'test', owner_id: 1, scopes: [] }) })
+      .useValue({ validateToken: async () => ({ id: 1, name: 'test', owner_id: 1, org_id: null, scopes: [] }) })
       .compile();
 
     app = moduleFixture.createNestApplication();

@@ -21,7 +21,7 @@ describe('AuthClient', () => {
   });
 
   it('returns the parsed key when auth-service responds ok', async () => {
-    const apiKey = { id: 1, name: 'test', owner_id: 1, scopes: [] };
+    const apiKey = { id: 1, name: 'test', owner_id: 1, org_id: null, scopes: [] };
     fetchSpy.mockResolvedValue({ ok: true, json: async () => apiKey } as Response);
 
     const result = await client.validateToken('Bearer sms_live_x.y');

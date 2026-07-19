@@ -46,7 +46,7 @@ describe('RealtimeGateway', () => {
   });
 
   it('accepts the connection and later broadcasts to it when the token is valid', async () => {
-    authClient.validateToken.mockResolvedValue({ id: 1, name: 'test', owner_id: 1, scopes: [] });
+    authClient.validateToken.mockResolvedValue({ id: 1, name: 'test', owner_id: 1, org_id: null, scopes: [] });
     const client = fakeClient();
 
     await gateway.handleConnection(client as unknown as WebSocket, fakeRequest('?token=good') as never);
@@ -59,6 +59,7 @@ describe('RealtimeGateway', () => {
       body: 'Your OTP is 845231',
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
+      orgId: null,
       createdAt: new Date('2026-07-19T00:00:00.000Z'),
     };
     gateway.broadcastMessageCreated(message);
@@ -73,6 +74,7 @@ describe('RealtimeGateway', () => {
           message: 'Your OTP is 845231',
           status: 'captured',
           replayed_from: null,
+          org_id: null,
           created_at: '2026-07-19T00:00:00.000Z',
         },
       }),
@@ -87,6 +89,7 @@ describe('RealtimeGateway', () => {
       body: 'Your OTP is 845231',
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
+      orgId: null,
       createdAt: new Date('2026-07-19T00:00:00.000Z'),
     };
 
@@ -94,7 +97,7 @@ describe('RealtimeGateway', () => {
   });
 
   it('stops broadcasting to a client after it disconnects', async () => {
-    authClient.validateToken.mockResolvedValue({ id: 1, name: 'test', owner_id: 1, scopes: [] });
+    authClient.validateToken.mockResolvedValue({ id: 1, name: 'test', owner_id: 1, org_id: null, scopes: [] });
     const client = fakeClient();
     await gateway.handleConnection(client as unknown as WebSocket, fakeRequest('?token=good') as never);
 
@@ -107,10 +110,41 @@ describe('RealtimeGateway', () => {
       body: 'Your OTP is 845231',
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
+      orgId: null,
       createdAt: new Date('2026-07-19T00:00:00.000Z'),
     };
     gateway.broadcastMessageCreated(message);
 
     expect(client.send).not.toHaveBeenCalled();
+  });
+
+  it('only broadcasts a message to clients authenticated for the same org', async () => {
+    authClient.validateToken.mockResolvedValueOnce({ id: 1, name: 'org-a', owner_id: 1, org_id: 1, scopes: [] });
+    const clientA = fakeClient();
+    await gateway.handleConnection(clientA as unknown as WebSocket, fakeRequest('?token=a') as never);
+
+    authClient.validateToken.mockResolvedValueOnce({ id: 2, name: 'org-b', owner_id: 2, org_id: 2, scopes: [] });
+    const clientB = fakeClient();
+    await gateway.handleConnection(clientB as unknown as WebSocket, fakeRequest('?token=b') as never);
+
+    authClient.validateToken.mockResolvedValueOnce({ id: 3, name: 'ungrouped', owner_id: 3, org_id: null, scopes: [] });
+    const clientUngrouped = fakeClient();
+    await gateway.handleConnection(clientUngrouped as unknown as WebSocket, fakeRequest('?token=c') as never);
+
+    const orgAMessage: Message = {
+      id: 'sms_org_a',
+      to: '+8801700000000',
+      from: 'SMSPit',
+      body: 'org a message',
+      status: MessageStatus.CAPTURED,
+      replayedFrom: null,
+      orgId: 1,
+      createdAt: new Date('2026-07-19T00:00:00.000Z'),
+    };
+    gateway.broadcastMessageCreated(orgAMessage);
+
+    expect(clientA.send).toHaveBeenCalledTimes(1);
+    expect(clientB.send).not.toHaveBeenCalled();
+    expect(clientUngrouped.send).not.toHaveBeenCalled();
   });
 });

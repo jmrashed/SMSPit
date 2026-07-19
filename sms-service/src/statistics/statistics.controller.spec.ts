@@ -1,8 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import type { Request } from 'express';
 import { StatisticsController } from './statistics.controller';
 import { StatisticsService } from './statistics.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { AuthClient } from '../auth/auth-client';
+
+function fakeRequest(orgId: number | null = 42): Request {
+  return { apiKey: { id: 1, name: 'test', owner_id: 1, org_id: orgId, scopes: [] } } as unknown as Request;
+}
 
 describe('StatisticsController', () => {
   let controller: StatisticsController;
@@ -23,12 +28,13 @@ describe('StatisticsController', () => {
     controller = module.get(StatisticsController);
   });
 
-  it('returns the aggregated statistics from the service', async () => {
+  it('returns the aggregated statistics from the service, scoped to the acting org', async () => {
     const stats = { total: 5, by_status: { captured: 4, failed: 1 }, by_day: [{ date: '2026-07-19', count: 5 }] };
     service.getStatistics.mockResolvedValue(stats);
 
-    const result = await controller.getStatistics();
+    const result = await controller.getStatistics(fakeRequest());
 
+    expect(service.getStatistics).toHaveBeenCalledWith(42);
     expect(result).toEqual(stats);
   });
 });

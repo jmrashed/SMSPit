@@ -1,12 +1,20 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
-import { Between, FindOptionsWhere, In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import { Between, FindOptionsWhere, In, IsNull, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { DeleteMessagesDto } from './dto/delete-messages.dto';
 import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
 import { Message, MessageStatus } from './entities/message.entity';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
+
+// TypeORM's FindOptionsWhere type for a nullable numeric column doesn't
+// accept a plain `null` (only `number | FindOperator<number>`), even
+// though `IsNull()` is exactly the operator it means -- this bridges
+// that so callers can keep passing `number | null` around.
+function orgWhere(orgId: number | null): number | ReturnType<typeof IsNull> {
+  return orgId === null ? IsNull() : orgId;
+}
 
 @Injectable()
 export class MessagesService {
@@ -18,7 +26,7 @@ export class MessagesService {
     private readonly realtimeGateway: RealtimeGateway,
   ) {}
 
-  async create(dto: CreateMessageDto): Promise<Message> {
+  async create(dto: CreateMessageDto, orgId: number | null): Promise<Message> {
     const message = this.messagesRepository.create({
       id: `sms_${randomBytes(8).toString('hex')}`,
       to: dto.to,
@@ -26,6 +34,7 @@ export class MessagesService {
       body: dto.message,
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
+      orgId,
       createdAt: new Date(),
     });
 
@@ -35,8 +44,11 @@ export class MessagesService {
     return saved;
   }
 
-  async findAll(query: ListMessagesQueryDto): Promise<[Message[], number]> {
-    const where: FindOptionsWhere<Message> = {};
+  async findAll(query: ListMessagesQueryDto, orgId: number | null): Promise<[Message[], number]> {
+    // A NULL org_id is its own bucket ("ungrouped"), not a wildcard --
+    // see docs/multi-tenancy.md. Assigning null here still filters
+    // correctly: TypeORM translates a null property value to "IS NULL".
+    const where: FindOptionsWhere<Message> = { orgId: orgWhere(orgId) };
 
     if (query.to) where.to = query.to;
     if (query.from) where.from = query.from;
@@ -57,9 +69,9 @@ export class MessagesService {
     });
   }
 
-  async findOne(id: string): Promise<Message> {
+  async findOne(id: string, orgId: number | null): Promise<Message> {
     this.logger.log(`Looking up message ${id}`);
-    const message = await this.messagesRepository.findOneBy({ id });
+    const message = await this.messagesRepository.findOneBy({ id, orgId: orgWhere(orgId) });
 
     if (!message) {
       this.logger.warn(`Message ${id} not found`);
@@ -69,8 +81,8 @@ export class MessagesService {
     return message;
   }
 
-  async replay(id: string): Promise<Message> {
-    const original = await this.findOne(id);
+  async replay(id: string, orgId: number | null): Promise<Message> {
+    const original = await this.findOne(id, orgId);
 
     const replay = this.messagesRepository.create({
       id: `sms_${randomBytes(8).toString('hex')}`,
@@ -79,6 +91,7 @@ export class MessagesService {
       body: original.body,
       status: MessageStatus.CAPTURED,
       replayedFrom: original.id,
+      orgId,
       createdAt: new Date(),
     });
 
@@ -89,7 +102,7 @@ export class MessagesService {
     return saved;
   }
 
-  async remove(dto: DeleteMessagesDto): Promise<number> {
+  async remove(dto: DeleteMessagesDto, orgId: number | null): Promise<number> {
     const hasIds = !!dto.ids && dto.ids.length > 0;
 
     if (!hasIds && !dto.confirm) {
@@ -97,8 +110,8 @@ export class MessagesService {
     }
 
     const result = hasIds
-      ? await this.messagesRepository.delete({ id: In(dto.ids!) })
-      : await this.messagesRepository.createQueryBuilder().delete().execute();
+      ? await this.messagesRepository.delete({ id: In(dto.ids!), orgId: orgWhere(orgId) })
+      : await this.messagesRepository.delete({ orgId: orgWhere(orgId) });
 
     const deletedCount = result.affected ?? 0;
     this.logger.log(

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ApiKey;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -143,5 +144,55 @@ class ApiKeyTest extends TestCase
         ]);
 
         $response->assertStatus(401);
+    }
+
+    public function test_generates_an_org_scoped_key_when_the_owner_is_a_member(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $organization->users()->attach($user->id, ['role' => 'member']);
+
+        $response = $this->postJson('/api/api-keys', [
+            'name' => 'Org key',
+            'owner_id' => $user->id,
+            'org_id' => $organization->id,
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('org_id', $organization->id);
+    }
+
+    public function test_rejects_an_org_id_the_owner_is_not_a_member_of(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+
+        $response = $this->postJson('/api/api-keys', [
+            'name' => 'Org key',
+            'owner_id' => $user->id,
+            'org_id' => $organization->id,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('code', 'VALIDATION_ERROR');
+    }
+
+    public function test_validate_returns_the_keys_org_id(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $organization->users()->attach($user->id, ['role' => 'member']);
+        $secret = 'plaintext-secret';
+        $apiKey = ApiKey::factory()->for($user, 'owner')->create([
+            'org_id' => $organization->id,
+            'secret_hash' => Hash::make($secret),
+        ]);
+
+        $response = $this->getJson('/api/api-keys/validate', [
+            'Authorization' => "Bearer {$apiKey->key}.{$secret}",
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('org_id', $organization->id);
     }
 }

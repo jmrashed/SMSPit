@@ -8,6 +8,7 @@ describe('StatisticsService', () => {
   let queryBuilder: {
     select: jest.Mock;
     addSelect: jest.Mock;
+    where: jest.Mock;
     groupBy: jest.Mock;
     orderBy: jest.Mock;
     getRawMany: jest.Mock;
@@ -18,6 +19,7 @@ describe('StatisticsService', () => {
     queryBuilder = {
       select: jest.fn().mockReturnThis(),
       addSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
       groupBy: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
       getRawMany: jest.fn(),
@@ -34,7 +36,7 @@ describe('StatisticsService', () => {
     service = module.get(StatisticsService);
   });
 
-  it('aggregates total, by_status, and by_day counts', async () => {
+  it('aggregates total, by_status, and by_day counts scoped to the acting org', async () => {
     repository.count.mockResolvedValue(5);
     queryBuilder.getRawMany
       .mockResolvedValueOnce([
@@ -46,8 +48,10 @@ describe('StatisticsService', () => {
         { date: '2026-07-19', count: '3' },
       ]);
 
-    const result = await service.getStatistics();
+    const result = await service.getStatistics(42);
 
+    expect(repository.count).toHaveBeenCalledWith({ where: { orgId: 42 } });
+    expect(queryBuilder.where).toHaveBeenCalledWith('m.org_id = :orgId', { orgId: 42 });
     expect(result).toEqual({
       total: 5,
       by_status: { captured: 4, failed: 1 },
@@ -58,11 +62,20 @@ describe('StatisticsService', () => {
     });
   });
 
+  it('scopes to a null org_id ("ungrouped") using IS NULL, not = NULL', async () => {
+    repository.count.mockResolvedValue(0);
+    queryBuilder.getRawMany.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+
+    await service.getStatistics(null);
+
+    expect(queryBuilder.where).toHaveBeenCalledWith('m.org_id IS NULL', {});
+  });
+
   it('returns empty aggregates when there are no messages', async () => {
     repository.count.mockResolvedValue(0);
     queryBuilder.getRawMany.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
 
-    const result = await service.getStatistics();
+    const result = await service.getStatistics(42);
 
     expect(result).toEqual({ total: 0, by_status: {}, by_day: [] });
   });

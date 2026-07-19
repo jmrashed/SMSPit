@@ -26,6 +26,7 @@ describe('VonageController', () => {
       body: 'Hello from Vonage',
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
+      orgId: null,
       createdAt: new Date('2026-07-19T00:00:00.000Z'),
     };
     messagesService.create.mockResolvedValue(entity);
@@ -36,11 +37,14 @@ describe('VonageController', () => {
       text: 'Hello from Vonage',
     });
 
-    expect(messagesService.create).toHaveBeenCalledWith({
-      to: '31612345678',
-      from: 'SMSPit',
-      message: 'Hello from Vonage',
-    });
+    expect(messagesService.create).toHaveBeenCalledWith(
+      {
+        to: '31612345678',
+        from: 'SMSPit',
+        message: 'Hello from Vonage',
+      },
+      null,
+    );
     expect(result).toEqual({
       'message-count': '1',
       messages: [{ to: '31612345678', 'message-id': 'sms_abc123', status: '0' }],
@@ -55,6 +59,7 @@ describe('VonageController', () => {
       body: 'hi',
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
+      orgId: null,
       createdAt: new Date('2026-07-19T00:00:00.000Z'),
     };
     messagesService.create.mockResolvedValue(entity);

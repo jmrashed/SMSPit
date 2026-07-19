@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { Message } from '../messages/entities/message.entity';
 import { StatisticsResponseDto } from './dto/statistics-response.dto';
 
@@ -14,13 +14,19 @@ export class StatisticsService {
   // No caching layer here: v0.1's data volume (a local dev/test sandbox,
   // not production traffic) doesn't justify one -- see
   // docs/redis.md#caching-strategy-for-v01.
-  async getStatistics(): Promise<StatisticsResponseDto> {
-    const total = await this.messagesRepository.count();
+  async getStatistics(orgId: number | null): Promise<StatisticsResponseDto> {
+    const total = await this.messagesRepository.count({ where: { orgId: orgId === null ? IsNull() : orgId } });
+
+    // A NULL org_id needs "IS NULL", not "= NULL" (always false in SQL)
+    // -- orgId-conditional clause, same reasoning as MessagesService.
+    const orgClause = orgId === null ? 'm.org_id IS NULL' : 'm.org_id = :orgId';
+    const orgParams = orgId === null ? {} : { orgId };
 
     const byStatusRows: { status: string; count: string }[] = await this.messagesRepository
       .createQueryBuilder('m')
       .select('m.status', 'status')
       .addSelect('COUNT(*)', 'count')
+      .where(orgClause, orgParams)
       .groupBy('m.status')
       .getRawMany();
 
@@ -31,6 +37,7 @@ export class StatisticsService {
       .createQueryBuilder('m')
       .select("TO_CHAR(m.createdAt, 'YYYY-MM-DD')", 'date')
       .addSelect('COUNT(*)', 'count')
+      .where(orgClause, orgParams)
       .groupBy("TO_CHAR(m.createdAt, 'YYYY-MM-DD')")
       .orderBy("TO_CHAR(m.createdAt, 'YYYY-MM-DD')", 'ASC')
       .getRawMany();

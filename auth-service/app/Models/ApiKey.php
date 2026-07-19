@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['name', 'key', 'secret_hash', 'owner_id', 'scopes', 'revoked_at'])]
+#[Fillable(['name', 'key', 'secret_hash', 'owner_id', 'org_id', 'scopes', 'revoked_at'])]
 #[Hidden(['secret_hash'])]
 class ApiKey extends Model
 {
@@ -26,5 +26,10 @@ class ApiKey extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class, 'org_id');
     }
 }

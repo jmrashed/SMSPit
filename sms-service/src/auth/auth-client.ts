@@ -5,6 +5,7 @@ export interface ValidatedApiKey {
   id: number;
   name: string;
   owner_id: number;
+  org_id: number | null;
   scopes: string[];
 }
 

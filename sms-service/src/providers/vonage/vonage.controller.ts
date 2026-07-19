@@ -12,11 +12,14 @@ export class VonageController {
   @Post('sms/json')
   @HttpCode(HttpStatus.OK)
   async send(@Body() dto: VonageSendDto) {
-    const message = await this.messagesService.create({
-      to: dto.to,
-      from: dto.from,
-      message: dto.text,
-    });
+    const message = await this.messagesService.create(
+      {
+        to: dto.to,
+        from: dto.from,
+        message: dto.text,
+      },
+      null,
+    );
 
     // status "0" is Vonage's own success code -- SDKs branch on it.
     return {

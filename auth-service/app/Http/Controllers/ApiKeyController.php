@@ -23,6 +23,7 @@ class ApiKeyController extends Controller
             'key' => $key,
             'secret_hash' => Hash::make($secret),
             'owner_id' => $request->validated('owner_id'),
+            'org_id' => $request->validated('org_id'),
             'scopes' => $request->validated('scopes', []),
         ]);
 
@@ -30,6 +31,7 @@ class ApiKeyController extends Controller
             'id' => $apiKey->id,
             'name' => $apiKey->name,
             'key' => "{$key}.{$secret}",
+            'org_id' => $apiKey->org_id,
             'scopes' => $apiKey->scopes,
             'created_at' => $apiKey->created_at->toIso8601String(),
         ], 201);
@@ -44,6 +46,7 @@ class ApiKeyController extends Controller
             'id' => $apiKey->id,
             'name' => $apiKey->name,
             'owner_id' => $apiKey->owner_id,
+            'org_id' => $apiKey->org_id,
             'scopes' => $apiKey->scopes,
         ]);
     }
@@ -76,6 +79,7 @@ class ApiKeyController extends Controller
             'name' => $apiKey->name,
             'key' => $apiKey->key,
             'owner_id' => $apiKey->owner_id,
+            'org_id' => $apiKey->org_id,
             'scopes' => $apiKey->scopes,
             'last_used_at' => $apiKey->last_used_at?->toIso8601String(),
             'revoked_at' => $apiKey->revoked_at?->toIso8601String(),

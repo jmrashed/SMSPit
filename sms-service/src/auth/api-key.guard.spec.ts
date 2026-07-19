@@ -33,7 +33,7 @@ describe('ApiKeyGuard', () => {
   });
 
   it('allows a request with a valid key and attaches it to the request', async () => {
-    const apiKey: ValidatedApiKey = { id: 1, name: 'test', owner_id: 1, scopes: [] };
+    const apiKey: ValidatedApiKey = { id: 1, name: 'test', owner_id: 1, org_id: null, scopes: [] };
     authClient.validateToken.mockResolvedValue(apiKey);
     const request: any = { headers: { authorization: 'Bearer sms_live_ok.secret' } };
     const context = {

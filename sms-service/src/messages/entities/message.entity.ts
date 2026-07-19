@@ -31,6 +31,12 @@ export class Message {
   @Column({ name: 'replayed_from', type: 'varchar', nullable: true })
   replayedFrom: string | null;
 
+  // NULL means "ungrouped" (pre-multi-tenancy data, or a key with no
+  // org_id) -- treated as its own bucket by query scoping, not a
+  // wildcard that matches every organization. See docs/multi-tenancy.md.
+  @Column({ name: 'org_id', type: 'bigint', nullable: true })
+  orgId: number | null;
+
   @Column({ name: 'created_at' })
   createdAt: Date;
 }

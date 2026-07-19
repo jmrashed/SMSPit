@@ -42,11 +42,14 @@ export class SnsController {
     // SNS has no per-message sender field (SMSSenderID is account-level,
     // set outside the Publish call) -- default to SMSPit like other
     // adapters do when the source format has no equivalent field.
-    const message = await this.messagesService.create({
-      to: body.PhoneNumber,
-      from: 'SMSPit',
-      message: body.Message,
-    });
+    const message = await this.messagesService.create(
+      {
+        to: body.PhoneNumber,
+        from: 'SMSPit',
+        message: body.Message,
+      },
+      null,
+    );
 
     res.status(200);
     res.set('Content-Type', 'text/xml');

@@ -13,11 +13,18 @@ export class MessageBirdController {
   @HttpCode(HttpStatus.CREATED)
   async send(@Body() dto: MessageBirdSendDto) {
     const to = firstRecipient(dto.recipients);
-    const message = await this.messagesService.create({
-      to,
-      from: dto.originator,
-      message: dto.body,
-    });
+    // Provider adapters need no SMSPit API key (see
+    // docs/api/provider-compatibility.md#auth), so there's no org
+    // context to attach -- captured as ungrouped, like other
+    // pre-multi-tenancy data.
+    const message = await this.messagesService.create(
+      {
+        to,
+        from: dto.originator,
+        message: dto.body,
+      },
+      null,
+    );
 
     return {
       id: message.id,

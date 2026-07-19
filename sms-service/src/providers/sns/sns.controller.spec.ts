@@ -39,6 +39,7 @@ describe('SnsController', () => {
       body: 'Hello from SNS',
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
+      orgId: null,
       createdAt: new Date('2026-07-19T00:00:00.000Z'),
     };
     messagesService.create.mockResolvedValue(entity);
@@ -49,11 +50,14 @@ describe('SnsController', () => {
       res as unknown as Response,
     );
 
-    expect(messagesService.create).toHaveBeenCalledWith({
-      to: '+15551234567',
-      from: 'SMSPit',
-      message: 'Hello from SNS',
-    });
+    expect(messagesService.create).toHaveBeenCalledWith(
+      {
+        to: '+15551234567',
+        from: 'SMSPit',
+        message: 'Hello from SNS',
+      },
+      null,
+    );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.set).toHaveBeenCalledWith('Content-Type', 'text/xml');
     const xml = res.send.mock.calls[0][0] as string;

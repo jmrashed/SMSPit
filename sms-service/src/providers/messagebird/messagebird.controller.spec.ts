@@ -26,6 +26,7 @@ describe('MessageBirdController', () => {
     body: 'Hello World',
     status: MessageStatus.CAPTURED,
     replayedFrom: null,
+    orgId: null,
     createdAt: new Date('2026-07-19T00:00:00.000Z'),
   };
 
@@ -38,11 +39,14 @@ describe('MessageBirdController', () => {
       body: 'Hello World',
     });
 
-    expect(messagesService.create).toHaveBeenCalledWith({
-      to: '31612345678',
-      from: 'SMSPit',
-      message: 'Hello World',
-    });
+    expect(messagesService.create).toHaveBeenCalledWith(
+      {
+        to: '31612345678',
+        from: 'SMSPit',
+        message: 'Hello World',
+      },
+      null,
+    );
     expect(result).toEqual({
       id: 'sms_abc123',
       originator: 'SMSPit',
@@ -59,6 +63,7 @@ describe('MessageBirdController', () => {
 
     expect(messagesService.create).toHaveBeenCalledWith(
       expect.objectContaining({ to: '31612345678' }),
+      null,
     );
   });
 
@@ -69,6 +74,7 @@ describe('MessageBirdController', () => {
 
     expect(messagesService.create).toHaveBeenCalledWith(
       expect.objectContaining({ to: '31612345678' }),
+      null,
     );
   });
 

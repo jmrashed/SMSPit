@@ -19,7 +19,7 @@ describe('Messages (e2e): capture -> list -> detail', () => {
       imports: [AppModule],
     })
       .overrideProvider(AuthClient)
-      .useValue({ validateToken: async () => ({ id: 1, name: 'test', owner_id: 1, scopes: [] }) })
+      .useValue({ validateToken: async () => ({ id: 1, name: 'test', owner_id: 1, org_id: null, scopes: [] }) })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -96,7 +96,7 @@ describe('Messages (e2e): replay', () => {
       imports: [AppModule],
     })
       .overrideProvider(AuthClient)
-      .useValue({ validateToken: async () => ({ id: 1, name: 'test', owner_id: 1, scopes: [] }) })
+      .useValue({ validateToken: async () => ({ id: 1, name: 'test', owner_id: 1, org_id: null, scopes: [] }) })
       .compile();
 
     app = moduleFixture.createNestApplication();
