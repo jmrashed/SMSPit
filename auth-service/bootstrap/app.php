@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\ValidateApiKey;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -40,6 +41,14 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => 'Validation failed',
                     'details' => collect($e->errors())->flatten()->values()->all(),
                 ], 422);
+            }
+
+            if ($e instanceof AuthorizationException) {
+                return response()->json([
+                    'code' => 'FORBIDDEN',
+                    'message' => $e->getMessage() ?: 'This action is unauthorized.',
+                    'details' => null,
+                ], 403);
             }
 
             if ($e instanceof HttpExceptionInterface || $e instanceof RequestExceptionInterface) {
