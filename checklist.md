@@ -242,14 +242,14 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Review the MessageBird API payload format
   - [x] Implement an endpoint accepting MessageBird-style payloads and translate to the internal capture call
   - [x] Add a test comparing against the real MessageBird SDK request shape
-- [ ] **Day 53: Implement Vonage-compatible adapter**
-  - [ ] Review the Vonage API payload format
-  - [ ] Implement the adapter endpoint and translation
-  - [ ] Add tests
-- [ ] **Day 54: Implement AWS SNS-compatible adapter**
-  - [ ] Review the SNS publish payload format
-  - [ ] Implement the adapter endpoint and translation
-  - [ ] Add tests
+- [x] **Day 53: Implement Vonage-compatible adapter**
+  - [x] Review the Vonage API payload format
+  - [x] Implement the adapter endpoint and translation
+  - [x] Add tests
+- [x] **Day 54: Implement AWS SNS-compatible adapter**
+  - [x] Review the SNS publish payload format
+  - [x] Implement the adapter endpoint and translation
+  - [x] Add tests
 - [ ] **Day 55: Write tests for provider adapters**
   - [ ] Add coverage for malformed provider payloads
   - [ ] Add coverage for each adapter's success path
