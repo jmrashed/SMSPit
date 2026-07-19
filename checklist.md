@@ -149,10 +149,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
 
 ## Phase 2 — v0.2: Authentication, API Keys, Replay, Statistics, WebSocket (Days 31–50)
 
-- [ ] **Day 31: Scaffold `auth-service` (Laravel)**
-  - [ ] Run `laravel new auth-service`
-  - [ ] Configure `.env` and database connection
-  - [ ] Set up the base routing structure
+- [x] **Day 31: Scaffold `auth-service` (Laravel)**
+  - [x] Run `laravel new auth-service`
+  - [x] Configure `.env` and database connection
+  - [x] Set up the base routing structure
 - [ ] **Day 32: Design `auth-service` schema**
   - [ ] Create the `users` migration
   - [ ] Create the `api_keys` migration (key, hashed secret, owner, scopes)
