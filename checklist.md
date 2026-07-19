@@ -250,10 +250,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Review the SNS publish payload format
   - [x] Implement the adapter endpoint and translation
   - [x] Add tests
-- [ ] **Day 55: Write tests for provider adapters**
-  - [ ] Add coverage for malformed provider payloads
-  - [ ] Add coverage for each adapter's success path
-  - [ ] Document supported vs. unsupported provider fields
+- [x] **Day 55: Write tests for provider adapters**
+  - [x] Add coverage for malformed provider payloads
+  - [x] Add coverage for each adapter's success path
+  - [x] Document supported vs. unsupported provider fields
 - [ ] **Day 56: Design multi-tenant data model**
   - [ ] Design `organizations` and `teams` tables
   - [ ] Define the org/team/user/api_key relationships
