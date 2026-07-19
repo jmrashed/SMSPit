@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Message } from '../types/message';
 import { listMessages } from '../api/messages';
 import { MessageList } from '../components/MessageList';
@@ -54,7 +55,12 @@ export function InboxPage() {
   return (
     <main className="inbox-page">
       <header className="inbox-page__header">
-        <h1>Inbox</h1>
+        <div className="inbox-page__header-row">
+          <h1>Inbox</h1>
+          <Link to="/statistics" className="inbox-page__stats-link">
+            Statistics
+          </Link>
+        </div>
         <p>Messages captured by SMSPit instead of being delivered.</p>
       </header>
       <MessageFilters filters={filters} onChange={setFilters} />

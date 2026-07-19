@@ -201,10 +201,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement `GET /api/v1/statistics`
   - [x] Aggregate counts by status/day
   - [x] Add caching if aggregation is expensive (not needed -- see docs/redis.md#caching-strategy-for-v01)
-- [ ] **Day 44: Build dashboard statistics page**
-  - [ ] Build an overview page with key metric cards
-  - [ ] Add a simple chart for message volume over time
-  - [ ] Wire it to the statistics endpoint
+- [x] **Day 44: Build dashboard statistics page**
+  - [x] Build an overview page with key metric cards
+  - [x] Add a simple chart for message volume over time
+  - [x] Wire it to the statistics endpoint
 - [ ] **Day 45: Set up a WebSocket server**
   - [ ] Add a WebSocket gateway/module in sms-service
   - [ ] Emit an event on new message capture

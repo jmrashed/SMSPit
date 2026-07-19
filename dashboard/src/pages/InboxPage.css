@@ -11,6 +11,13 @@
   margin-bottom: 24px;
 }
 
+.inbox-page__header-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .inbox-page__header h1 {
   margin: 0 0 4px;
   font-size: 32px;
@@ -18,6 +25,16 @@
 
 .inbox-page__header p {
   color: var(--text);
+}
+
+.inbox-page__stats-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.inbox-page__stats-link:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 640px) {
