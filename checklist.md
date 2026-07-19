@@ -218,9 +218,9 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Show key metadata (created date, last used)
   - [x] Add copy-to-clipboard for a newly generated key
 - [ ] **Day 48: Write Dockerfiles for `auth-service` and `gateway`**
-  - [ ] Write the Dockerfile for auth-service (PHP-FPM/Laravel)
-  - [ ] Write the Dockerfile for gateway (Go binary)
-  - [ ] Verify both build and run standalone
+  - [x] Write the Dockerfile for auth-service (PHP-FPM/Laravel)
+  - [x] Write the Dockerfile for gateway (Go binary)
+  - [ ] Verify both build and run standalone (no `docker`/`podman` available in this environment -- verified the gateway's exact build+run commands directly with the host Go toolchain, and auth-service's exact `composer install` step directly, but couldn't run either as an actual container; re-verify with `docker build`/`docker run` when Docker is available)
 - [ ] **Day 49: Update `docker-compose.yml`**
   - [ ] Add auth-service and gateway services
   - [ ] Configure the network so gateway can reach both services
