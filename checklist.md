@@ -290,10 +290,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add an export button with a format selector
   - [x] Trigger a file download from the API response
   - [x] Show a progress/loading indicator for large exports
-- [ ] **Day 65: Tag and release v0.3**
-  - [ ] Update `CHANGELOG.md`
-  - [ ] Tag the release (`v0.3.0`)
-  - [ ] Update README with provider compatibility & multi-tenancy notes
+- [x] **Day 65: Tag and release v0.3**
+  - [x] Update `CHANGELOG.md`
+  - [x] Tag the release (`v0.3.0`)
+  - [x] Update README with provider compatibility & multi-tenancy notes
 
 ---
 

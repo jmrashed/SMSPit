@@ -10,7 +10,7 @@
   <a href="https://github.com/jmrashed/SMSPit/issues"><img src="https://img.shields.io/github/issues/jmrashed/SMSPit" alt="Issues"></a>
 </p>
 
-> **Status: v0.2.0 released.** SMS capture/search/replay, the dashboard (inbox, detail, statistics, live WebSocket updates, API key management), and API-key authentication enforced at both `sms-service` and the `gateway` are live — see the [changelog](CHANGELOG.md) for what's actually runnable today. Everything else in this README (provider emulation, teams/organizations, AI features, Kubernetes) is still the v0.3+ roadmap, not yet built. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
+> **Status: v0.3.0 released.** SMS capture/search/replay, the dashboard (inbox, detail, statistics, live WebSocket updates, API key management), API-key authentication enforced at both `sms-service` and the `gateway`, provider-compatible endpoints (Vonage, AWS SNS, MessageBird), multi-tenant organizations/teams with scoped data, message templates, and message export (CSV/JSON) are live — see the [changelog](CHANGELOG.md) for what's actually runnable today. Everything else in this README (AI features, Kubernetes) is still the v0.4+ roadmap, not yet built. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
 
 ---
 
@@ -397,6 +397,47 @@ GET /api/v1/statistics
 
 ---
 
+## Export Messages
+
+```
+GET /api/v1/messages/export?format=csv
+GET /api/v1/messages/export?format=json
+```
+
+Same filters as List Messages (`to`, `from`, `created_after`, `created_before`); streamed as an attachment, so a `Content-Disposition` header carries the suggested filename.
+
+---
+
+## Message Templates
+
+```
+GET    /api/v1/templates
+POST   /api/v1/templates
+GET    /api/v1/templates/{id}
+PATCH  /api/v1/templates/{id}
+DELETE /api/v1/templates/{id}
+```
+
+Templates support `{{variable}}` placeholders, filled in at send time.
+
+---
+
+## Organizations & Teams
+
+```
+GET    /api/organizations
+POST   /api/organizations
+GET    /api/organizations/{id}
+PATCH  /api/organizations/{id}
+DELETE /api/organizations/{id}
+GET    /api/organizations/{id}/teams
+POST   /api/organizations/{id}/teams
+```
+
+Served by `auth-service`. An API key scoped to an organization only sees that organization's messages, keys, and templates; ungrouped keys (no organization) see only ungrouped data — organization membership is a partition, not a wildcard.
+
+---
+
 # Dashboard Features
 
 - Inbox
@@ -409,23 +450,28 @@ GET /api/v1/statistics
 - API Logs
 - Timeline
 - WebSocket Updates
+- Organization/Team Switcher
+- Template Picker
 
 ---
 
 # Provider Compatibility
 
-SMSPit aims to support compatible endpoints for popular SMS providers.
+SMSPit exposes drop-in-compatible endpoints for popular SMS providers, so an application can point its existing SDK at SMSPit by swapping the base URL — no other code changes. See [docs/api/provider-compatibility.md](docs/api/provider-compatibility.md) for the full path convention and field mappings.
 
-Planned integrations include:
+Shipped (v0.3):
 
-- Vonage
-- AWS SNS
-- MessageBird
+- Vonage — `POST /providers/vonage/sms/json`
+- AWS SNS — `POST /providers/sns`
+- MessageBird — `POST /providers/messagebird/messages`
+
+Planned:
+
 - Infobip
 - Plivo
 - Clickatell
 
-This allows existing applications to switch to SMSPit with minimal configuration changes.
+These endpoints are unauthenticated by design, matching the "swap the base URL, nothing else" premise — they don't sit behind `/api/v1` and aren't covered by API-key auth.
 
 ---
 
@@ -451,7 +497,7 @@ This allows existing applications to switch to SMSPit with minimal configuration
 
 ---
 
-## v0.3
+## v0.3 — shipped
 
 - Provider Emulation
 - Teams

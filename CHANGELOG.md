@@ -2,6 +2,35 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.0] - 2026-07-20
+
+Provider-compatible endpoints, multi-tenancy (organizations/teams), message templates, and export, per the [v0.3 roadmap](README.md#roadmap). No new services were added this release — everything ships as new endpoints/tables on the existing four services, so `docker-compose.yml` is unchanged from v0.2.0.
+
+### Added
+
+- **Provider-compatible endpoints (`sms-service`)** — drop-in replacements for popular SMS providers' send APIs, so an app can point its existing SDK at SMSPit by swapping the base URL alone:
+  - `POST /providers/vonage/sms/json` — accepts form or JSON, Vonage's response shape
+  - `POST /providers/sns` — hand-built XML response matching AWS SNS's `PublishResponse`
+  - `POST /providers/messagebird/messages` — handles MessageBird's string/CSV/array recipient formats
+  - Unauthenticated by design (outside `/api/v1`) and outside the versioned prefix, matching the "swap the base URL, nothing else" premise; see [docs/api/provider-compatibility.md](docs/api/provider-compatibility.md)
+- **Multi-tenancy (`auth-service` + `sms-service` + `dashboard`)**:
+  - `organizations` and `teams` tables, admin-only CRUD (`OrganizationPolicy`) behind Laravel's authorization system, bridged from the existing API-key middleware via `Auth::setUser()`
+  - `messages`, `api_keys`, and `templates` gained a nullable `org_id` — `NULL` is an "ungrouped" bucket, not a wildcard, so ungrouped keys never see another organization's data and vice versa
+  - Org-scoping applied uniformly across REST queries and the WebSocket broadcast feed, so live updates respect the same isolation as search/list
+  - Dashboard organization/team switcher, persisted to `localStorage`
+- **Message templates (`sms-service` + `dashboard`)**:
+  - Full CRUD (`GET`/`POST`/`PATCH`/`DELETE /api/v1/templates`), org-scoped like messages and keys
+  - `{{variable}}` placeholder syntax with a template picker UI that fills in variables before sending
+- **Export (`sms-service` + `dashboard`)**:
+  - `GET /api/v1/messages/export?format=csv|json`, streamed as an attachment with the same filters as list/search
+  - Dashboard export button with a format selector and loading state, downloading via a fetched blob + object URL (the only way to attach the required `Authorization` header to a triggered file download)
+  - `Content-Disposition` explicitly exposed via CORS at both `sms-service` and the `gateway`, since it isn't a "simple" response header and is otherwise unreadable by cross-origin `fetch()` — without it, downloads silently fell back to a generic filename
+
+### Known gaps
+
+- `docker`/`podman` were unavailable in the environment this was built in; verification was done by replicating the same request paths with real processes instead of `docker compose up` (same constraint as [0.2.0](#020---2026-07-19)).
+- `ai-service` and `worker` are not part of this release — they land in v0.4 per the roadmap.
+
 ## [0.2.0] - 2026-07-19
 
 Authentication, API keys, replay, statistics, and real-time updates, per the [v0.2 roadmap](README.md#roadmap). All four services that make up the sandbox's request path (`gateway`, `auth-service`, `sms-service`, `dashboard`) now exist and are wired together.
