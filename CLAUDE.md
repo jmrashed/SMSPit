@@ -8,15 +8,20 @@ SMSPit is a self-hosted SMS sandbox (like Mailpit, but for SMS) for local develo
 
 ## Current state (check before assuming otherwise)
 
-The repo is in early planning/scaffolding. As of now:
+Progress tracks `checklist.md`; check it for the exact day-by-day cutoff, but roughly:
 - `README.md` — product description, planned architecture, tech stack, and roadmap (v0.1 → v1.0)
-- `checklist.md` — a 100-day, day-by-day build checklist derived from the roadmap; the source of truth for build order
+- `checklist.md` — a 100-day, day-by-day build checklist derived from the roadmap; the source of truth for build order and completion status
 - `LICENSE` — MIT
 - `CLAUDE.md` — this file
-- Empty service skeletons, each with a stub `README.md` marked "Not yet implemented": `gateway/`, `auth-service/`, `sms-service/`, `ai-service/`, `worker/`, `dashboard/`
+- `sms-service/` (NestJS) — v0.1 message capture/search/replay REST API plus API-key auth guard (Days 11–35); has a `Dockerfile` and its own test suite
+- `auth-service/` (Laravel) — users/API-key schema, key generation, and validation middleware (Days 31–35); has its own test suite
+- `gateway/` (Go) — base HTTP server (chi router), health check, and path-based reverse-proxy routing to `sms-service` (`/api/v1/*`) and `auth-service` (`/auth/*` → `/api/*`) (Days 37–38); gateway-level auth enforcement not yet implemented
+- `dashboard/` (React) — inbox, message detail, search/filter UI wired to the REST API (Days 21–25)
+- `docker-compose.yml` — wires `sms-service`, `dashboard`, Postgres, and Redis (Day 28); `gateway` and `auth-service` are not yet added to it (pending Day 49)
+- `ai-service/`, `worker/` — still empty skeletons with stub `README.md`s marked "Not yet implemented" (Phase 4, Days 66+)
 - Placeholder structural folders: `proto/`, `docs/`, `docker/`, `deployments/`, `scripts/`
 
-No service has real code, no `docker-compose.yml` exists yet, and nothing in this repo currently runs. **Before writing code or docs that assume something exists (an endpoint, a config file, a running container), check the filesystem** — don't infer from the README's aspirational descriptions.
+**Before writing code or docs that assume something exists (an endpoint, a config file, a running container), check the filesystem and `checklist.md`** — don't infer from the README's aspirational descriptions, and don't assume this section stays current as work proceeds past its last update.
 
 ## Tech stack (per service, once built)
 

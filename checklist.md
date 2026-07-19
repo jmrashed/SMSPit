@@ -177,10 +177,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Initialize the Go module and base HTTP server
   - [x] Set up a routing library (chi/gin/echo)
   - [x] Add a health check endpoint
-- [ ] **Day 38: Implement gateway routing**
-  - [ ] Configure reverse-proxy rules to sms-service and auth-service
-  - [ ] Add path-based routing rules
-  - [ ] Test routing locally against running services
+- [x] **Day 38: Implement gateway routing**
+  - [x] Configure reverse-proxy rules to sms-service and auth-service
+  - [x] Add path-based routing rules
+  - [x] Test routing locally against running services
 - [ ] **Day 39: Enforce authentication at the gateway**
   - [ ] Add middleware to validate the API key before proxying
   - [ ] Pass validated identity downstream via headers
