@@ -26,3 +26,7 @@ export function listMessages(params: ListMessagesParams = {}): Promise<MessageLi
 export function getMessage(id: string): Promise<Message> {
   return apiFetch<Message>(`/api/v1/messages/${id}`);
 }
+
+export function replayMessage(id: string): Promise<Message> {
+  return apiFetch<Message>(`/api/v1/messages/${id}/replay`, { method: 'POST' });
+}

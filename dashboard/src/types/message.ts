@@ -6,6 +6,7 @@ export interface Message {
   from: string;
   message: string;
   status: MessageStatus;
+  replayed_from: string | null;
   created_at: string;
 }
 

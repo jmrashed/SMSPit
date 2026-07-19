@@ -16,7 +16,7 @@ Progress tracks `checklist.md`; check it for the exact day-by-day cutoff, but ro
 - `sms-service/` (NestJS) — v0.1 message capture/search REST API, replay endpoint, plus API-key auth guard (Days 11–41); has a `Dockerfile` and its own unit + e2e test suites
 - `auth-service/` (Laravel) — users/API-key schema, key generation, and validation middleware (Days 31–35); has its own test suite
 - `gateway/` (Go) — base HTTP server (chi router), health check, path-based reverse-proxy routing to `sms-service` (`/api/v1/*`) and `auth-service` (`/auth/*` → `/api/*`), and API-key auth enforcement on the `/api/v1/*` route (validates against auth-service, forwards identity via `X-Api-Key-Id`/`X-Owner-Id`/`X-Api-Key-Scopes` headers) (Days 37–39)
-- `dashboard/` (React) — inbox, message detail, search/filter UI wired to the REST API (Days 21–25)
+- `dashboard/` (React) — inbox, message detail, search/filter, and replay UI wired to the REST API (Days 21–25, 42)
 - `docker-compose.yml` — wires `sms-service`, `dashboard`, Postgres, and Redis (Day 28); `gateway` and `auth-service` are not yet added to it (pending Day 49)
 - `ai-service/`, `worker/` — still empty skeletons with stub `README.md`s marked "Not yet implemented" (Phase 4, Days 66+)
 - Placeholder structural folders: `proto/`, `docs/`, `docker/`, `deployments/`, `scripts/`

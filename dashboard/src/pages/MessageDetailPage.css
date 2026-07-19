@@ -30,6 +30,27 @@
   font-size: 28px;
 }
 
+.message-detail-page__replay {
+  margin-left: auto;
+  font: inherit;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.message-detail-page__replay:hover:not(:disabled) {
+  background: var(--accent-border);
+}
+
+.message-detail-page__replay:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .message-detail-page__meta {
   display: grid;
   grid-template-columns: max-content 1fr;

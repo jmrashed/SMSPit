@@ -193,10 +193,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Test the successful replay flow
   - [x] Test replay of a nonexistent message (404)
   - [x] Test the replay audit trail entry
-- [ ] **Day 42: Add replay UI to the dashboard**
-  - [ ] Add a replay button on the message detail view
-  - [ ] Show a confirmation and success/failure toast
-  - [ ] Refresh the list after replay
+- [x] **Day 42: Add replay UI to the dashboard**
+  - [x] Add a replay button on the message detail view
+  - [x] Show a confirmation and success/failure toast
+  - [x] Refresh the list after replay
 - [ ] **Day 43: Implement statistics endpoint**
   - [ ] Implement `GET /api/v1/statistics`
   - [ ] Aggregate counts by status/day

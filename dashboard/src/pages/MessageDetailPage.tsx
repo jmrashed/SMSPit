@@ -1,20 +1,24 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { Message } from '../types/message';
-import { getMessage } from '../api/messages';
+import { getMessage, replayMessage } from '../api/messages';
 import { ApiError } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
 import { Spinner } from '../components/Spinner';
 import { ErrorBanner } from '../components/ErrorBanner';
+import { useToast } from '../components/Toast';
 import './MessageDetailPage.css';
 
 type LoadState = 'loading' | 'found' | 'not-found' | 'error';
 
 export function MessageDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { showToast } = useToast();
   const [state, setState] = useState<LoadState>('loading');
   const [message, setMessage] = useState<Message | null>(null);
   const [retryToken, setRetryToken] = useState(0);
+  const [replaying, setReplaying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +45,24 @@ export function MessageDetailPage() {
     };
   }, [id, retryToken]);
 
+  async function handleReplay() {
+    if (!id || !window.confirm('Replay this message as a new captured message?')) {
+      return;
+    }
+
+    setReplaying(true);
+    try {
+      await replayMessage(id);
+      showToast('Message replayed successfully.', 'success');
+      navigate('/');
+    } catch (error: unknown) {
+      console.error('Failed to replay message', error);
+      showToast('Failed to replay message.', 'error');
+    } finally {
+      setReplaying(false);
+    }
+  }
+
   return (
     <main className="message-detail-page">
       <Link to="/" className="message-detail-page__back">
@@ -65,6 +87,14 @@ export function MessageDetailPage() {
           <header className="message-detail-page__header">
             <h1>Message detail</h1>
             <StatusBadge status={message.status} />
+            <button
+              type="button"
+              className="message-detail-page__replay"
+              onClick={handleReplay}
+              disabled={replaying}
+            >
+              {replaying ? 'Replaying…' : 'Replay'}
+            </button>
           </header>
 
           <dl className="message-detail-page__meta">
