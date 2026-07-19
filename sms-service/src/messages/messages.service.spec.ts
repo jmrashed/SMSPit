@@ -18,6 +18,12 @@ describe('MessagesService', () => {
   };
   let realtimeGateway: { broadcastMessageCreated: jest.Mock };
 
+  async function collect<T>(iterable: AsyncGenerator<T>): Promise<T[]> {
+    const items: T[] = [];
+    for await (const item of iterable) items.push(item);
+    return items;
+  }
+
   beforeEach(async () => {
     repository = {
       create: jest.fn(),
@@ -230,5 +236,58 @@ describe('MessagesService', () => {
 
     expect(repository.delete).toHaveBeenCalledWith({ orgId: 42 });
     expect(deletedCount).toBe(5);
+  });
+
+  describe('streamExportBatches', () => {
+    it('yields a single batch scoped to the acting org when under the batch size', async () => {
+      const messages = [{ id: 'sms_1' }, { id: 'sms_2' }] as Message[];
+      repository.find.mockResolvedValueOnce(messages);
+
+      const batches = await collect(service.streamExportBatches({ format: 'json' }, 42));
+
+      expect(batches).toEqual([messages]);
+      expect(repository.find).toHaveBeenCalledTimes(1);
+      expect(repository.find).toHaveBeenCalledWith({
+        where: { orgId: 42 },
+        order: { createdAt: 'ASC', id: 'ASC' },
+        take: 500,
+        skip: 0,
+      });
+    });
+
+    it('pages through multiple full batches before stopping on a short final batch', async () => {
+      const fullBatch = Array.from({ length: 500 }, (_, i) => ({ id: `sms_${i}` }) as Message);
+      const lastBatch = [{ id: 'sms_last' }] as Message[];
+      repository.find.mockResolvedValueOnce(fullBatch).mockResolvedValueOnce(lastBatch);
+
+      const batches = await collect(service.streamExportBatches({ format: 'csv' }, 42));
+
+      expect(batches).toEqual([fullBatch, lastBatch]);
+      expect(repository.find).toHaveBeenCalledTimes(2);
+      expect(repository.find).toHaveBeenNthCalledWith(2, expect.objectContaining({ skip: 500 }));
+    });
+
+    it('yields nothing when there are no matching messages', async () => {
+      repository.find.mockResolvedValueOnce([]);
+
+      const batches = await collect(service.streamExportBatches({ format: 'json' }, 42));
+
+      expect(batches).toEqual([]);
+    });
+
+    it('applies the same to/from/created_at filters as findAll', async () => {
+      repository.find.mockResolvedValueOnce([]);
+
+      await collect(
+        service.streamExportBatches(
+          { format: 'json', to: '+8801700000000', created_after: '2026-01-01T00:00:00.000Z' },
+          42,
+        ),
+      );
+
+      const call = repository.find.mock.calls[0][0];
+      expect(call.where.to).toBe('+8801700000000');
+      expect(call.where.createdAt).toBeDefined();
+    });
   });
 });

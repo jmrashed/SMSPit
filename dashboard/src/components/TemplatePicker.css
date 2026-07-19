@@ -1,0 +1,173 @@
+.template-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--code-bg);
+}
+
+.template-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.template-picker__header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.template-picker__new {
+  font: inherit;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.template-picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.template-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.template-picker__item--selected {
+  border-color: var(--accent);
+}
+
+.template-picker__item-name {
+  flex: 1;
+  background: none;
+  border: none;
+  text-align: left;
+  font: inherit;
+  color: var(--text-h);
+  cursor: pointer;
+  padding: 0;
+}
+
+.template-picker__item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.template-picker__item-actions button {
+  font: inherit;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.template-picker__empty {
+  color: var(--text);
+  font-size: 14px;
+  margin: 0;
+}
+
+.template-picker__variables {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.template-picker__variable-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.template-picker__variable-row input {
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.template-picker__insert {
+  align-self: flex-start;
+  font: inherit;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.template-picker__insert:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.template-picker__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.template-picker__form input,
+.template-picker__form textarea {
+  font: inherit;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  resize: vertical;
+}
+
+.template-picker__form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.template-picker__form-actions button {
+  font: inherit;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.template-picker__form-actions button[type='submit'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.template-picker__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text);
+}

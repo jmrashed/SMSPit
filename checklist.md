@@ -278,14 +278,14 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Design the `templates` table (name, body, variables)
   - [x] Implement CRUD endpoints
   - [x] Add tests
-- [ ] **Day 62: Build template picker UI**
-  - [ ] Build a template list/select UI
-  - [ ] Support inserting a template into the compose/replay flow
-  - [ ] Add a create/edit template form
-- [ ] **Day 63: Implement export endpoint**
-  - [ ] Implement an export endpoint supporting CSV and JSON
-  - [ ] Stream large exports instead of loading fully into memory
-  - [ ] Add tests for both formats
+- [x] **Day 62: Build template picker UI**
+  - [x] Build a template list/select UI
+  - [x] Support inserting a template into the compose/replay flow
+  - [x] Add a create/edit template form
+- [x] **Day 63: Implement export endpoint**
+  - [x] Implement an export endpoint supporting CSV and JSON
+  - [x] Stream large exports instead of loading fully into memory
+  - [x] Add tests for both formats
 - [ ] **Day 64: Build export UI**
   - [ ] Add an export button with a format selector
   - [ ] Trigger a file download from the API response

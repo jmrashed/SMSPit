@@ -63,6 +63,9 @@ export function InboxPage() {
           <h1>Inbox</h1>
           <div className="inbox-page__nav-links">
             <OrgSwitcher />
+            <Link to="/compose" className="inbox-page__stats-link">
+              Compose
+            </Link>
             <Link to="/organizations" className="inbox-page__stats-link">
               Organizations
             </Link>

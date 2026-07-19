@@ -62,6 +62,11 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     throw new ApiError(response.status, `Request to ${path} failed with status ${response.status}`);
   }
 
+  // DELETE endpoints like templates' return 204 with no body.
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json() as Promise<T>;
 }
 

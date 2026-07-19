@@ -5,8 +5,11 @@ import { Between, FindOptionsWhere, In, IsNull, LessThanOrEqual, MoreThanOrEqual
 import { CreateMessageDto } from './dto/create-message.dto';
 import { DeleteMessagesDto } from './dto/delete-messages.dto';
 import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
+import { ExportMessagesQueryDto } from './dto/export-messages-query.dto';
 import { Message, MessageStatus } from './entities/message.entity';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
+
+const EXPORT_BATCH_SIZE = 500;
 
 // TypeORM's FindOptionsWhere type for a nullable numeric column doesn't
 // accept a plain `null` (only `number | FindOperator<number>`), even
@@ -45,6 +48,23 @@ export class MessagesService {
   }
 
   async findAll(query: ListMessagesQueryDto, orgId: number | null): Promise<[Message[], number]> {
+    const where = this.buildFilterWhere(query, orgId);
+
+    return this.messagesRepository.findAndCount({
+      where,
+      order: { createdAt: 'DESC' },
+      take: query.limit,
+      skip: query.offset,
+    });
+  }
+
+  // Shared by findAll and streamExportBatches -- both filter on the same
+  // to/from/created_after/created_before fields, just with different
+  // pagination on top.
+  private buildFilterWhere(
+    query: Pick<ListMessagesQueryDto, 'to' | 'from' | 'created_after' | 'created_before'>,
+    orgId: number | null,
+  ): FindOptionsWhere<Message> {
     // A NULL org_id is its own bucket ("ungrouped"), not a wildcard --
     // see docs/multi-tenancy.md. Assigning null here still filters
     // correctly: TypeORM translates a null property value to "IS NULL".
@@ -61,12 +81,35 @@ export class MessagesService {
       where.createdAt = LessThanOrEqual(new Date(query.created_before));
     }
 
-    return this.messagesRepository.findAndCount({
-      where,
-      order: { createdAt: 'DESC' },
-      take: query.limit,
-      skip: query.offset,
-    });
+    return where;
+  }
+
+  // Yields matching messages in fixed-size batches (offset pagination),
+  // so a caller can write each batch to the response as it arrives
+  // instead of holding the full export in memory at once.
+  async *streamExportBatches(query: ExportMessagesQueryDto, orgId: number | null): AsyncGenerator<Message[]> {
+    const where = this.buildFilterWhere(query, orgId);
+    let offset = 0;
+
+    while (true) {
+      const batch = await this.messagesRepository.find({
+        where,
+        order: { createdAt: 'ASC', id: 'ASC' },
+        take: EXPORT_BATCH_SIZE,
+        skip: offset,
+      });
+
+      if (batch.length === 0) {
+        return;
+      }
+
+      yield batch;
+      offset += batch.length;
+
+      if (batch.length < EXPORT_BATCH_SIZE) {
+        return;
+      }
+    }
   }
 
   async findOne(id: string, orgId: number | null): Promise<Message> {

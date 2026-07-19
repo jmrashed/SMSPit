@@ -30,3 +30,16 @@ export function getMessage(id: string): Promise<Message> {
 export function replayMessage(id: string): Promise<Message> {
   return apiFetch<Message>(`/api/v1/messages/${id}/replay`, { method: 'POST' });
 }
+
+export interface CreateMessageParams {
+  to: string;
+  from: string;
+  message: string;
+}
+
+export function createMessage(params: CreateMessageParams): Promise<Message> {
+  return apiFetch<Message>('/api/v1/messages', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}
