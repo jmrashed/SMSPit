@@ -129,9 +129,9 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [ ] Verify the image builds and runs locally
   - [x] Minimize image size (slim base, prune dev deps)
 - [ ] **Day 27: Write `Dockerfile` for `dashboard`**
-  - [ ] Write a multi-stage Dockerfile (build + static serve)
+  - [x] Write a multi-stage Dockerfile (build + static serve)
   - [ ] Verify the production build serves correctly
-  - [ ] Configure env injection for the API base URL
+  - [x] Configure env injection for the API base URL
 - [ ] **Day 28: Wire services into `docker-compose.yml`**
   - [ ] Replace placeholders with real build contexts
   - [ ] Configure `depends_on` and networks

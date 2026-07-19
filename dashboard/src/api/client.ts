@@ -1,4 +1,15 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+declare global {
+  interface Window {
+    __APP_CONFIG__?: { VITE_API_BASE_URL?: string };
+  }
+}
+
+// Runtime config (injected by docker-entrypoint.sh at container start)
+// takes priority over the build-time env var, since Vite bakes
+// import.meta.env values into the bundle at build time -- runtime
+// injection is what lets one built image be reused across environments.
+const API_BASE_URL =
+  window.__APP_CONFIG__?.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 export class ApiError extends Error {
   status: number;
