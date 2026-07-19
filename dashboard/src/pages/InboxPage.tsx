@@ -60,9 +60,14 @@ export function InboxPage() {
       <header className="inbox-page__header">
         <div className="inbox-page__header-row">
           <h1>Inbox</h1>
-          <Link to="/statistics" className="inbox-page__stats-link">
-            Statistics
-          </Link>
+          <div className="inbox-page__nav-links">
+            <Link to="/statistics" className="inbox-page__stats-link">
+              Statistics
+            </Link>
+            <Link to="/api-keys" className="inbox-page__stats-link">
+              API keys
+            </Link>
+          </div>
         </div>
         <p>Messages captured by SMSPit instead of being delivered.</p>
       </header>

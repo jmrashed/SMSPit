@@ -80,4 +80,68 @@ class ApiKeyTest extends TestCase
         $this->assertNotSame($first, $second);
         $this->assertSame(2, ApiKey::count());
     }
+
+    public function test_lists_keys_newest_first_without_exposing_the_secret_hash(): void
+    {
+        $user = User::factory()->create();
+        $older = ApiKey::factory()->for($user, 'owner')->create(['created_at' => now()->subDay()]);
+        $newer = ApiKey::factory()->for($user, 'owner')->create(['created_at' => now()]);
+
+        $response = $this->getJson('/api/api-keys');
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('api_keys.0.id', $newer->id);
+        $response->assertJsonPath('api_keys.1.id', $older->id);
+        $response->assertJsonStructure([
+            'api_keys' => [['id', 'name', 'key', 'owner_id', 'scopes', 'last_used_at', 'revoked_at', 'created_at']],
+        ]);
+        $this->assertArrayNotHasKey('secret_hash', $response->json('api_keys.0'));
+    }
+
+    public function test_revokes_a_key(): void
+    {
+        $user = User::factory()->create();
+        $apiKey = ApiKey::factory()->for($user, 'owner')->create();
+
+        $response = $this->deleteJson("/api/api-keys/{$apiKey->id}");
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('id', $apiKey->id);
+        $this->assertNotNull($response->json('revoked_at'));
+        $this->assertNotNull($apiKey->fresh()->revoked_at);
+    }
+
+    public function test_revoking_an_already_revoked_key_is_idempotent(): void
+    {
+        $user = User::factory()->create();
+        $apiKey = ApiKey::factory()->for($user, 'owner')->create(['revoked_at' => now()->subHour()]);
+        $originalRevokedAt = $apiKey->revoked_at;
+
+        $response = $this->deleteJson("/api/api-keys/{$apiKey->id}");
+
+        $response->assertStatus(200);
+        $this->assertTrue($apiKey->fresh()->revoked_at->equalTo($originalRevokedAt));
+    }
+
+    public function test_revoking_an_unknown_key_returns_404(): void
+    {
+        $response = $this->deleteJson('/api/api-keys/999999');
+
+        $response->assertStatus(404);
+    }
+
+    public function test_a_revoked_key_fails_validation(): void
+    {
+        $user = User::factory()->create();
+        $secret = 'plaintext-secret';
+        $apiKey = ApiKey::factory()->for($user, 'owner')->create(['secret_hash' => Hash::make($secret)]);
+
+        $this->deleteJson("/api/api-keys/{$apiKey->id}")->assertStatus(200);
+
+        $response = $this->getJson('/api/api-keys/validate', [
+            'Authorization' => "Bearer {$apiKey->key}.{$secret}",
+        ]);
+
+        $response->assertStatus(401);
+    }
 }

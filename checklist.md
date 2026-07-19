@@ -213,10 +213,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Connect on inbox page mount
   - [x] Update the message list in real time on new events
   - [x] Handle reconnect/backoff on disconnect
-- [ ] **Day 47: Build API key management UI**
-  - [ ] Build a page to list/create/revoke API keys
-  - [ ] Show key metadata (created date, last used)
-  - [ ] Add copy-to-clipboard for a newly generated key
+- [x] **Day 47: Build API key management UI**
+  - [x] Build a page to list/create/revoke API keys
+  - [x] Show key metadata (created date, last used)
+  - [x] Add copy-to-clipboard for a newly generated key
 - [ ] **Day 48: Write Dockerfiles for `auth-service` and `gateway`**
   - [ ] Write the Dockerfile for auth-service (PHP-FPM/Laravel)
   - [ ] Write the Dockerfile for gateway (Go binary)

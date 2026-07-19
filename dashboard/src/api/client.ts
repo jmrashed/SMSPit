@@ -1,6 +1,6 @@
 declare global {
   interface Window {
-    __APP_CONFIG__?: { VITE_API_BASE_URL?: string; VITE_API_KEY?: string };
+    __APP_CONFIG__?: { VITE_API_BASE_URL?: string; VITE_API_KEY?: string; VITE_AUTH_SERVICE_URL?: string };
   }
 }
 
@@ -10,6 +10,12 @@ declare global {
 // injection is what lets one built image be reused across environments.
 const API_BASE_URL =
   window.__APP_CONFIG__?.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+// auth-service isn't yet routed through the same base URL as sms-service
+// (see gateway/.env.example) -- called directly for now, same as
+// sms-service's own AuthClient does (Day 35).
+const AUTH_SERVICE_URL =
+  window.__APP_CONFIG__?.VITE_AUTH_SERVICE_URL || import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:8000';
 
 // Stop-gap until Day 47's API key management UI exists: sms-service
 // requires auth as of Day 35, so the dashboard needs *a* key to
@@ -47,6 +53,25 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     headers: {
       'Content-Type': 'application/json',
       ...(API_KEY ? { Authorization: `Bearer ${API_KEY}` } : {}),
+      ...init?.headers,
+    },
+    ...init,
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, `Request to ${path} failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+// api-keys endpoints on auth-service aren't behind the API key guard
+// themselves (see auth-service/routes/api.php) -- generating/listing/
+// revoking keys is how you'd bootstrap the very first key.
+export async function authApiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${AUTH_SERVICE_URL}${path}`, {
+    headers: {
+      'Content-Type': 'application/json',
       ...init?.headers,
     },
     ...init,

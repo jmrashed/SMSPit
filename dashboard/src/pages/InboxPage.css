@@ -27,6 +27,12 @@
   color: var(--text);
 }
 
+.inbox-page__nav-links {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
 .inbox-page__stats-link {
   color: var(--accent);
   text-decoration: none;

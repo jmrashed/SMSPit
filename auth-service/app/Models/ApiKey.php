@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['name', 'key', 'secret_hash', 'owner_id', 'scopes'])]
+#[Fillable(['name', 'key', 'secret_hash', 'owner_id', 'scopes', 'revoked_at'])]
 #[Hidden(['secret_hash'])]
 class ApiKey extends Model
 {
+    use HasFactory;
+
     protected function casts(): array
     {
         return [

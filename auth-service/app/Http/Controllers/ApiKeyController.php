@@ -47,4 +47,39 @@ class ApiKeyController extends Controller
             'scopes' => $apiKey->scopes,
         ]);
     }
+
+    public function index(): JsonResponse
+    {
+        $apiKeys = ApiKey::orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'api_keys' => $apiKeys->map(fn (ApiKey $apiKey) => $this->toResource($apiKey)),
+        ]);
+    }
+
+    public function revoke(ApiKey $apiKey): JsonResponse
+    {
+        if ($apiKey->revoked_at === null) {
+            $apiKey->forceFill(['revoked_at' => now()])->save();
+        }
+
+        return response()->json($this->toResource($apiKey));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function toResource(ApiKey $apiKey): array
+    {
+        return [
+            'id' => $apiKey->id,
+            'name' => $apiKey->name,
+            'key' => $apiKey->key,
+            'owner_id' => $apiKey->owner_id,
+            'scopes' => $apiKey->scopes,
+            'last_used_at' => $apiKey->last_used_at?->toIso8601String(),
+            'revoked_at' => $apiKey->revoked_at?->toIso8601String(),
+            'created_at' => $apiKey->created_at->toIso8601String(),
+        ];
+    }
 }
