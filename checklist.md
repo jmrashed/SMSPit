@@ -181,10 +181,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Configure reverse-proxy rules to sms-service and auth-service
   - [x] Add path-based routing rules
   - [x] Test routing locally against running services
-- [ ] **Day 39: Enforce authentication at the gateway**
-  - [ ] Add middleware to validate the API key before proxying
-  - [ ] Pass validated identity downstream via headers
-  - [ ] Add tests for gateway auth rejection
+- [x] **Day 39: Enforce authentication at the gateway**
+  - [x] Add middleware to validate the API key before proxying
+  - [x] Pass validated identity downstream via headers
+  - [x] Add tests for gateway auth rejection
 - [ ] **Day 40: Implement replay endpoint**
   - [ ] Implement `POST /api/v1/messages/{id}/replay`
   - [ ] Re-trigger the capture pipeline with the original payload
