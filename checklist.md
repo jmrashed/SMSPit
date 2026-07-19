@@ -165,10 +165,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Implement middleware to validate the `Authorization` header
   - [x] Look up the key hash against the DB
   - [x] Return 401 on invalid/missing key
-- [ ] **Day 35: Integrate API key auth into `sms-service`**
-  - [ ] Call auth-service (or a shared lib) to validate keys per request
-  - [ ] Add an auth guard to protected endpoints
-  - [ ] Add tests for authorized vs. unauthorized requests
+- [x] **Day 35: Integrate API key auth into `sms-service`**
+  - [x] Call auth-service (or a shared lib) to validate keys per request
+  - [x] Add an auth guard to protected endpoints
+  - [x] Add tests for authorized vs. unauthorized requests
 - [ ] **Day 36: Write tests for the API key flow**
   - [ ] Test key generation
   - [ ] Test key validation success/failure paths

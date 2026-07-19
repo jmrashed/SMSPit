@@ -29,6 +29,11 @@ services:
       - "${DASHBOARD_PORT}:80"
     environment:
       VITE_API_BASE_URL: "http://localhost:${SMS_SERVICE_PORT}"
+      # sms-service requires an API key as of Day 35. auth-service isn't
+      # wired into compose until Day 49, so there's no automated way to
+      # generate one here yet -- set DASHBOARD_API_KEY in your own .env
+      # once you've created a key manually against auth-service.
+      VITE_API_KEY: "${DASHBOARD_API_KEY:-}"
     depends_on:
       - sms-service
     networks:

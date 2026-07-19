@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageResponseDto } from './dto/message-response.dto';
 import { MessageListResponseDto } from './dto/message-list-response.dto';
@@ -6,8 +6,10 @@ import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
 import { DeleteMessagesDto } from './dto/delete-messages.dto';
 import { DeleteMessagesResponseDto } from './dto/delete-messages-response.dto';
 import { MessagesService } from './messages.service';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @Controller('messages')
+@UseGuards(ApiKeyGuard)
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 

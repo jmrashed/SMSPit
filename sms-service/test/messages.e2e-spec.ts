@@ -4,6 +4,11 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { HttpExceptionFilter } from './../src/common/filters/http-exception.filter';
+import { AuthClient } from './../src/auth/auth-client';
+
+// Auth is stubbed here (unit-tested separately in api-key.guard.spec.ts) --
+// this suite exercises message capture/list/detail, not cross-service auth.
+const AUTH_HEADER = { Authorization: 'Bearer sms_live_test.secret' };
 
 describe('Messages (e2e): capture -> list -> detail', () => {
   let app: INestApplication<App>;
@@ -11,7 +16,10 @@ describe('Messages (e2e): capture -> list -> detail', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(AuthClient)
+      .useValue({ validateToken: async () => ({ id: 1, name: 'test', owner_id: 1, scopes: [] }) })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api/v1');
@@ -27,6 +35,7 @@ describe('Messages (e2e): capture -> list -> detail', () => {
   it('captures a message, finds it in the list, and fetches its detail', async () => {
     const createRes = await request(app.getHttpServer())
       .post('/api/v1/messages')
+      .set(AUTH_HEADER)
       .send({ to: '+8801700000099', from: 'SMSPit', message: 'e2e capture -> list -> detail' })
       .expect(201);
 
@@ -41,12 +50,16 @@ describe('Messages (e2e): capture -> list -> detail', () => {
 
     const listRes = await request(app.getHttpServer())
       .get('/api/v1/messages')
+      .set(AUTH_HEADER)
       .query({ to: '+8801700000099' })
       .expect(200);
 
     expect(listRes.body.messages.some((m: { id: string }) => m.id === id)).toBe(true);
 
-    const detailRes = await request(app.getHttpServer()).get(`/api/v1/messages/${id}`).expect(200);
+    const detailRes = await request(app.getHttpServer())
+      .get(`/api/v1/messages/${id}`)
+      .set(AUTH_HEADER)
+      .expect(200);
 
     expect(detailRes.body).toMatchObject({
       id,
@@ -54,10 +67,21 @@ describe('Messages (e2e): capture -> list -> detail', () => {
       message: 'e2e capture -> list -> detail',
     });
 
-    await request(app.getHttpServer()).delete('/api/v1/messages').send({ ids: [id] }).expect(200);
+    await request(app.getHttpServer())
+      .delete('/api/v1/messages')
+      .set(AUTH_HEADER)
+      .send({ ids: [id] })
+      .expect(200);
   });
 
   it('returns 404 for a detail lookup on an unknown id', () => {
-    return request(app.getHttpServer()).get('/api/v1/messages/sms_does_not_exist').expect(404);
+    return request(app.getHttpServer())
+      .get('/api/v1/messages/sms_does_not_exist')
+      .set(AUTH_HEADER)
+      .expect(404);
+  });
+
+  it('returns 401 when no Authorization header is sent', () => {
+    return request(app.getHttpServer()).get('/api/v1/messages').expect(401);
   });
 });

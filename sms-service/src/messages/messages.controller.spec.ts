@@ -3,6 +3,8 @@ import { NotFoundException } from '@nestjs/common';
 import { MessagesController } from './messages.controller';
 import { MessagesService } from './messages.service';
 import { Message, MessageStatus } from './entities/message.entity';
+import { ApiKeyGuard } from '../auth/api-key.guard';
+import { AuthClient } from '../auth/auth-client';
 
 describe('MessagesController', () => {
   let controller: MessagesController;
@@ -13,7 +15,11 @@ describe('MessagesController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MessagesController],
-      providers: [{ provide: MessagesService, useValue: service }],
+      providers: [
+        { provide: MessagesService, useValue: service },
+        ApiKeyGuard,
+        { provide: AuthClient, useValue: { validateToken: jest.fn() } },
+      ],
     }).compile();
 
     controller = module.get(MessagesController);
