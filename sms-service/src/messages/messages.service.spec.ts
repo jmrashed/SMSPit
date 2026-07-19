@@ -128,6 +128,39 @@ describe('MessagesService', () => {
     await expect(service.findOne('sms_missing')).rejects.toThrow(NotFoundException);
   });
 
+  it('replays a message as a new entry linked to the original via replayedFrom', async () => {
+    const original: Message = {
+      id: 'sms_abc123',
+      to: '+8801700000000',
+      from: 'SMSPit',
+      body: 'Your OTP is 845231',
+      status: MessageStatus.CAPTURED,
+      replayedFrom: null,
+      createdAt: new Date('2026-07-19T00:00:00.000Z'),
+    };
+    repository.findOneBy.mockResolvedValue(original);
+    repository.create.mockImplementation((entity: Partial<Message>) => entity as Message);
+    repository.save.mockImplementation((entity: Message) => Promise.resolve(entity));
+
+    const result = await service.replay('sms_abc123');
+
+    expect(result.id).toMatch(/^sms_[0-9a-f]{16}$/);
+    expect(result.id).not.toBe(original.id);
+    expect(result.to).toBe(original.to);
+    expect(result.from).toBe(original.from);
+    expect(result.body).toBe(original.body);
+    expect(result.status).toBe(MessageStatus.CAPTURED);
+    expect(result.replayedFrom).toBe('sms_abc123');
+    expect(repository.save).toHaveBeenCalledWith(result);
+  });
+
+  it('throws NotFoundException when replaying a nonexistent message', async () => {
+    repository.findOneBy.mockResolvedValue(null);
+
+    await expect(service.replay('sms_missing')).rejects.toThrow(NotFoundException);
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
   it('deletes messages by id without requiring confirmation', async () => {
     repository.delete.mockResolvedValue({ affected: 2, raw: [] });
 

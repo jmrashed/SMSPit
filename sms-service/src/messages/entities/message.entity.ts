@@ -28,6 +28,9 @@ export class Message {
   @Column({ type: 'varchar' })
   status: MessageStatus;
 
+  @Column({ name: 'replayed_from', type: 'varchar', nullable: true })
+  replayedFrom: string | null;
+
   @Column({ name: 'created_at' })
   createdAt: Date;
 }

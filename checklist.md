@@ -185,14 +185,14 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add middleware to validate the API key before proxying
   - [x] Pass validated identity downstream via headers
   - [x] Add tests for gateway auth rejection
-- [ ] **Day 40: Implement replay endpoint**
-  - [ ] Implement `POST /api/v1/messages/{id}/replay`
-  - [ ] Re-trigger the capture pipeline with the original payload
-  - [ ] Store the replay as a linked/new message entry
-- [ ] **Day 41: Write tests for replay**
-  - [ ] Test the successful replay flow
-  - [ ] Test replay of a nonexistent message (404)
-  - [ ] Test the replay audit trail entry
+- [x] **Day 40: Implement replay endpoint**
+  - [x] Implement `POST /api/v1/messages/{id}/replay`
+  - [x] Re-trigger the capture pipeline with the original payload
+  - [x] Store the replay as a linked/new message entry
+- [x] **Day 41: Write tests for replay**
+  - [x] Test the successful replay flow
+  - [x] Test replay of a nonexistent message (404)
+  - [x] Test the replay audit trail entry
 - [ ] **Day 42: Add replay UI to the dashboard**
   - [ ] Add a replay button on the message detail view
   - [ ] Show a confirmation and success/failure toast

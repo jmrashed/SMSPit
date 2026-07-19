@@ -32,6 +32,13 @@ export class MessagesController {
     return MessageResponseDto.fromEntity(message);
   }
 
+  @Post(':id/replay')
+  @HttpCode(HttpStatus.CREATED)
+  async replay(@Param('id') id: string): Promise<MessageResponseDto> {
+    const replay = await this.messagesService.replay(id);
+    return MessageResponseDto.fromEntity(replay);
+  }
+
   @Delete()
   async remove(@Body() dto: DeleteMessagesDto): Promise<DeleteMessagesResponseDto> {
     const deletedCount = await this.messagesService.remove(dto);

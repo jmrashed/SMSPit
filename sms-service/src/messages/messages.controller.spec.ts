@@ -8,10 +8,10 @@ import { AuthClient } from '../auth/auth-client';
 
 describe('MessagesController', () => {
   let controller: MessagesController;
-  let service: { create: jest.Mock; findAll: jest.Mock; findOne: jest.Mock; remove: jest.Mock };
+  let service: { create: jest.Mock; findAll: jest.Mock; findOne: jest.Mock; replay: jest.Mock; remove: jest.Mock };
 
   beforeEach(async () => {
-    service = { create: jest.fn(), findAll: jest.fn(), findOne: jest.fn(), remove: jest.fn() };
+    service = { create: jest.fn(), findAll: jest.fn(), findOne: jest.fn(), replay: jest.fn(), remove: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MessagesController],
@@ -32,6 +32,7 @@ describe('MessagesController', () => {
       from: 'SMSPit',
       body: 'Your OTP is 845231',
       status: MessageStatus.CAPTURED,
+      replayedFrom: null,
       createdAt: new Date('2026-07-19T00:00:00.000Z'),
     };
     service.create.mockResolvedValue(entity);
@@ -53,6 +54,7 @@ describe('MessagesController', () => {
       from: 'SMSPit',
       message: 'Your OTP is 845231',
       status: 'captured',
+      replayed_from: null,
       created_at: '2026-07-19T00:00:00.000Z',
     });
   });
@@ -64,6 +66,7 @@ describe('MessagesController', () => {
       from: 'SMSPit',
       body: 'newer',
       status: MessageStatus.CAPTURED,
+      replayedFrom: null,
       createdAt: new Date('2026-07-19T01:00:00.000Z'),
     };
     service.findAll.mockResolvedValue([[newer], 1]);
@@ -79,6 +82,7 @@ describe('MessagesController', () => {
           from: 'SMSPit',
           message: 'newer',
           status: 'captured',
+          replayed_from: null,
           created_at: '2026-07-19T01:00:00.000Z',
         },
       ],
@@ -103,6 +107,7 @@ describe('MessagesController', () => {
       from: 'SMSPit',
       body: 'Your OTP is 845231',
       status: MessageStatus.CAPTURED,
+      replayedFrom: null,
       createdAt: new Date('2026-07-19T00:00:00.000Z'),
     };
     service.findOne.mockResolvedValue(entity);
@@ -117,6 +122,38 @@ describe('MessagesController', () => {
     service.findOne.mockRejectedValue(new NotFoundException('Message sms_missing not found'));
 
     await expect(controller.findOne('sms_missing')).rejects.toThrow(NotFoundException);
+  });
+
+  it('returns the replay as a new message linked to the original', async () => {
+    const replay: Message = {
+      id: 'sms_replay123',
+      to: '+8801700000000',
+      from: 'SMSPit',
+      body: 'Your OTP is 845231',
+      status: MessageStatus.CAPTURED,
+      replayedFrom: 'sms_abc123',
+      createdAt: new Date('2026-07-19T02:00:00.000Z'),
+    };
+    service.replay.mockResolvedValue(replay);
+
+    const result = await controller.replay('sms_abc123');
+
+    expect(service.replay).toHaveBeenCalledWith('sms_abc123');
+    expect(result).toEqual({
+      id: 'sms_replay123',
+      to: '+8801700000000',
+      from: 'SMSPit',
+      message: 'Your OTP is 845231',
+      status: 'captured',
+      replayed_from: 'sms_abc123',
+      created_at: '2026-07-19T02:00:00.000Z',
+    });
+  });
+
+  it('propagates NotFoundException from the service when replaying an unknown id', async () => {
+    service.replay.mockRejectedValue(new NotFoundException('Message sms_missing not found'));
+
+    await expect(controller.replay('sms_missing')).rejects.toThrow(NotFoundException);
   });
 
   it('returns deleted_count from the service', async () => {

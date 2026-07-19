@@ -23,6 +23,7 @@ export class MessagesService {
       from: dto.from,
       body: dto.message,
       status: MessageStatus.CAPTURED,
+      replayedFrom: null,
       createdAt: new Date(),
     });
 
@@ -61,6 +62,25 @@ export class MessagesService {
     }
 
     return message;
+  }
+
+  async replay(id: string): Promise<Message> {
+    const original = await this.findOne(id);
+
+    const replay = this.messagesRepository.create({
+      id: `sms_${randomBytes(8).toString('hex')}`,
+      to: original.to,
+      from: original.from,
+      body: original.body,
+      status: MessageStatus.CAPTURED,
+      replayedFrom: original.id,
+      createdAt: new Date(),
+    });
+
+    const saved = await this.messagesRepository.save(replay);
+    this.logger.log(`Replayed message ${original.id} as ${saved.id}`);
+
+    return saved;
   }
 
   async remove(dto: DeleteMessagesDto): Promise<number> {
