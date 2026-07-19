@@ -10,7 +10,7 @@
   <a href="https://github.com/jmrashed/SMSPit/issues"><img src="https://img.shields.io/github/issues/jmrashed/SMSPit" alt="Issues"></a>
 </p>
 
-> **Status: v0.1.0 released.** SMS capture, search, and the dashboard inbox/detail views are live — see the [changelog](CHANGELOG.md) for what's actually runnable today. Everything else in this README (auth, replay, statistics, provider emulation, AI features, Kubernetes) is still the v0.2+ roadmap, not yet built. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
+> **Status: v0.2.0 released.** SMS capture/search/replay, the dashboard (inbox, detail, statistics, live WebSocket updates, API key management), and API-key authentication enforced at both `sms-service` and the `gateway` are live — see the [changelog](CHANGELOG.md) for what's actually runnable today. Everything else in this README (provider emulation, teams/organizations, AI features, Kubernetes) is still the v0.3+ roadmap, not yet built. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
 
 ---
 
@@ -231,7 +231,7 @@ SMSPit/
 │   ├── setup.sh
 │   └── migrate.sh
 │
-├── docker-compose.yml             # wires sms-service + dashboard + Postgres + Redis (v0.1)
+├── docker-compose.yml             # wires gateway + auth-service + sms-service + dashboard + Postgres + Redis (v0.2)
 ├── checklist.md                   # 100-day build checklist
 ├── CLAUDE.md                      # AI agent working guide
 ├── LICENSE
@@ -242,7 +242,9 @@ SMSPit/
 
 # Quick Start
 
-v0.1 ships `sms-service` and `dashboard`; the workflow below covers those two. `docker compose up -d` itself hasn't been run/verified in this environment (no Docker available during development) — see [CHANGELOG.md](CHANGELOG.md#known-gaps).
+v0.2 ships `gateway`, `auth-service`, `sms-service`, and `dashboard`; the workflow below covers all four. `docker compose up -d` itself hasn't been run/verified in this environment (no Docker available during development) — see [CHANGELOG.md](CHANGELOG.md#known-gaps).
+
+All API requests now require an API key: generate one via `POST /api/api-keys` on `auth-service` (or the dashboard's own `/api-keys` page, which needs no key itself to get in) and pass it as `Authorization: Bearer <key>` against the gateway.
 
 ## Clone
 
@@ -326,7 +328,9 @@ The message appears instantly in the dashboard — no network call leaves your m
 
 ---
 
-# REST API (Planned)
+# REST API
+
+Every endpoint below requires `Authorization: Bearer <api key>` as of v0.2, validated against `auth-service` (at the gateway, and again at `sms-service` itself for defense in depth).
 
 ## Send SMS
 
@@ -427,7 +431,7 @@ This allows existing applications to switch to SMSPit with minimal configuration
 
 # Roadmap
 
-## v0.1
+## v0.1 — shipped
 
 - SMS Capture
 - Dashboard
@@ -437,7 +441,7 @@ This allows existing applications to switch to SMSPit with minimal configuration
 
 ---
 
-## v0.2
+## v0.2 — shipped
 
 - Authentication
 - API Keys
