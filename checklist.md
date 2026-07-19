@@ -169,14 +169,14 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Call auth-service (or a shared lib) to validate keys per request
   - [x] Add an auth guard to protected endpoints
   - [x] Add tests for authorized vs. unauthorized requests
-- [ ] **Day 36: Write tests for the API key flow**
-  - [ ] Test key generation
-  - [ ] Test key validation success/failure paths
-  - [ ] Test key revocation (if implemented)
-- [ ] **Day 37: Scaffold `gateway` (Go)**
-  - [ ] Initialize the Go module and base HTTP server
-  - [ ] Set up a routing library (chi/gin/echo)
-  - [ ] Add a health check endpoint
+- [x] **Day 36: Write tests for the API key flow**
+  - [x] Test key generation
+  - [x] Test key validation success/failure paths
+  - [x] Test key revocation (if implemented)
+- [x] **Day 37: Scaffold `gateway` (Go)**
+  - [x] Initialize the Go module and base HTTP server
+  - [x] Set up a routing library (chi/gin/echo)
+  - [x] Add a health check endpoint
 - [ ] **Day 38: Implement gateway routing**
   - [ ] Configure reverse-proxy rules to sms-service and auth-service
   - [ ] Add path-based routing rules

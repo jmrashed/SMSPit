@@ -56,4 +56,28 @@ class ApiKeyTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonPath('code', 'VALIDATION_ERROR');
     }
+
+    public function test_defaults_scopes_to_an_empty_array_when_omitted(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->postJson('/api/api-keys', [
+            'name' => 'No scopes',
+            'owner_id' => $user->id,
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('scopes', []);
+    }
+
+    public function test_generates_unique_keys_and_secrets_across_multiple_requests(): void
+    {
+        $user = User::factory()->create();
+
+        $first = $this->postJson('/api/api-keys', ['name' => 'a', 'owner_id' => $user->id])->json('key');
+        $second = $this->postJson('/api/api-keys', ['name' => 'b', 'owner_id' => $user->id])->json('key');
+
+        $this->assertNotSame($first, $second);
+        $this->assertSame(2, ApiKey::count());
+    }
 }
