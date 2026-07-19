@@ -274,10 +274,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add an org selector dropdown in the dashboard header
   - [x] Persist the selected org in session/local storage
   - [x] Refetch data on org switch
-- [ ] **Day 61: Implement message templates CRUD**
-  - [ ] Design the `templates` table (name, body, variables)
-  - [ ] Implement CRUD endpoints
-  - [ ] Add tests
+- [x] **Day 61: Implement message templates CRUD**
+  - [x] Design the `templates` table (name, body, variables)
+  - [x] Implement CRUD endpoints
+  - [x] Add tests
 - [ ] **Day 62: Build template picker UI**
   - [ ] Build a template list/select UI
   - [ ] Support inserting a template into the compose/replay flow

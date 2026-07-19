@@ -156,4 +156,43 @@ describe('Multi-tenancy (e2e): cross-org data isolation', () => {
 
     expect(ungroupedList.body.messages.some((m: { id: string }) => m.id === orgAMessageId)).toBe(false);
   });
+
+  it("org B does not see org A's templates when listing", async () => {
+    const createRes = await request(app.getHttpServer())
+      .post('/api/v1/templates')
+      .set(ORG_A_HEADER)
+      .send({ name: 'Org A template', body: 'Hello {{name}}', variables: ['name'] })
+      .expect(201);
+    const orgATemplateId: number = createRes.body.id;
+
+    const orgBList = await request(app.getHttpServer()).get('/api/v1/templates').set(ORG_B_HEADER).expect(200);
+    expect(orgBList.body.templates.some((t: { id: number }) => t.id === orgATemplateId)).toBe(false);
+
+    const orgAList = await request(app.getHttpServer()).get('/api/v1/templates').set(ORG_A_HEADER).expect(200);
+    expect(orgAList.body.templates.some((t: { id: number }) => t.id === orgATemplateId)).toBe(true);
+  });
+
+  it("org B gets 404 fetching, updating, or deleting org A's template", async () => {
+    const createRes = await request(app.getHttpServer())
+      .post('/api/v1/templates')
+      .set(ORG_A_HEADER)
+      .send({ name: 'Org A only', body: 'Hello {{name}}' })
+      .expect(201);
+    const orgATemplateId: number = createRes.body.id;
+
+    await request(app.getHttpServer()).get(`/api/v1/templates/${orgATemplateId}`).set(ORG_B_HEADER).expect(404);
+    await request(app.getHttpServer())
+      .put(`/api/v1/templates/${orgATemplateId}`)
+      .set(ORG_B_HEADER)
+      .send({ name: 'hijacked' })
+      .expect(404);
+    await request(app.getHttpServer()).delete(`/api/v1/templates/${orgATemplateId}`).set(ORG_B_HEADER).expect(404);
+
+    // Untouched by org B's failed attempts.
+    const stillThere = await request(app.getHttpServer())
+      .get(`/api/v1/templates/${orgATemplateId}`)
+      .set(ORG_A_HEADER)
+      .expect(200);
+    expect(stillThere.body.name).toBe('Org A only');
+  });
 });

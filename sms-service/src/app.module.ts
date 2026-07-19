@@ -6,7 +6,9 @@ import { AppService } from './app.service';
 import { MessagesModule } from './messages/messages.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { ProvidersModule } from './providers/providers.module';
+import { TemplatesModule } from './templates/templates.module';
 import { Message } from './messages/entities/message.entity';
+import { Template } from './templates/entities/template.entity';
 
 @Module({
   imports: [
@@ -21,7 +23,7 @@ import { Message } from './messages/entities/message.entity';
         database: config.get<string>('DB_DATABASE', 'smspit'),
         username: config.get<string>('DB_USERNAME', 'smspit'),
         password: config.get<string>('DB_PASSWORD', 'smspit'),
-        entities: [Message],
+        entities: [Message, Template],
         // Schema/migrations are owned by auth-service (Laravel) -- this
         // service must never create or alter tables on its own.
         synchronize: false,
@@ -34,6 +36,7 @@ import { Message } from './messages/entities/message.entity';
     MessagesModule,
     StatisticsModule,
     ProvidersModule,
+    TemplatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
