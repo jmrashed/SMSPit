@@ -8,3 +8,5 @@ Route::get('/health', function () {
 });
 
 Route::post('/api-keys', [ApiKeyController::class, 'store']);
+
+Route::middleware('api.key')->get('/api-keys/validate', [ApiKeyController::class, 'validateKey']);

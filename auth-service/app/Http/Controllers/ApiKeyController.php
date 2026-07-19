@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreApiKeyRequest;
 use App\Models\ApiKey;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class ApiKeyController extends Controller
@@ -32,5 +33,18 @@ class ApiKeyController extends Controller
             'scopes' => $apiKey->scopes,
             'created_at' => $apiKey->created_at->toIso8601String(),
         ], 201);
+    }
+
+    public function validateKey(Request $request): JsonResponse
+    {
+        /** @var ApiKey $apiKey */
+        $apiKey = $request->attributes->get('api_key');
+
+        return response()->json([
+            'id' => $apiKey->id,
+            'name' => $apiKey->name,
+            'owner_id' => $apiKey->owner_id,
+            'scopes' => $apiKey->scopes,
+        ]);
     }
 }
