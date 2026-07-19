@@ -125,9 +125,9 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add an empty-state message when there are no messages
   - [x] Add an error banner with a retry action
 - [ ] **Day 26: Write `Dockerfile` for `sms-service`**
-  - [ ] Write a multi-stage Dockerfile (build + runtime)
+  - [x] Write a multi-stage Dockerfile (build + runtime)
   - [ ] Verify the image builds and runs locally
-  - [ ] Minimize image size (slim base, prune dev deps)
+  - [x] Minimize image size (slim base, prune dev deps)
 - [ ] **Day 27: Write `Dockerfile` for `dashboard`**
   - [ ] Write a multi-stage Dockerfile (build + static serve)
   - [ ] Verify the production build serves correctly
