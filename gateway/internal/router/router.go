@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 
 	"github.com/jmrashed/SMSPit/gateway/config"
 	"github.com/jmrashed/SMSPit/gateway/internal/auth"
@@ -17,6 +18,18 @@ func New(cfg config.Config) http.Handler {
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	// Must run before RequireAPIKey: a CORS preflight OPTIONS request
+	// never carries the Authorization header (browsers deliberately omit
+	// custom headers on preflight), so without this, RequireAPIKey would
+	// 401 every preflight with no CORS headers on the response, and the
+	// browser would block the real request that follows.
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{cfg.CORSOrigin},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: false,
+		MaxAge:           300,
+	}))
 
 	r.Get("/healthz", healthCheck)
 

@@ -42,5 +42,22 @@ func New(target string, stripPrefix string, addPrefix string) http.Handler {
 		_, _ = w.Write([]byte(`{"code":"BAD_GATEWAY","message":"upstream service unavailable","details":null}`))
 	}
 
+	// Backends (sms-service) set their own CORS headers for when they're
+	// reached directly. The gateway's own CORS middleware sets them too --
+	// left alone, a proxied response would carry both, and a header
+	// repeated across two lines is invalid CORS (browsers require exactly
+	// one Access-Control-Allow-Origin value) and gets rejected. The
+	// gateway is the single source of truth for CORS once a request comes
+	// through it, so strip whatever the backend set before its own
+	// middleware adds the real one.
+	proxy.ModifyResponse = func(resp *http.Response) error {
+		for header := range resp.Header {
+			if strings.HasPrefix(strings.ToLower(header), "access-control-") {
+				resp.Header.Del(header)
+			}
+		}
+		return nil
+	}
+
 	return proxy
 }

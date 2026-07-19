@@ -11,6 +11,7 @@ services:
       GATEWAY_PORT: 8080
       SMS_SERVICE_URL: "http://sms-service:3000"
       AUTH_SERVICE_URL: "http://auth-service:80"
+      CORS_ORIGIN: "*"
     depends_on:
       - sms-service
       - auth-service

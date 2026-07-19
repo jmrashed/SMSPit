@@ -118,6 +118,66 @@ func TestSMSServiceRouteForwardsValidatedIdentity(t *testing.T) {
 	}
 }
 
+func TestCORSPreflightSucceedsWithoutAuthorization(t *testing.T) {
+	smsBackendCalled := false
+	smsBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		smsBackendCalled = true
+	}))
+	defer smsBackend.Close()
+
+	r := New(config.Config{SMSServiceURL: smsBackend.URL, AuthServiceURL: "http://example.invalid", CORSOrigin: "*"})
+
+	req := httptest.NewRequest(http.MethodOptions, "/api/v1/messages", nil)
+	req.Header.Set("Origin", "http://localhost:5173")
+	req.Header.Set("Access-Control-Request-Method", "GET")
+	req.Header.Set("Access-Control-Request-Headers", "authorization")
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	// A preflight OPTIONS request never carries Authorization (browsers
+	// omit custom headers on preflight) -- RequireAPIKey must not see it
+	// before CORS has a chance to respond, or every cross-origin request
+	// through the gateway breaks.
+	if rec.Code != http.StatusOK && rec.Code != http.StatusNoContent {
+		t.Fatalf("expected preflight to succeed, got %d", rec.Code)
+	}
+	if rec.Header().Get("Access-Control-Allow-Origin") == "" {
+		t.Error("expected Access-Control-Allow-Origin on the preflight response")
+	}
+	if smsBackendCalled {
+		t.Error("preflight should be answered by the gateway, not forwarded to sms-service")
+	}
+}
+
+func TestCORSHeaderNotDuplicatedWhenBackendAlsoSetsIt(t *testing.T) {
+	authBackend := validatingAuthBackend(t)
+	defer authBackend.Close()
+
+	smsBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		// Simulates sms-service's own app.enableCors() also setting the
+		// header on direct responses.
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer smsBackend.Close()
+
+	r := New(config.Config{SMSServiceURL: smsBackend.URL, AuthServiceURL: authBackend.URL, CORSOrigin: "*"})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/messages", nil)
+	req.Header.Set("Authorization", "Bearer valid")
+	req.Header.Set("Origin", "http://localhost:5173")
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	// A header repeated across two lines is invalid CORS -- browsers
+	// require exactly one Access-Control-Allow-Origin value and reject
+	// the response outright if there are two, even if both say "*".
+	values := rec.Header().Values("Access-Control-Allow-Origin")
+	if len(values) != 1 {
+		t.Fatalf("expected exactly one Access-Control-Allow-Origin header, got %d: %v", len(values), values)
+	}
+}
+
 func TestRoutesToAuthServiceWithPathRewrite(t *testing.T) {
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path != "/api/api-keys" {
