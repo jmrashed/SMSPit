@@ -254,10 +254,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add coverage for malformed provider payloads
   - [x] Add coverage for each adapter's success path
   - [x] Document supported vs. unsupported provider fields
-- [ ] **Day 56: Design multi-tenant data model**
-  - [ ] Design `organizations` and `teams` tables
-  - [ ] Define the org/team/user/api_key relationships
-  - [ ] Write the migration for the org/team schema
+- [x] **Day 56: Design multi-tenant data model**
+  - [x] Design `organizations` and `teams` tables
+  - [x] Define the org/team/user/api_key relationships
+  - [x] Write the migration for the org/team schema
 - [ ] **Day 57: Implement organizations CRUD**
   - [ ] Implement create/list/update/delete endpoints
   - [ ] Add authorization checks (org admins only)
