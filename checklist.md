@@ -157,10 +157,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Create the `users` migration
   - [x] Create the `api_keys` migration (key, hashed secret, owner, scopes)
   - [x] Run migrations locally and verify the schema
-- [ ] **Day 33: Implement API key generation endpoint**
-  - [ ] Implement `POST /api-keys`
-  - [ ] Generate a secure random key and hash it before storage
-  - [ ] Return the plaintext key once, never retrievable again
+- [x] **Day 33: Implement API key generation endpoint**
+  - [x] Implement `POST /api-keys`
+  - [x] Generate a secure random key and hash it before storage
+  - [x] Return the plaintext key once, never retrievable again
 - [ ] **Day 34: Implement API key validation middleware**
   - [ ] Implement middleware to validate the `Authorization` header
   - [ ] Look up the key hash against the DB
