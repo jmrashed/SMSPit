@@ -132,10 +132,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Write a multi-stage Dockerfile (build + static serve)
   - [ ] Verify the production build serves correctly
   - [x] Configure env injection for the API base URL
-- [ ] **Day 28: Wire services into `docker-compose.yml`**
-  - [ ] Replace placeholders with real build contexts
-  - [ ] Configure `depends_on` and networks
-  - [ ] Set environment variables for DB connection
+- [x] **Day 28: Wire services into `docker-compose.yml`**
+  - [x] Replace placeholders with real build contexts
+  - [x] Configure `depends_on` and networks
+  - [x] Set environment variables for DB connection
 - [ ] **Day 29: Run end-to-end smoke test**
   - [ ] Run `docker compose up -d` from a clean state
   - [ ] Send a test SMS via curl/Postman and verify capture
