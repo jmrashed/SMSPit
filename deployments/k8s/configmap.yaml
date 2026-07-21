@@ -1,0 +1,38 @@
+# Non-secret env vars shared across services -- mirrors docker-compose.yml's
+# plaintext environment values. Passwords/keys live in secret.yaml instead.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smspit-config
+  namespace: smspit
+data:
+  # Postgres
+  POSTGRES_DB: smspit
+  POSTGRES_USER: smspit
+  DB_HOST: postgres
+  DB_PORT: "5432"
+
+  # Redis
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+
+  # Internal service URLs (ClusterIP DNS names, same namespace)
+  AUTH_SERVICE_URL: "http://auth-service:80"
+  SMS_SERVICE_URL: "http://sms-service:3000"
+  AI_SERVICE_URL: "http://ai-service:8001"
+
+  CORS_ORIGIN: "*"
+
+  # auth-service (Laravel)
+  APP_ENV: production
+  APP_DEBUG: "false"
+  # Same externally-reachable-URL caveat as the VITE_* entries below.
+  APP_URL: "http://localhost:8000"
+
+  # Dashboard runtime config (Days 21-47) -- these must be externally
+  # reachable URLs (browser-side fetch), not ClusterIP DNS names. Set to
+  # your ingress/LoadBalancer hostnames before applying; localhost only
+  # works when port-forwarding to a single machine.
+  VITE_API_BASE_URL: "http://localhost:8080"
+  VITE_AUTH_SERVICE_URL: "http://localhost:8000"
+  VITE_AI_SERVICE_URL: "http://localhost:8001"

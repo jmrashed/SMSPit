@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: smspit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: smspit/auth-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: smspit-config
+          env:
+            - name: DB_CONNECTION
+              value: pgsql
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: POSTGRES_DB
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smspit-secrets
+                  key: POSTGRES_PASSWORD
+            - name: SESSION_DRIVER
+              value: database
+            - name: QUEUE_CONNECTION
+              value: database
+            - name: CACHE_STORE
+              value: database
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: smspit
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: 80
+      targetPort: 80

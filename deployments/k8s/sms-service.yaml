@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sms-service
+  namespace: smspit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sms-service
+  template:
+    metadata:
+      labels:
+        app: sms-service
+    spec:
+      containers:
+        - name: sms-service
+          image: smspit/sms-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: smspit-config
+          env:
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: POSTGRES_DB
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smspit-secrets
+                  key: POSTGRES_PASSWORD
+          readinessProbe:
+            httpGet:
+              path: /api/v1
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/v1
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sms-service
+  namespace: smspit
+spec:
+  selector:
+    app: sms-service
+  ports:
+    - port: 3000
+      targetPort: 3000

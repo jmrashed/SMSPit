@@ -364,10 +364,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
 
 ## Phase 5 — v1.0: Kubernetes, Observability, Multi-tenancy, SDKs, Launch (Days 81–100)
 
-- [ ] **Day 81: Write Kubernetes manifests**
-  - [ ] Write Deployment + Service manifests for each microservice
-  - [ ] Write ConfigMap/Secret manifests for env vars
-  - [ ] Validate manifests with `kubectl apply --dry-run`
+- [x] **Day 81: Write Kubernetes manifests**
+  - [x] Write Deployment + Service manifests for each microservice
+  - [x] Write ConfigMap/Secret manifests for env vars
+  - [x] Validate manifests with `kubectl apply --dry-run` — `kubectl` unavailable in this environment (segfaulted when downloaded); validated by parsing every manifest with PyYAML and cross-checking ConfigMap/Secret key references instead. See [deployments/k8s/README.md](deployments/k8s/README.md).
 - [ ] **Day 82: Write Helm chart**
   - [ ] Scaffold the chart structure (`Chart.yaml`, `values.yaml`, `templates/`)
   - [ ] Parameterize replica counts, images, resource limits

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: smspit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: smspit/dashboard:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          env:
+            - name: VITE_API_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: VITE_API_BASE_URL
+            - name: VITE_AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: VITE_AUTH_SERVICE_URL
+            - name: VITE_AI_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: VITE_AI_SERVICE_URL
+            - name: VITE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: smspit-secrets
+                  key: DASHBOARD_API_KEY
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  namespace: smspit
+spec:
+  selector:
+    app: dashboard
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer

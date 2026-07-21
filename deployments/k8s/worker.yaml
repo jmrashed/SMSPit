@@ -1,0 +1,31 @@
+# No Service -- worker is a background Redis Streams consumer (Day 78),
+# it doesn't listen on a port.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: smspit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: smspit/worker:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: smspit-config
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
