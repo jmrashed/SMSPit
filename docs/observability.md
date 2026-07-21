@@ -26,6 +26,22 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4318           # gateway/worker
 
 Leave it unset to disable tracing entirely (the default for `scripts/dev-up.sh`).
 
-## Metrics, dashboards
+## Metrics (Day 84)
 
-Not yet implemented — Prometheus metrics land Day 84, Grafana dashboards Day 85.
+Every backend service exposes `GET /metrics` in Prometheus text exposition format. `docker-compose.yml` wires up `prom/prometheus`, scraping all five per [`docker/prometheus/prometheus.yml`](../docker/prometheus/prometheus.yml); Prometheus's UI/API is on `:9090`.
+
+| Service | Library | Notes |
+|---|---|---|
+| `gateway` (Go) | `prometheus/client_golang` | `gateway_http_requests_total`, `gateway_http_request_duration_seconds`, labeled by chi's matched route pattern (not the raw path) |
+| `auth-service` (Laravel) | `promphp/prometheus_client_php` | `auth_service_http_requests_total`/`..._duration_seconds`, **Redis-backed storage** — classic php-fpm spawns multiple worker processes with separate memory, so an in-memory counter would only reflect whichever worker handled the scrape, not the sum across all of them |
+| `sms-service` (NestJS) | `prom-client` | `sms_service_http_requests_total`/`..._duration_seconds` plus Node.js default process metrics (heap, GC, event loop); `GET /metrics` sits outside the `/api/v1` prefix, same as `/providers/*` |
+| `ai-service` (FastAPI) | `prometheus-fastapi-instrumentator` | Auto-instruments every route; also exposes request-size histograms out of the box |
+| `worker` (Go) | `prometheus/client_golang` | `worker_messages_processed_total{outcome}`, `worker_message_processing_duration_seconds` — served on its own small HTTP server (`:9100` by default, `WORKER_METRICS_ADDR`), since worker otherwise has no HTTP surface |
+
+Metrics are unconditional (no env var gates them off, unlike tracing) — a `/metrics` scrape target is expected to always be present once a service is up, so there's no "unset means disabled" story here.
+
+**Verified locally** (2026-07-21): each service's `/metrics` endpoint checked directly with `curl` after generating real traffic, confirming both the custom counters/histograms and each ecosystem's default metrics (Node process metrics, `pg_isready`-style Redis-storage round-trip for `auth-service`) render correctly. Not yet scraped by a real Prometheus instance — `docker`/`podman` were unavailable in this environment (same constraint as tracing above); re-verify `docker-compose.yml`'s `prometheus` service actually scrapes all five targets (`http://localhost:9090/targets`) wherever Docker is available.
+
+## Dashboards
+
+Not yet implemented — Grafana dashboards land Day 85.

@@ -1,0 +1,27 @@
+# Scrape config for the Prometheus metrics added Day 84. Service names
+# match docker-compose.yml's service names (Docker's embedded DNS
+# resolves them within the smspit network).
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: gateway
+    static_configs:
+      - targets: ["gateway:8080"]
+
+  - job_name: auth-service
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["auth-service:80"]
+
+  - job_name: sms-service
+    static_configs:
+      - targets: ["sms-service:3000"]
+
+  - job_name: ai-service
+    static_configs:
+      - targets: ["ai-service:8001"]
+
+  - job_name: worker
+    static_configs:
+      - targets: ["worker:9100"]

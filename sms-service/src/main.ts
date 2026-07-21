@@ -4,6 +4,8 @@ import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { MetricsService } from './metrics/metrics.service';
+import { metricsMiddleware } from './metrics/metrics.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,7 +13,15 @@ async function bootstrap() {
   // relative path exactly (e.g. MessageBird's /messages) -- excluded from
   // the versioned prefix since they aren't part of the native API, see
   // docs/api/provider-compatibility.md#url-path-convention.
-  app.setGlobalPrefix('api/v1', { exclude: [{ path: 'providers/(.*)', method: RequestMethod.ALL }] });
+  // /metrics (Day 84) is excluded the same way -- a scrape target, not
+  // part of the versioned API surface.
+  app.setGlobalPrefix('api/v1', {
+    exclude: [
+      { path: 'providers/(.*)', method: RequestMethod.ALL },
+      { path: 'metrics', method: RequestMethod.GET },
+    ],
+  });
+  app.use(metricsMiddleware(app.get(MetricsService)));
   // Dashboard runs on a different origin/port; scope this to specific
   // origins once auth (Day 34+) makes credentialed cross-origin
   // requests a real security concern.

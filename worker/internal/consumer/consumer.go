@@ -13,6 +13,7 @@ import (
 
 	"github.com/jmrashed/SMSPit/worker/config"
 	"github.com/jmrashed/SMSPit/worker/internal/aiclient"
+	"github.com/jmrashed/SMSPit/worker/internal/metrics"
 	"github.com/jmrashed/SMSPit/worker/internal/queue"
 )
 
@@ -91,18 +92,22 @@ func (c *Consumer) process(ctx context.Context, entry redis.XMessage) {
 	id, _ := entry.Values["id"].(string)
 	message, _ := entry.Values["message"].(string)
 
+	start := time.Now()
 	spanCtx, span := tracer.Start(ctx, "worker.process_message")
 	defer span.End()
 	span.SetAttributes(attribute.String("message.id", id))
 
 	category, err := c.aiClient.Classify(spanCtx, message)
+	metrics.ProcessingDuration.Observe(time.Since(start).Seconds())
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+		metrics.MessagesProcessedTotal.WithLabelValues("error").Inc()
 		log.Printf("worker: failed to classify message %s: %v", id, err)
 		return
 	}
 
 	span.SetAttributes(attribute.String("message.category", category.Category))
+	metrics.MessagesProcessedTotal.WithLabelValues("success").Inc()
 	log.Printf("worker: processed message %s (category=%s)", id, category.Category)
 }

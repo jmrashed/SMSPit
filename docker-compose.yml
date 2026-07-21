@@ -152,9 +152,28 @@ services:
     networks:
       - smspit
 
+  # Scrapes every service's /metrics (Day 84) -- see
+  # docker/prometheus/prometheus.yml for the target list.
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      - gateway
+      - auth-service
+      - sms-service
+      - ai-service
+      - worker
+    networks:
+      - smspit
+
 networks:
   smspit:
     driver: bridge
 
 volumes:
   postgres_data:
+  prometheus_data:

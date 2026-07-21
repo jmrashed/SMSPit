@@ -10,7 +10,8 @@
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
         "open-telemetry/exporter-otlp": "^1.4",
-        "open-telemetry/sdk": "^1.15"
+        "open-telemetry/sdk": "^1.15",
+        "promphp/prometheus_client_php": "^2.15"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RecordMetrics;
 use App\Http\Middleware\TraceRequest;
 use App\Http\Middleware\ValidateApiKey;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['api.key' => ValidateApiKey::class]);
         $middleware->append(TraceRequest::class);
+        $middleware->append(RecordMetrics::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

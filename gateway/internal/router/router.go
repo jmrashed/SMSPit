@@ -9,6 +9,7 @@ import (
 
 	"github.com/jmrashed/SMSPit/gateway/config"
 	"github.com/jmrashed/SMSPit/gateway/internal/auth"
+	"github.com/jmrashed/SMSPit/gateway/internal/metrics"
 	gwmiddleware "github.com/jmrashed/SMSPit/gateway/internal/middleware"
 	"github.com/jmrashed/SMSPit/gateway/internal/proxy"
 )
@@ -21,6 +22,7 @@ func New(cfg config.Config) http.Handler {
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(metrics.Middleware)
 	// Must run before RequireAPIKey: a CORS preflight OPTIONS request
 	// never carries the Authorization header (browsers deliberately omit
 	// custom headers on preflight), so without this, RequireAPIKey would
@@ -40,6 +42,7 @@ func New(cfg config.Config) http.Handler {
 	}))
 
 	r.Get("/healthz", healthCheck)
+	r.Handle("/metrics", metrics.Handler())
 
 	authClient := auth.NewClient(cfg.AuthServiceURL)
 

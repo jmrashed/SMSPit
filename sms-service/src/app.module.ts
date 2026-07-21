@@ -7,6 +7,7 @@ import { MessagesModule } from './messages/messages.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { ProvidersModule } from './providers/providers.module';
 import { TemplatesModule } from './templates/templates.module';
+import { MetricsModule } from './metrics/metrics.module';
 import { Message } from './messages/entities/message.entity';
 import { Template } from './templates/entities/template.entity';
 
@@ -37,6 +38,7 @@ import { Template } from './templates/entities/template.entity';
     StatisticsModule,
     ProvidersModule,
     TemplatesModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -8,6 +8,7 @@ import (
 
 	"github.com/jmrashed/SMSPit/worker/config"
 	"github.com/jmrashed/SMSPit/worker/internal/consumer"
+	"github.com/jmrashed/SMSPit/worker/internal/metrics"
 	"github.com/jmrashed/SMSPit/worker/internal/telemetry"
 )
 
@@ -26,6 +27,8 @@ func main() {
 			log.Printf("telemetry shutdown: %v", err)
 		}
 	}()
+
+	go metrics.Serve(ctx, cfg.MetricsAddr)
 
 	log.Printf("worker starting (ai-service=%s)", cfg.AIServiceURL)
 

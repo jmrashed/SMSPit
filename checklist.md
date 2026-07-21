@@ -376,10 +376,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add OTel SDK/instrumentation to each service
   - [x] Configure the trace exporter (OTLP) to a collector — Jaeger's all-in-one wired into `docker-compose.yml`
   - [x] Verify traces flow end-to-end across gateway → services — see [docs/observability.md](docs/observability.md) for the verification method (no Docker/real collector available in this environment) and results
-- [ ] **Day 84: Set up Prometheus metrics**
-  - [ ] Expose a `/metrics` endpoint on each service
-  - [ ] Instrument key counters/histograms (request count, latency)
-  - [ ] Configure the Prometheus scrape config
+- [x] **Day 84: Set up Prometheus metrics**
+  - [x] Expose a `/metrics` endpoint on each service
+  - [x] Instrument key counters/histograms (request count, latency)
+  - [x] Configure the Prometheus scrape config — see [docs/observability.md](docs/observability.md#metrics-day-84) and [docker/prometheus/prometheus.yml](docker/prometheus/prometheus.yml)
 - [ ] **Day 85: Build Grafana dashboards**
   - [ ] Connect Grafana to the Prometheus datasource
   - [ ] Build panels for request rate, latency, error rate

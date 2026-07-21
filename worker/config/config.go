@@ -17,6 +17,7 @@ type Config struct {
 	ConsumerName  string
 	// Host:port only (no scheme) -- otlptracehttp.WithEndpoint's format.
 	OTLPEndpoint string
+	MetricsAddr  string
 }
 
 func Load() Config {
@@ -30,6 +31,7 @@ func Load() Config {
 		ConsumerGroup: getEnv("WORKER_CONSUMER_GROUP", "worker"),
 		ConsumerName:  getEnv("WORKER_CONSUMER_NAME", "worker-1"),
 		OTLPEndpoint:  getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", ""),
+		MetricsAddr:   getEnv("WORKER_METRICS_ADDR", ":9100"),
 	}
 }
 

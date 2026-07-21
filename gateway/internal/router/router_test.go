@@ -21,6 +21,26 @@ func TestHealthCheck(t *testing.T) {
 	}
 }
 
+func TestMetricsEndpointExposesPrometheusFormat(t *testing.T) {
+	r := New(config.Config{SMSServiceURL: "http://example.invalid", AuthServiceURL: "http://example.invalid"})
+
+	// Generate at least one request so gateway_http_requests_total has a
+	// sample -- an empty registry would still return 200, but wouldn't
+	// prove the counter is actually wired up.
+	r.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/healthz", nil))
+
+	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), "gateway_http_requests_total") {
+		t.Fatalf("expected gateway_http_requests_total in /metrics output, got:\n%s", rec.Body.String())
+	}
+}
+
 // validatingAuthBackend fakes auth-service's GET /api/api-keys/validate: it
 // accepts "Bearer valid" and rejects everything else, matching the real
 // ValidateApiKey middleware's 401 JSON shape.
