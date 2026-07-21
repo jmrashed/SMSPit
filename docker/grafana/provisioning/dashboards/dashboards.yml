@@ -1,0 +1,13 @@
+# Auto-provisions every dashboard JSON in docker/grafana/dashboards/
+# (Day 85) -- no manual import needed on first run.
+apiVersion: 1
+
+providers:
+  - name: smspit
+    orgId: 1
+    folder: SMSPit
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards/files

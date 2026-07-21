@@ -10,6 +10,7 @@ import { Message, MessageStatus } from './entities/message.entity';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { AiClient } from '../ai/ai-client';
 import { QueuePublisher } from '../queue/queue-publisher';
+import { MetricsService } from '../metrics/metrics.service';
 
 const EXPORT_BATCH_SIZE = 500;
 
@@ -31,6 +32,7 @@ export class MessagesService {
     private readonly realtimeGateway: RealtimeGateway,
     private readonly aiClient: AiClient,
     private readonly queuePublisher: QueuePublisher,
+    private readonly metrics: MetricsService,
   ) {}
 
   async create(dto: CreateMessageDto, orgId: number | null): Promise<Message> {
@@ -57,6 +59,8 @@ export class MessagesService {
     const saved = await this.messagesRepository.save(message);
     this.realtimeGateway.broadcastMessageCreated(saved);
     await this.queuePublisher.publishMessageCaptured(saved);
+    this.metrics.messagesCapturedTotal.inc({ category: category ?? 'unknown' });
+    if (otp) this.metrics.otpDetectedTotal.inc();
 
     return saved;
   }

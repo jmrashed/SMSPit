@@ -22,6 +22,20 @@ export class MetricsService {
     registers: [this.registry],
   });
 
+  // Feeds the Grafana "message volume / OTP detection rate" panel (Day 85).
+  readonly messagesCapturedTotal = new Counter({
+    name: 'sms_service_messages_captured_total',
+    help: 'Total messages captured, by classification category.',
+    labelNames: ['category'] as const,
+    registers: [this.registry],
+  });
+
+  readonly otpDetectedTotal = new Counter({
+    name: 'sms_service_otp_detected_total',
+    help: 'Total captured messages an OTP was detected in.',
+    registers: [this.registry],
+  });
+
   constructor() {
     collectDefaultMetrics({ register: this.registry });
   }

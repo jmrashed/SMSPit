@@ -380,10 +380,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Expose a `/metrics` endpoint on each service
   - [x] Instrument key counters/histograms (request count, latency)
   - [x] Configure the Prometheus scrape config — see [docs/observability.md](docs/observability.md#metrics-day-84) and [docker/prometheus/prometheus.yml](docker/prometheus/prometheus.yml)
-- [ ] **Day 85: Build Grafana dashboards**
-  - [ ] Connect Grafana to the Prometheus datasource
-  - [ ] Build panels for request rate, latency, error rate
-  - [ ] Build a panel for message volume/OTP detection rate
+- [x] **Day 85: Build Grafana dashboards**
+  - [x] Connect Grafana to the Prometheus datasource — auto-provisioned, see [docker/grafana/provisioning/datasources/prometheus.yml](docker/grafana/provisioning/datasources/prometheus.yml)
+  - [x] Build panels for request rate, latency, error rate
+  - [x] Build a panel for message volume/OTP detection rate — see [docs/observability.md](docs/observability.md#dashboards-day-85)
 - [ ] **Day 86: Harden multi-tenancy**
   - [ ] Audit all queries/endpoints for missing org scoping
   - [ ] Implement per-org rate limiting

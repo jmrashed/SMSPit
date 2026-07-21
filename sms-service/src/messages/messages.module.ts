@@ -7,9 +7,10 @@ import { AuthModule } from '../auth/auth.module';
 import { RealtimeModule } from '../realtime/realtime.module';
 import { AiModule } from '../ai/ai.module';
 import { QueueModule } from '../queue/queue.module';
+import { MetricsModule } from '../metrics/metrics.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message]), AuthModule, RealtimeModule, AiModule, QueueModule],
+  imports: [TypeOrmModule.forFeature([Message]), AuthModule, RealtimeModule, AiModule, QueueModule, MetricsModule],
   controllers: [MessagesController],
   providers: [MessagesService],
   exports: [MessagesService],

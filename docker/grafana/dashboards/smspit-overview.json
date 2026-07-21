@@ -1,0 +1,209 @@
+{
+  "title": "SMSPit Overview",
+  "uid": "smspit-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "tags": [
+    "smspit"
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request rate (req/s)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(gateway_http_requests_total[5m]))",
+          "legendFormat": "gateway"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(sms_service_http_requests_total[5m]))",
+          "legendFormat": "sms-service"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(rate(auth_service_http_requests_total[5m]))",
+          "legendFormat": "auth-service"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(rate(http_requests_total{job=\"ai-service\"}[5m]))",
+          "legendFormat": "ai-service"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "P95 latency by service",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(gateway_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "gateway"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum(rate(sms_service_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "sms-service"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.95, sum(rate(auth_service_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "auth-service"
+        },
+        {
+          "refId": "D",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"ai-service\"}[5m])) by (le))",
+          "legendFormat": "ai-service"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Error rate (5xx, %)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(gateway_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(gateway_http_requests_total[5m]))",
+          "legendFormat": "gateway"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(sms_service_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(sms_service_http_requests_total[5m]))",
+          "legendFormat": "sms-service"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(rate(auth_service_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(auth_service_http_requests_total[5m]))",
+          "legendFormat": "auth-service"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(rate(http_requests_total{job=\"ai-service\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"ai-service\"}[5m]))",
+          "legendFormat": "ai-service"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Worker: messages processed (by outcome, msgs/s)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(worker_messages_processed_total[5m])) by (outcome)",
+          "legendFormat": "{{outcome}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Message volume by category (msgs/s)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(sms_service_messages_captured_total[5m])) by (category)",
+          "legendFormat": "{{category}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "OTP detection rate (msgs/s)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(sms_service_otp_detected_total[5m])",
+          "legendFormat": "OTP detected"
+        }
+      ]
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import { Message, MessageStatus } from './entities/message.entity';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { AiClient } from '../ai/ai-client';
 import { QueuePublisher } from '../queue/queue-publisher';
+import { MetricsService } from '../metrics/metrics.service';
 
 describe('MessagesService', () => {
   let service: MessagesService;
@@ -21,6 +22,7 @@ describe('MessagesService', () => {
   let realtimeGateway: { broadcastMessageCreated: jest.Mock };
   let aiClient: { detectOtp: jest.Mock; classify: jest.Mock; detectSpam: jest.Mock };
   let queuePublisher: { publishMessageCaptured: jest.Mock };
+  let metrics: { messagesCapturedTotal: { inc: jest.Mock }; otpDetectedTotal: { inc: jest.Mock } };
 
   async function collect<T>(iterable: AsyncGenerator<T>): Promise<T[]> {
     const items: T[] = [];
@@ -44,6 +46,7 @@ describe('MessagesService', () => {
       detectSpam: jest.fn().mockResolvedValue(null),
     };
     queuePublisher = { publishMessageCaptured: jest.fn().mockResolvedValue(undefined) };
+    metrics = { messagesCapturedTotal: { inc: jest.fn() }, otpDetectedTotal: { inc: jest.fn() } };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -52,6 +55,7 @@ describe('MessagesService', () => {
         { provide: RealtimeGateway, useValue: realtimeGateway },
         { provide: AiClient, useValue: aiClient },
         { provide: QueuePublisher, useValue: queuePublisher },
+        { provide: MetricsService, useValue: metrics },
       ],
     }).compile();
 

@@ -1,0 +1,11 @@
+# Auto-provisions the Prometheus datasource (Day 85) -- no manual
+# "Add data source" click-through needed on first run.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false

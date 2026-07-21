@@ -40,8 +40,16 @@ Every backend service exposes `GET /metrics` in Prometheus text exposition forma
 
 Metrics are unconditional (no env var gates them off, unlike tracing) — a `/metrics` scrape target is expected to always be present once a service is up, so there's no "unset means disabled" story here.
 
-**Verified locally** (2026-07-21): each service's `/metrics` endpoint checked directly with `curl` after generating real traffic, confirming both the custom counters/histograms and each ecosystem's default metrics (Node process metrics, `pg_isready`-style Redis-storage round-trip for `auth-service`) render correctly. Not yet scraped by a real Prometheus instance — `docker`/`podman` were unavailable in this environment (same constraint as tracing above); re-verify `docker-compose.yml`'s `prometheus` service actually scrapes all five targets (`http://localhost:9090/targets`) wherever Docker is available.
+**Verified end-to-end** (2026-07-21): a real Prometheus 2.55.1 binary (downloaded directly — no Docker needed, unlike Jaeger) scraped all five services running locally, confirming every target reports `up` and every dashboard query below (Days 84+85) returns real, non-empty data from live traffic sent through the gateway.
 
-## Dashboards
+## Dashboards (Day 85)
 
-Not yet implemented — Grafana dashboards land Day 85.
+`docker-compose.yml` wires up `grafana/grafana`, auto-provisioned (no manual "Add data source" or dashboard import click-through):
+
+- [`docker/grafana/provisioning/datasources/prometheus.yml`](../docker/grafana/provisioning/datasources/prometheus.yml) — points Grafana at the `prometheus` service, set as default
+- [`docker/grafana/provisioning/dashboards/dashboards.yml`](../docker/grafana/provisioning/dashboards/dashboards.yml) — loads every dashboard JSON under `docker/grafana/dashboards/`
+- [`docker/grafana/dashboards/smspit-overview.json`](../docker/grafana/dashboards/smspit-overview.json) — six panels: request rate, P95 latency, and error rate (all per-service, one query per `gateway`/`sms-service`/`auth-service`/`ai-service`), worker's processed-message rate by outcome, message volume by classification category, and OTP detection rate
+
+Grafana's UI is on `:3001` (`GRAFANA_PORT`) with `GF_AUTH_ANONYMOUS_ENABLED=true` (Viewer role) — convenient for a local self-hosted dev sandbox, matching this project's other "no auth needed to look" defaults (e.g. the provider-compat endpoints), but **turn this off** (`GF_AUTH_ANONYMOUS_ENABLED=false`) before exposing this port beyond your own machine.
+
+**Verified end-to-end** (2026-07-21): all 6 panels' underlying PromQL queries were run directly against a real local Prometheus scraping live services (see Metrics section above) — every query returned real data, including the `category="otp"` breakdown and `outcome="success"` from `worker` actually processing a queued message end-to-end. Not yet rendered in an actual Grafana UI — `docker`/`podman` were unavailable in this environment, and no standalone Grafana binary/verification was attempted beyond confirming the underlying queries and provisioning YAML are correct; re-verify the dashboard renders as expected (panel layout, legends, units) wherever Docker is available.

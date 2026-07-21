@@ -170,6 +170,25 @@ services:
     networks:
       - smspit
 
+  # Dashboards (Day 85), auto-provisioned from docker/grafana/ -- the
+  # Prometheus datasource and every dashboard JSON load with no
+  # manual click-through on first run.
+  grafana:
+    image: grafana/grafana:11.3.1
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards/files:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - smspit
+
 networks:
   smspit:
     driver: bridge
@@ -177,3 +196,4 @@ networks:
 volumes:
   postgres_data:
   prometheus_data:
+  grafana_data:

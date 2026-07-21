@@ -62,4 +62,23 @@ describe('Metrics (e2e)', () => {
 
     expect(res.text).toContain('process_cpu_user_seconds_total');
   });
+
+  it('counts a captured message against messages_captured_total, labeled by its classified category', async () => {
+    // ai-service isn't running in this test env, so classify()/detectOtp()
+    // degrade to null (Days 68/71's non-blocking behavior) -- category
+    // lands as "unknown" here, not "otp". The point of this test is the
+    // metric wiring, not ai-service's classification accuracy (covered
+    // by ai-service's own test suite).
+    await request(app.getHttpServer())
+      .post('/api/v1/messages')
+      .set(AUTH_HEADER)
+      .send({ to: '+8801700000094', from: 'SMSPit', message: 'Your OTP is 445566' })
+      .expect(201);
+
+    const res = await request(app.getHttpServer()).get('/metrics').expect(200);
+
+    expect(res.text).toContain('sms_service_messages_captured_total');
+    expect(res.text).toMatch(/sms_service_messages_captured_total\{category="[^"]+"\} \d/);
+    expect(res.text).toContain('sms_service_otp_detected_total');
+  });
 });
