@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smspit-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "smspit.labels" . | nindent 4 }}
+data:
+  POSTGRES_DB: {{ .Values.postgres.db | quote }}
+  POSTGRES_USER: {{ .Values.postgres.user | quote }}
+  DB_HOST: postgres
+  DB_PORT: "5432"
+
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+
+  AUTH_SERVICE_URL: "http://auth-service:{{ .Values.authService.service.port }}"
+  SMS_SERVICE_URL: "http://sms-service:{{ .Values.smsService.service.port }}"
+  AI_SERVICE_URL: "http://ai-service:{{ .Values.aiService.service.port }}"
+
+  CORS_ORIGIN: {{ .Values.corsOrigin | quote }}
+
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_URL: {{ .Values.authServiceAppUrl | quote }}
+
+  VITE_API_BASE_URL: {{ .Values.dashboard.externalUrls.apiBaseUrl | quote }}
+  VITE_AUTH_SERVICE_URL: {{ .Values.dashboard.externalUrls.authServiceUrl | quote }}
+  VITE_AI_SERVICE_URL: {{ .Values.dashboard.externalUrls.aiServiceUrl | quote }}

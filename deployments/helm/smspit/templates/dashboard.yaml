@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "smspit.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.dashboard.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "smspit.selectorLabels" "dashboard" | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "smspit.selectorLabels" "dashboard" | nindent 8 }}
+    spec:
+      containers:
+        - name: dashboard
+          image: "{{ .Values.dashboard.image.repository }}:{{ .Values.dashboard.image.tag }}"
+          imagePullPolicy: {{ .Values.dashboard.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.dashboard.service.port }}
+          env:
+            - name: VITE_API_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: VITE_API_BASE_URL
+            - name: VITE_AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: VITE_AUTH_SERVICE_URL
+            - name: VITE_AI_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smspit-config
+                  key: VITE_AI_SERVICE_URL
+            - name: VITE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: smspit-secrets
+                  key: DASHBOARD_API_KEY
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.dashboard.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.dashboard.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "smspit.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "smspit.selectorLabels" "dashboard" | nindent 4 }}
+  ports:
+    - port: {{ .Values.dashboard.service.port }}
+      targetPort: {{ .Values.dashboard.service.port }}
+  type: {{ .Values.dashboard.service.type }}

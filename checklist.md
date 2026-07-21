@@ -368,10 +368,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Write Deployment + Service manifests for each microservice
   - [x] Write ConfigMap/Secret manifests for env vars
   - [x] Validate manifests with `kubectl apply --dry-run` — `kubectl` unavailable in this environment (segfaulted when downloaded); validated by parsing every manifest with PyYAML and cross-checking ConfigMap/Secret key references instead. See [deployments/k8s/README.md](deployments/k8s/README.md).
-- [ ] **Day 82: Write Helm chart**
-  - [ ] Scaffold the chart structure (`Chart.yaml`, `values.yaml`, `templates/`)
-  - [ ] Parameterize replica counts, images, resource limits
-  - [ ] Test `helm install` against a local cluster (kind/minikube)
+- [x] **Day 82: Write Helm chart**
+  - [x] Scaffold the chart structure (`Chart.yaml`, `values.yaml`, `templates/`)
+  - [x] Parameterize replica counts, images, resource limits
+  - [x] Test `helm install` against a local cluster (kind/minikube) — no `kind`/`minikube`/Docker/Podman available in this environment; validated instead with `helm lint` (0 failures) and `helm template` (all 19 resources render correctly, including with `--set` overrides). See [deployments/helm/smspit/README.md](deployments/helm/smspit/README.md).
 - [ ] **Day 83: Set up OpenTelemetry tracing**
   - [ ] Add OTel SDK/instrumentation to each service
   - [ ] Configure the trace exporter (OTLP) to a collector

@@ -1,0 +1,28 @@
+# No Service -- worker is a background Redis Streams consumer (Day 78),
+# it doesn't listen on a port.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "smspit.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "smspit.selectorLabels" "worker" | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "smspit.selectorLabels" "worker" | nindent 8 }}
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: smspit-config
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}

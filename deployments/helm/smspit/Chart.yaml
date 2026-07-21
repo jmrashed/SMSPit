@@ -1,0 +1,7 @@
+apiVersion: v2
+name: smspit
+description: Self-hosted SMS sandbox for local development, testing, and CI/CD — capture, inspect, search, replay, and debug SMS without a real provider.
+type: application
+version: 0.4.0
+appVersion: "0.4.0"
+home: https://github.com/jmrashed/SMSPit

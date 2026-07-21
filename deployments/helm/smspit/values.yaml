@@ -1,0 +1,110 @@
+# Default values for the smspit chart. Override with -f my-values.yaml or
+# --set, especially everything under `secrets:` -- see README.md.
+
+namespace: smspit
+
+gateway:
+  replicaCount: 1
+  image:
+    repository: smspit/gateway
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 8080
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 250m, memory: 256Mi }
+
+authService:
+  replicaCount: 1
+  image:
+    repository: smspit/auth-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 80
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
+smsService:
+  replicaCount: 1
+  image:
+    repository: smspit/sms-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 3000
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
+aiService:
+  replicaCount: 1
+  image:
+    repository: smspit/ai-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 8001
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
+worker:
+  replicaCount: 1
+  image:
+    repository: smspit/worker
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 250m, memory: 256Mi }
+
+dashboard:
+  replicaCount: 1
+  image:
+    repository: smspit/dashboard
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 80
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 250m, memory: 256Mi }
+  # Browser-facing URLs (the dashboard is a static SPA fetching from the
+  # client, not server-to-server) -- these must be externally reachable
+  # hostnames, not the ClusterIP DNS names used elsewhere in this chart.
+  # localhost only works when port-forwarding to a single machine.
+  externalUrls:
+    apiBaseUrl: "http://localhost:8080"
+    authServiceUrl: "http://localhost:8000"
+    aiServiceUrl: "http://localhost:8001"
+
+postgres:
+  image: postgres:16-alpine
+  storage: 1Gi
+  db: smspit
+  user: smspit
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
+redis:
+  image: redis:7-alpine
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 250m, memory: 256Mi }
+
+# Same externally-reachable-URL caveat as dashboard.externalUrls above.
+authServiceAppUrl: "http://localhost:8000"
+
+corsOrigin: "*"
+
+# Placeholders -- override via -f my-secrets.yaml (gitignored) or --set,
+# never commit real values. See README.md.
+secrets:
+  postgresPassword: changeme
+  dashboardApiKey: ""
