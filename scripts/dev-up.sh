@@ -117,24 +117,24 @@ wait_for "$DASHBOARD_URL" "dashboard" || exit 1
 cat <<EOF
 
 ============================================================
- SMSPit is running:
+  SMSPit is running:
 
-   Dashboard:      $DASHBOARD_URL
-   Gateway (API):  $GATEWAY_URL
-   sms-service:    $SMS_URL   (direct, bypassing gateway)
-   auth-service:   $AUTH_URL  (direct, bypassing gateway)
+    Dashboard:      $DASHBOARD_URL
+    Gateway (API):  $GATEWAY_URL
+    sms-service:    $SMS_URL   (direct, bypassing gateway)
+    auth-service:   $AUTH_URL  (direct, bypassing gateway)
 
-   Dev API key (also saved to $KEY_FILE):
-   $DEV_API_KEY
+    Dev API key (also saved to $KEY_FILE):
+    $DEV_API_KEY
 
-   Try it:
-   curl -X POST $GATEWAY_URL/api/v1/messages \\
-     -H "Authorization: Bearer $DEV_API_KEY" \\
-     -H "Content-Type: application/json" \\
-     -d '{"to":"+8801700000000","from":"SMSPit","message":"hello"}'
+    Try it:
+    curl -X POST $GATEWAY_URL/api/v1/messages \\
+      -H "Authorization: Bearer $DEV_API_KEY" \\
+      -H "Content-Type: application/json" \\
+      -d '{"to":"+8801700000000","from":"SMSPit","message":"hello"}'
 
-   Logs: $LOG_DIR/*.log
-   Press Ctrl+C to stop all services.
+    Logs: $LOG_DIR/*.log
+    Press Ctrl+C to stop all services.
 ============================================================
 EOF
 
