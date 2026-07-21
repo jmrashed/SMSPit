@@ -372,10 +372,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Scaffold the chart structure (`Chart.yaml`, `values.yaml`, `templates/`)
   - [x] Parameterize replica counts, images, resource limits
   - [x] Test `helm install` against a local cluster (kind/minikube) — no `kind`/`minikube`/Docker/Podman available in this environment; validated instead with `helm lint` (0 failures) and `helm template` (all 19 resources render correctly, including with `--set` overrides). See [deployments/helm/smspit/README.md](deployments/helm/smspit/README.md).
-- [ ] **Day 83: Set up OpenTelemetry tracing**
-  - [ ] Add OTel SDK/instrumentation to each service
-  - [ ] Configure the trace exporter (OTLP) to a collector
-  - [ ] Verify traces flow end-to-end across gateway → services
+- [x] **Day 83: Set up OpenTelemetry tracing**
+  - [x] Add OTel SDK/instrumentation to each service
+  - [x] Configure the trace exporter (OTLP) to a collector — Jaeger's all-in-one wired into `docker-compose.yml`
+  - [x] Verify traces flow end-to-end across gateway → services — see [docs/observability.md](docs/observability.md) for the verification method (no Docker/real collector available in this environment) and results
 - [ ] **Day 84: Set up Prometheus metrics**
   - [ ] Expose a `/metrics` endpoint on each service
   - [ ] Instrument key counters/histograms (request count, latency)

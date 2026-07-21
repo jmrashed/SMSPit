@@ -1,3 +1,4 @@
+import './tracing'; // Must be the first import -- see tracing.ts.
 import { NestFactory } from '@nestjs/core';
 import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { WsAdapter } from '@nestjs/platform-ws';

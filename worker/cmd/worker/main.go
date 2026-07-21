@@ -8,6 +8,7 @@ import (
 
 	"github.com/jmrashed/SMSPit/worker/config"
 	"github.com/jmrashed/SMSPit/worker/internal/consumer"
+	"github.com/jmrashed/SMSPit/worker/internal/telemetry"
 )
 
 func main() {
@@ -15,6 +16,16 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	shutdown, err := telemetry.Init(context.Background(), "worker", cfg.OTLPEndpoint)
+	if err != nil {
+		log.Fatalf("telemetry init: %v", err)
+	}
+	defer func() {
+		if err := shutdown(context.Background()); err != nil {
+			log.Printf("telemetry shutdown: %v", err)
+		}
+	}()
 
 	log.Printf("worker starting (ai-service=%s)", cfg.AIServiceURL)
 

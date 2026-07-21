@@ -13,6 +13,9 @@ import (
 	"github.com/jmrashed/SMSPit/gateway/internal/proxy"
 )
 
+// New builds the gateway's handler. Wrapped in otelhttp.NewHandler by the
+// caller (cmd/gateway/main.go) rather than here, so router_test.go can
+// exercise the plain chi router without a TracerProvider registered.
 func New(cfg config.Config) http.Handler {
 	r := chi.NewRouter()
 

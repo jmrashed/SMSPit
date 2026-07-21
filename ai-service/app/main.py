@@ -3,8 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.routers import classify, generate, health, otp, spam
+from app.telemetry import setup_tracing
 
 app = FastAPI(title="SMSPit AI Service")
+
+setup_tracing(app, settings.otel_exporter_otlp_endpoint)
 
 app.add_middleware(
     CORSMiddleware,

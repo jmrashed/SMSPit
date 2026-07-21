@@ -8,9 +8,11 @@ services:
       SMS_SERVICE_URL: "http://sms-service:3000"
       AUTH_SERVICE_URL: "http://auth-service:80"
       CORS_ORIGIN: "*"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "jaeger:4318"
     depends_on:
       - sms-service
       - auth-service
+      - jaeger
     networks:
       - smspit
 
@@ -31,8 +33,10 @@ services:
       SESSION_DRIVER: database
       QUEUE_CONNECTION: database
       CACHE_STORE: database
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
     depends_on:
       - postgres
+      - jaeger
     networks:
       - smspit
 
@@ -51,10 +55,12 @@ services:
       CORS_ORIGIN: "*"
       AUTH_SERVICE_URL: "http://auth-service:80"
       AI_SERVICE_URL: "http://ai-service:8001"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
     depends_on:
       - postgres
       - redis
       - auth-service
+      - jaeger
     networks:
       - smspit
 
@@ -65,6 +71,9 @@ services:
     environment:
       PORT: 8001
       CORS_ORIGIN: "*"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+    depends_on:
+      - jaeger
     networks:
       - smspit
 
@@ -74,9 +83,11 @@ services:
       AI_SERVICE_URL: "http://ai-service:8001"
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      OTEL_EXPORTER_OTLP_ENDPOINT: "jaeger:4318"
     depends_on:
       - redis
       - ai-service
+      - jaeger
     networks:
       - smspit
 
@@ -126,6 +137,18 @@ services:
     image: redis:7-alpine
     ports:
       - "${REDIS_PORT}:6379"
+    networks:
+      - smspit
+
+  # All-in-one Jaeger (Day 83): OTLP/HTTP receiver on 4318, trace UI on
+  # 16686. In-memory storage only -- fine for local dev/CI, not meant to
+  # persist traces across restarts.
+  jaeger:
+    image: jaegertracing/all-in-one:1.58
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686"
     networks:
       - smspit
 

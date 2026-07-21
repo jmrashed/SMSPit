@@ -9,11 +9,14 @@ package aiclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Client struct {
@@ -24,7 +27,11 @@ type Client struct {
 func New(baseURL string) *Client {
 	return &Client{
 		baseURL: baseURL,
-		http:    &http.Client{Timeout: 5 * time.Second},
+		// otelhttp.NewTransport propagates the caller's trace context
+		// (W3C traceparent header) onto this request and records a span
+		// for it -- what makes a trace continuous from worker's consumer
+		// loop into ai-service (Day 83).
+		http: &http.Client{Timeout: 5 * time.Second, Transport: otelhttp.NewTransport(http.DefaultTransport)},
 	}
 }
 
@@ -32,13 +39,19 @@ type ClassifyResponse struct {
 	Category string `json:"category"`
 }
 
-func (c *Client) Classify(message string) (*ClassifyResponse, error) {
+func (c *Client) Classify(ctx context.Context, message string) (*ClassifyResponse, error) {
 	body, err := json.Marshal(map[string]string{"message": message})
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.http.Post(c.baseURL+"/classify", "application/json", bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/classify", bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
 	}

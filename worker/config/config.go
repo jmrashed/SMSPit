@@ -15,6 +15,8 @@ type Config struct {
 	StreamKey     string
 	ConsumerGroup string
 	ConsumerName  string
+	// Host:port only (no scheme) -- otlptracehttp.WithEndpoint's format.
+	OTLPEndpoint string
 }
 
 func Load() Config {
@@ -27,6 +29,7 @@ func Load() Config {
 		StreamKey:     getEnv("WORKER_STREAM_KEY", "sms.messages.created"),
 		ConsumerGroup: getEnv("WORKER_CONSUMER_GROUP", "worker"),
 		ConsumerName:  getEnv("WORKER_CONSUMER_NAME", "worker-1"),
+		OTLPEndpoint:  getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", ""),
 	}
 }
 

@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     port: int = 8001
     cors_origin: str = "*"
+    otel_exporter_otlp_endpoint: str | None = None
 
 
 settings = Settings()

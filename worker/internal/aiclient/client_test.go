@@ -1,6 +1,7 @@
 package aiclient
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -18,7 +19,7 @@ func TestClassifyReturnsTheCategoryOnSuccess(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL)
-	result, err := client.Classify("Huge sale, 50% off!")
+	result, err := client.Classify(context.Background(), "Huge sale, 50% off!")
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -35,7 +36,7 @@ func TestClassifyReturnsAnErrorOnNonOKStatus(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL)
-	_, err := client.Classify("hi")
+	_, err := client.Classify(context.Background(), "hi")
 
 	if err == nil {
 		t.Fatal("expected an error for a non-200 response, got nil")
@@ -44,7 +45,7 @@ func TestClassifyReturnsAnErrorOnNonOKStatus(t *testing.T) {
 
 func TestClassifyReturnsAnErrorWhenTheServerIsUnreachable(t *testing.T) {
 	client := New("http://127.0.0.1:1")
-	_, err := client.Classify("hi")
+	_, err := client.Classify(context.Background(), "hi")
 
 	if err == nil {
 		t.Fatal("expected an error for an unreachable server, got nil")

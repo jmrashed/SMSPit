@@ -8,6 +8,8 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strings"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // New returns a reverse proxy to target. If stripPrefix is non-empty, it is
@@ -20,6 +22,11 @@ func New(target string, stripPrefix string, addPrefix string) http.Handler {
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
+	// Propagates the inbound request's trace context (W3C traceparent
+	// header) onto the outgoing proxied request, and records a span for
+	// the upstream call -- this is what makes a trace continuous across
+	// gateway -> sms-service/auth-service (Day 83).
+	proxy.Transport = otelhttp.NewTransport(http.DefaultTransport)
 
 	originalDirector := proxy.Director
 	proxy.Director = func(r *http.Request) {

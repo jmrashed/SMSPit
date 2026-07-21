@@ -7,11 +7,16 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 
 	"github.com/jmrashed/SMSPit/worker/config"
 	"github.com/jmrashed/SMSPit/worker/internal/aiclient"
 	"github.com/jmrashed/SMSPit/worker/internal/queue"
 )
+
+var tracer = otel.Tracer("worker/consumer")
 
 // Consumer reads sms-service's capture events off the Redis Stream
 // (see docs/redis.md) via a consumer group, and calls ai-service for
@@ -72,21 +77,32 @@ func (c *Consumer) readAndProcess(ctx context.Context) {
 
 	for _, stream := range streams {
 		for _, entry := range stream.Messages {
-			c.process(entry)
+			c.process(ctx, entry)
 			c.redis.XAck(ctx, c.cfg.StreamKey, c.cfg.ConsumerGroup, entry.ID)
 		}
 	}
 }
 
-func (c *Consumer) process(entry redis.XMessage) {
+// process starts its own trace rather than continuing sms-service's
+// capture-request trace -- the Redis Stream entry (Day 78) doesn't carry
+// a traceparent, so there's nothing to extract. It's still a real,
+// exported span showing worker's ai-service call (Day 83).
+func (c *Consumer) process(ctx context.Context, entry redis.XMessage) {
 	id, _ := entry.Values["id"].(string)
 	message, _ := entry.Values["message"].(string)
 
-	category, err := c.aiClient.Classify(message)
+	spanCtx, span := tracer.Start(ctx, "worker.process_message")
+	defer span.End()
+	span.SetAttributes(attribute.String("message.id", id))
+
+	category, err := c.aiClient.Classify(spanCtx, message)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		log.Printf("worker: failed to classify message %s: %v", id, err)
 		return
 	}
 
+	span.SetAttributes(attribute.String("message.category", category.Category))
 	log.Printf("worker: processed message %s (category=%s)", id, category.Category)
 }
