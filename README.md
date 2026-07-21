@@ -10,7 +10,7 @@
   <a href="https://github.com/jmrashed/SMSPit/issues"><img src="https://img.shields.io/github/issues/jmrashed/SMSPit" alt="Issues"></a>
 </p>
 
-> **Status: v0.3.0 released.** SMS capture/search/replay, the dashboard (inbox, detail, statistics, live WebSocket updates, API key management), API-key authentication enforced at both `sms-service` and the `gateway`, provider-compatible endpoints (Vonage, AWS SNS, MessageBird), multi-tenant organizations/teams with scoped data, message templates, and message export (CSV/JSON) are live — see the [changelog](CHANGELOG.md) for what's actually runnable today. Everything else in this README (AI features, Kubernetes) is still the v0.4+ roadmap, not yet built. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
+> **Status: v0.4.0 released.** SMS capture/search/replay, the dashboard (inbox, detail, statistics, live WebSocket updates, API key management), API-key authentication enforced at both `sms-service` and the `gateway`, provider-compatible endpoints (Vonage, AWS SNS, MessageBird), multi-tenant organizations/teams with scoped data, message templates, message export (CSV/JSON), and AI-powered OTP detection/classification/spam detection/test-data generation (`ai-service`, consumed synchronously on capture and asynchronously by `worker` via a Redis Streams queue) are live — see the [changelog](CHANGELOG.md) for what's actually runnable today. Everything else in this README (Kubernetes) is still the v1.0 roadmap, not yet built. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
 
 ---
 
@@ -184,8 +184,10 @@ SMSPit/
 │
 ├── ai-service/                    # OTP/Spam Detection, Classification (FastAPI)
 │   ├── app/
-│   │   ├── api/
-│   │   ├── models/
+│   │   ├── routers/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   ├── config.py
 │   │   └── main.py
 │   ├── tests/
 │   ├── Dockerfile
@@ -197,7 +199,9 @@ SMSPit/
 │   │       └── main.go
 │   ├── internal/
 │   │   ├── consumer/
-│   │   └── jobs/
+│   │   ├── queue/
+│   │   └── aiclient/
+│   ├── config/
 │   ├── Dockerfile
 │   └── go.mod
 │
@@ -231,7 +235,7 @@ SMSPit/
 │   ├── setup.sh
 │   └── migrate.sh
 │
-├── docker-compose.yml             # wires gateway + auth-service + sms-service + dashboard + Postgres + Redis (v0.2)
+├── docker-compose.yml             # wires gateway + auth-service + sms-service + ai-service + worker + dashboard + Postgres + Redis (v0.4)
 ├── checklist.md                   # 100-day build checklist
 ├── CLAUDE.md                      # AI agent working guide
 ├── LICENSE
@@ -452,6 +456,25 @@ Served by `auth-service`. An API key scoped to an organization only sees that or
 - WebSocket Updates
 - Organization/Team Switcher
 - Template Picker
+- OTP Badge & Copy-to-Clipboard
+- Classification Tags
+- Spam Flag & Manual Override
+- Generate Test Data
+
+---
+
+# AI Features
+
+`ai-service` (FastAPI) provides OTP detection, message classification, spam detection, and synthetic test-data generation. `sms-service` calls it synchronously (with a short timeout) on every message capture — AI enrichment never blocks or fails a capture, and degrades to "not detected" if `ai-service` is unreachable. `worker` (Go) additionally consumes a Redis Streams queue (`sms.messages.created`, published by `sms-service` on capture) for its own async workloads on top of `ai-service` — see [docs/redis.md](docs/redis.md) for the full architecture.
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /detect-otp` | Regex-based OTP extraction |
+| `POST /classify` | Rule-based category: `otp` / `transactional` / `marketing` / `other` |
+| `POST /detect-spam` | Keyword/heuristic spam scoring (`is_spam`, `score`) |
+| `POST /generate-test-data` | Synthetic SMS samples (`count`, `type`), for exercising the dashboard/API without a real integration |
+
+Captured messages carry `otp`, `category`, and `is_spam` fields (see [REST API](#rest-api)); the dashboard surfaces these as a copyable OTP badge, a classification tag, and a spam flag with a manual "mark as not spam" override.
 
 ---
 
@@ -507,7 +530,7 @@ These endpoints are unauthenticated by design, matching the "swap the base URL, 
 
 ---
 
-## v0.4
+## v0.4 — shipped
 
 - AI OTP Detection
 - AI Classification

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageResponseDto } from './dto/message-response.dto';
@@ -7,6 +7,7 @@ import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
 import { ExportMessagesQueryDto } from './dto/export-messages-query.dto';
 import { DeleteMessagesDto } from './dto/delete-messages.dto';
 import { DeleteMessagesResponseDto } from './dto/delete-messages-response.dto';
+import { UpdateSpamDto } from './dto/update-spam.dto';
 import { MessagesService } from './messages.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { csvHeaderRow, csvRow, toExportRecord } from './export/message-export.util';
@@ -69,6 +70,16 @@ export class MessagesController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() request: Request): Promise<MessageResponseDto> {
     const message = await this.messagesService.findOne(id, request.apiKey!.org_id);
+    return MessageResponseDto.fromEntity(message);
+  }
+
+  @Patch(':id/spam')
+  async setSpam(
+    @Param('id') id: string,
+    @Body() dto: UpdateSpamDto,
+    @Req() request: Request,
+  ): Promise<MessageResponseDto> {
+    const message = await this.messagesService.setSpam(id, dto.is_spam, request.apiKey!.org_id);
     return MessageResponseDto.fromEntity(message);
   }
 

@@ -1,0 +1,11 @@
+.venv
+tests
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+.env
+.env.*
+!.env.example
+*.log
+README.md

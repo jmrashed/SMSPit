@@ -2,6 +2,40 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.0] - 2026-07-21
+
+AI OTP detection, classification, spam detection, and test-data generation, per the [v0.4 roadmap](README.md#roadmap). Two new services — `ai-service` (FastAPI) and `worker` (Go) — join the four from v0.3, wired into `docker-compose.yml`.
+
+### Added
+
+- **`ai-service` (FastAPI)** — stateless, unauthenticated (local helper, not a data store):
+  - `POST /detect-otp` — regex-based OTP extraction, keyword-adjacent match preferred over a bare digit run
+  - `POST /classify` — rule-based category (`otp`/`transactional`/`marketing`/`other`), OTP takes priority over other keyword matches
+  - `POST /detect-spam` — keyword/heuristic scoring (spam keywords, excessive `!`, URLs, ALL-CAPS words), capped at 1.0, flagged at ≥0.5
+  - `POST /generate-test-data` — synthetic SMS samples (`count` 1–50, optional `type`), for exercising the dashboard/API without a real integration
+  - 100% statement coverage (`pytest-cov`), including empty-message and max-length (1600 char) edge cases
+- **`sms-service` AI integration**:
+  - Calls `ai-service` synchronously on every capture (`Promise.all` for OTP/classify/spam) with a 2s timeout — enrichment is best-effort and never blocks or fails a capture; `ai-service` being down degrades to `null`/`not detected`
+  - Replay reuses the original message's OTP/category/spam verdict instead of re-calling `ai-service` for identical content
+  - New `otp`, `category`, `is_spam` columns on `messages`; `is_spam` also has a manual override endpoint (`PATCH /api/v1/messages/{id}/spam`) so a user can correct a false positive
+  - `GET /api/v1/messages` gained a `category` and `is_spam` filter, in addition to the existing `to`/`from`/date-range filters
+  - Publishes each capture to a Redis Stream (`sms.messages.created`, see [docs/redis.md](docs/redis.md)) for `worker` to consume — best-effort, same non-blocking philosophy as the `ai-service` calls
+- **`worker` (Go)** — new service:
+  - `cmd/worker` + `internal/consumer`/`internal/queue`/`internal/aiclient`, idiomatic Go layout matching `gateway`
+  - Consumes `sms.messages.created` via a Redis Streams consumer group (`XREADGROUP`/`XACK`), calling `ai-service`'s `/classify` for each entry — demonstrates the async processing path alongside `sms-service`'s synchronous fast-path enrichment
+  - Graceful shutdown on `SIGINT`/`SIGTERM` (`signal.NotifyContext`), verified to stop cleanly mid-poll
+- **Dashboard**:
+  - OTP badge on the inbox list, prominent OTP display with copy-to-clipboard on message detail
+  - Classification tag (transactional/marketing/other) on list and detail views, plus a category filter
+  - Spam flag on list/detail, a spam filter (all/hide/only), and a "Not spam" manual override button
+  - "Generate test data" button on the inbox (count capped at 20, confirmation required above 5) — generated messages are captured via the same `POST /api/v1/messages` endpoint a real integration would use, so they appear in the inbox live over the existing WebSocket feed
+- **Docker**: multi-stage `Dockerfile`s for `ai-service` (slim Python, runtime deps only — `pytest`/`httpx` split into `requirements-dev.txt`) and `worker` (static Go binary on Alpine, matching `gateway`'s pattern); both wired into `docker-compose.yml`
+
+### Known gaps
+
+- `docker`/`podman` were unavailable in the environment this was built in; verification was done by replicating the same request paths with real processes (including a live Redis Streams publish → consume → `ai-service` call) instead of `docker compose up` (same constraint as [0.3.0](#030---2026-07-20)).
+- `worker`'s queue consumption is a working demonstration of the async path (classify + log), not a full reprocessing/retry pipeline — see [docs/redis.md](docs/redis.md) for what's realized vs. originally scoped.
+
 ## [0.3.0] - 2026-07-20
 
 Provider-compatible endpoints, multi-tenancy (organizations/teams), message templates, and export, per the [v0.3 roadmap](README.md#roadmap). No new services were added this release — everything ships as new endpoints/tables on the existing four services, so `docker-compose.yml` is unchanged from v0.2.0.

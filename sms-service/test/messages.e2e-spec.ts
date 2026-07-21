@@ -157,3 +157,87 @@ describe('Messages (e2e): replay', () => {
       .expect(404);
   });
 });
+
+describe('Messages (e2e): manual spam override', () => {
+  let app: INestApplication<App>;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(AuthClient)
+      .useValue({ validateToken: async () => ({ id: 1, name: 'test', owner_id: 1, org_id: null, scopes: [] }) })
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api/v1');
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalFilters(new HttpExceptionFilter());
+    app.useWebSocketAdapter(new WsAdapter(app));
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('lets a user override the spam verdict via PATCH .../spam', async () => {
+    const createRes = await request(app.getHttpServer())
+      .post('/api/v1/messages')
+      .set(AUTH_HEADER)
+      .send({ to: '+8801700000097', from: 'SMSPit', message: 'e2e spam override' })
+      .expect(201);
+    const id: string = createRes.body.id;
+
+    const patchRes = await request(app.getHttpServer())
+      .patch(`/api/v1/messages/${id}/spam`)
+      .set(AUTH_HEADER)
+      .send({ is_spam: true })
+      .expect(200);
+    expect(patchRes.body.is_spam).toBe(true);
+
+    const detailRes = await request(app.getHttpServer())
+      .get(`/api/v1/messages/${id}`)
+      .set(AUTH_HEADER)
+      .expect(200);
+    expect(detailRes.body.is_spam).toBe(true);
+
+    await request(app.getHttpServer())
+      .patch(`/api/v1/messages/${id}/spam`)
+      .set(AUTH_HEADER)
+      .send({ is_spam: false })
+      .expect(200);
+    const undoneRes = await request(app.getHttpServer())
+      .get(`/api/v1/messages/${id}`)
+      .set(AUTH_HEADER)
+      .expect(200);
+    expect(undoneRes.body.is_spam).toBe(false);
+
+    await request(app.getHttpServer()).delete('/api/v1/messages').set(AUTH_HEADER).send({ ids: [id] });
+  });
+
+  it('returns 404 when overriding a nonexistent message', () => {
+    return request(app.getHttpServer())
+      .patch('/api/v1/messages/sms_does_not_exist/spam')
+      .set(AUTH_HEADER)
+      .send({ is_spam: true })
+      .expect(404);
+  });
+
+  it('returns 400 when is_spam is not a boolean', async () => {
+    const createRes = await request(app.getHttpServer())
+      .post('/api/v1/messages')
+      .set(AUTH_HEADER)
+      .send({ to: '+8801700000096', from: 'SMSPit', message: 'e2e invalid spam patch' })
+      .expect(201);
+    const id: string = createRes.body.id;
+
+    await request(app.getHttpServer())
+      .patch(`/api/v1/messages/${id}/spam`)
+      .set(AUTH_HEADER)
+      .send({ is_spam: 'yes' })
+      .expect(400);
+
+    await request(app.getHttpServer()).delete('/api/v1/messages').set(AUTH_HEADER).send({ ids: [id] });
+  });
+});

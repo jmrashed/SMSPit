@@ -7,10 +7,25 @@ interface Props {
   onChange: (filters: MessageFiltersState) => void;
 }
 
+const CATEGORY_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: '', label: 'All categories' },
+  { value: 'otp', label: 'OTP' },
+  { value: 'transactional', label: 'Transactional' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'other', label: 'Other' },
+];
+
+const SPAM_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: '', label: 'All messages' },
+  { value: 'false', label: 'Hide spam' },
+  { value: 'true', label: 'Spam only' },
+];
+
 export function MessageFilters({ filters, onChange }: Props) {
-  const handleField = (field: keyof MessageFiltersState) => (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...filters, [field]: event.target.value });
-  };
+  const handleField =
+    (field: keyof MessageFiltersState) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      onChange({ ...filters, [field]: event.target.value });
+    };
 
   return (
     <form className="message-filters" onSubmit={(e) => e.preventDefault()} role="search">
@@ -22,6 +37,28 @@ export function MessageFilters({ filters, onChange }: Props) {
       <label className="message-filters__field">
         <span>From</span>
         <input type="text" placeholder="SMSPit" value={filters.from} onChange={handleField('from')} />
+      </label>
+
+      <label className="message-filters__field">
+        <span>Category</span>
+        <select value={filters.category} onChange={handleField('category')}>
+          {CATEGORY_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="message-filters__field">
+        <span>Spam</span>
+        <select value={filters.isSpam} onChange={handleField('isSpam')}>
+          {SPAM_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label className="message-filters__field">

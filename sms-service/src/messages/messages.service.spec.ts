@@ -5,6 +5,8 @@ import { In, IsNull } from 'typeorm';
 import { MessagesService } from './messages.service';
 import { Message, MessageStatus } from './entities/message.entity';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
+import { AiClient } from '../ai/ai-client';
+import { QueuePublisher } from '../queue/queue-publisher';
 
 describe('MessagesService', () => {
   let service: MessagesService;
@@ -17,6 +19,8 @@ describe('MessagesService', () => {
     delete: jest.Mock;
   };
   let realtimeGateway: { broadcastMessageCreated: jest.Mock };
+  let aiClient: { detectOtp: jest.Mock; classify: jest.Mock; detectSpam: jest.Mock };
+  let queuePublisher: { publishMessageCaptured: jest.Mock };
 
   async function collect<T>(iterable: AsyncGenerator<T>): Promise<T[]> {
     const items: T[] = [];
@@ -34,12 +38,20 @@ describe('MessagesService', () => {
       delete: jest.fn(),
     };
     realtimeGateway = { broadcastMessageCreated: jest.fn() };
+    aiClient = {
+      detectOtp: jest.fn().mockResolvedValue(null),
+      classify: jest.fn().mockResolvedValue(null),
+      detectSpam: jest.fn().mockResolvedValue(null),
+    };
+    queuePublisher = { publishMessageCaptured: jest.fn().mockResolvedValue(undefined) };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MessagesService,
         { provide: getRepositoryToken(Message), useValue: repository },
         { provide: RealtimeGateway, useValue: realtimeGateway },
+        { provide: AiClient, useValue: aiClient },
+        { provide: QueuePublisher, useValue: queuePublisher },
       ],
     }).compile();
 
@@ -65,6 +77,90 @@ describe('MessagesService', () => {
     expect(result.orgId).toBe(42);
     expect(repository.save).toHaveBeenCalledWith(result);
     expect(realtimeGateway.broadcastMessageCreated).toHaveBeenCalledWith(result);
+    expect(queuePublisher.publishMessageCaptured).toHaveBeenCalledWith(result);
+  });
+
+  it('stores the OTP detected by ai-service on capture', async () => {
+    repository.create.mockImplementation((entity: Partial<Message>) => entity as Message);
+    repository.save.mockImplementation((entity: Message) => Promise.resolve(entity));
+    aiClient.detectOtp.mockResolvedValue('845231');
+
+    const result = await service.create({ to: '+8801700000000', from: 'SMSPit', message: 'Your OTP is 845231' }, 42);
+
+    expect(aiClient.detectOtp).toHaveBeenCalledWith('Your OTP is 845231');
+    expect(result.otp).toBe('845231');
+  });
+
+  it('stores a null OTP when ai-service detects none (or is unreachable)', async () => {
+    repository.create.mockImplementation((entity: Partial<Message>) => entity as Message);
+    repository.save.mockImplementation((entity: Message) => Promise.resolve(entity));
+    aiClient.detectOtp.mockResolvedValue(null);
+
+    const result = await service.create({ to: '+8801700000000', from: 'SMSPit', message: 'hi' }, 42);
+
+    expect(result.otp).toBeNull();
+  });
+
+  it('stores the category returned by ai-service on capture', async () => {
+    repository.create.mockImplementation((entity: Partial<Message>) => entity as Message);
+    repository.save.mockImplementation((entity: Message) => Promise.resolve(entity));
+    aiClient.classify.mockResolvedValue('marketing');
+
+    const result = await service.create({ to: '+8801700000000', from: 'SMSPit', message: '50% off sale!' }, 42);
+
+    expect(aiClient.classify).toHaveBeenCalledWith('50% off sale!');
+    expect(result.category).toBe('marketing');
+  });
+
+  it('filters by category, in addition to org scoping', async () => {
+    repository.findAndCount.mockResolvedValue([[], 0]);
+
+    await service.findAll({ limit: 20, offset: 0, category: 'marketing' }, 42);
+
+    expect(repository.findAndCount).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { orgId: 42, category: 'marketing' } }),
+    );
+  });
+
+  it('stores the spam verdict returned by ai-service on capture', async () => {
+    repository.create.mockImplementation((entity: Partial<Message>) => entity as Message);
+    repository.save.mockImplementation((entity: Message) => Promise.resolve(entity));
+    aiClient.detectSpam.mockResolvedValue(true);
+
+    const result = await service.create({ to: '+8801700000000', from: 'SMSPit', message: 'WIN FREE CASH!!!' }, 42);
+
+    expect(aiClient.detectSpam).toHaveBeenCalledWith('WIN FREE CASH!!!');
+    expect(result.isSpam).toBe(true);
+  });
+
+  it('filters by is_spam, in addition to org scoping', async () => {
+    repository.findAndCount.mockResolvedValue([[], 0]);
+
+    await service.findAll({ limit: 20, offset: 0, is_spam: true }, 42);
+
+    expect(repository.findAndCount).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { orgId: 42, isSpam: true } }),
+    );
+  });
+
+  describe('setSpam', () => {
+    it('overrides the spam verdict on the message, scoped to the acting org', async () => {
+      const entity = { id: 'sms_abc123', isSpam: true } as Message;
+      repository.findOneBy.mockResolvedValue(entity);
+      repository.save.mockImplementation((e: Message) => Promise.resolve(e));
+
+      const result = await service.setSpam('sms_abc123', false, 42);
+
+      expect(repository.findOneBy).toHaveBeenCalledWith({ id: 'sms_abc123', orgId: 42 });
+      expect(result.isSpam).toBe(false);
+      expect(repository.save).toHaveBeenCalledWith(expect.objectContaining({ isSpam: false }));
+    });
+
+    it('throws NotFoundException when overriding a nonexistent message', async () => {
+      repository.findOneBy.mockResolvedValue(null);
+
+      await expect(service.setSpam('sms_missing', false, 42)).rejects.toThrow(NotFoundException);
+    });
   });
 
   it('persists a message with a null org_id when the acting key is ungrouped', async () => {
@@ -177,6 +273,9 @@ describe('MessagesService', () => {
       to: '+8801700000000',
       from: 'SMSPit',
       body: 'Your OTP is 845231',
+      otp: '845231',
+      category: null,
+      isSpam: null,
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
       orgId: 42,
@@ -198,6 +297,33 @@ describe('MessagesService', () => {
     expect(result.orgId).toBe(42);
     expect(repository.save).toHaveBeenCalledWith(result);
     expect(realtimeGateway.broadcastMessageCreated).toHaveBeenCalledWith(result);
+  });
+
+  it('reuses the original message\'s detected OTP on replay instead of calling ai-service again', async () => {
+    const original: Message = {
+      id: 'sms_abc123',
+      to: '+8801700000000',
+      from: 'SMSPit',
+      body: 'Your OTP is 845231',
+      otp: '845231',
+      category: 'otp',
+      isSpam: null,
+      status: MessageStatus.CAPTURED,
+      replayedFrom: null,
+      orgId: 42,
+      createdAt: new Date('2026-07-19T00:00:00.000Z'),
+    };
+    repository.findOneBy.mockResolvedValue(original);
+    repository.create.mockImplementation((entity: Partial<Message>) => entity as Message);
+    repository.save.mockImplementation((entity: Message) => Promise.resolve(entity));
+
+    const result = await service.replay('sms_abc123', 42);
+
+    expect(result.otp).toBe('845231');
+    expect(result.category).toBe('otp');
+    expect(aiClient.detectOtp).not.toHaveBeenCalled();
+    expect(aiClient.classify).not.toHaveBeenCalled();
+    expect(queuePublisher.publishMessageCaptured).toHaveBeenCalledWith(result);
   });
 
   it('throws NotFoundException when replaying a nonexistent message', async () => {

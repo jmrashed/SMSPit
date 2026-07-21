@@ -1,0 +1,19 @@
+.spam-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  color: #b91c1c;
+  background: rgba(185, 28, 28, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  .spam-badge {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.15);
+  }
+}

@@ -45,6 +45,12 @@
   white-space: nowrap;
 }
 
+.message-list td[data-label='Status'] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 @media (max-width: 640px) {
   .message-list thead {
     display: none;

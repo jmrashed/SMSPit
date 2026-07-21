@@ -10,6 +10,7 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useMessageSocket } from '../hooks/useMessageSocket';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { ExportButton } from '../components/ExportButton';
+import { GenerateTestDataButton } from '../components/GenerateTestDataButton';
 import { EMPTY_FILTERS, type MessageFilters as MessageFiltersState } from '../types/filters';
 import './InboxPage.css';
 
@@ -35,6 +36,8 @@ export function InboxPage() {
     listMessages({
       to: debouncedFilters.to,
       from: debouncedFilters.from,
+      category: debouncedFilters.category || undefined,
+      is_spam: debouncedFilters.isSpam ? debouncedFilters.isSpam === 'true' : undefined,
       created_after: debouncedFilters.createdAfter || undefined,
       created_before: debouncedFilters.createdBefore ? endOfDay(debouncedFilters.createdBefore) : undefined,
     })
@@ -90,6 +93,7 @@ export function InboxPage() {
             created_before: debouncedFilters.createdBefore ? endOfDay(debouncedFilters.createdBefore) : undefined,
           }}
         />
+        <GenerateTestDataButton />
       </div>
       {error && (
         <ErrorBanner

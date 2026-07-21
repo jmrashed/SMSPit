@@ -1,6 +1,11 @@
 declare global {
   interface Window {
-    __APP_CONFIG__?: { VITE_API_BASE_URL?: string; VITE_API_KEY?: string; VITE_AUTH_SERVICE_URL?: string };
+    __APP_CONFIG__?: {
+      VITE_API_BASE_URL?: string;
+      VITE_API_KEY?: string;
+      VITE_AUTH_SERVICE_URL?: string;
+      VITE_AI_SERVICE_URL?: string;
+    };
   }
 }
 
@@ -16,6 +21,13 @@ const API_BASE_URL =
 // sms-service's own AuthClient does (Day 35).
 const AUTH_SERVICE_URL =
   window.__APP_CONFIG__?.VITE_AUTH_SERVICE_URL || import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:8000';
+
+// Not routed through the gateway (Day 79 adds ai-service to
+// docker-compose, still no gateway route for it) -- called directly,
+// same reasoning as AUTH_SERVICE_URL above. No auth on ai-service's
+// endpoints (Day 66+): it's a stateless local helper, not a data store.
+const AI_SERVICE_URL =
+  window.__APP_CONFIG__?.VITE_AI_SERVICE_URL || import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8001';
 
 // Stop-gap until Day 47's API key management UI exists: sms-service
 // requires auth as of Day 35, so the dashboard needs *a* key to
@@ -92,6 +104,22 @@ export async function apiFetchBlob(path: string, init?: RequestInit): Promise<{ 
   const filename = disposition.match(/filename="([^"]+)"/)?.[1] ?? 'export';
 
   return { blob: await response.blob(), filename };
+}
+
+export async function aiApiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${AI_SERVICE_URL}${path}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...init?.headers,
+    },
+    ...init,
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, `Request to ${path} failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<T>;
 }
 
 // api-keys endpoints on auth-service aren't behind the API key guard

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { Message } from '../types/message';
-import { getMessage, replayMessage } from '../api/messages';
+import { getMessage, replayMessage, setMessageSpam } from '../api/messages';
 import { ApiError } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
+import { ClassificationBadge } from '../components/ClassificationBadge';
+import { SpamBadge } from '../components/SpamBadge';
 import { Spinner } from '../components/Spinner';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { useToast } from '../components/Toast';
@@ -19,6 +21,33 @@ export function MessageDetailPage() {
   const [message, setMessage] = useState<Message | null>(null);
   const [retryToken, setRetryToken] = useState(0);
   const [replaying, setReplaying] = useState(false);
+  const [updatingSpam, setUpdatingSpam] = useState(false);
+
+  async function handleMarkNotSpam() {
+    if (!id) return;
+
+    setUpdatingSpam(true);
+    try {
+      const updated = await setMessageSpam(id, false);
+      setMessage(updated);
+      showToast('Marked as not spam.', 'success');
+    } catch (error: unknown) {
+      console.error('Failed to update spam status', error);
+      showToast('Failed to update spam status.', 'error');
+    } finally {
+      setUpdatingSpam(false);
+    }
+  }
+
+  async function handleCopyOtp(otp: string) {
+    try {
+      await navigator.clipboard.writeText(otp);
+      showToast('OTP copied to clipboard.', 'success');
+    } catch (error: unknown) {
+      console.error('Failed to copy OTP', error);
+      showToast('Failed to copy OTP.', 'error');
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -87,6 +116,8 @@ export function MessageDetailPage() {
           <header className="message-detail-page__header">
             <h1>Message detail</h1>
             <StatusBadge status={message.status} />
+            {message.category && <ClassificationBadge category={message.category} />}
+            {message.is_spam && <SpamBadge />}
             <button
               type="button"
               className="message-detail-page__replay"
@@ -107,6 +138,31 @@ export function MessageDetailPage() {
             <dt>Captured</dt>
             <dd>{new Date(message.created_at).toLocaleString()}</dd>
           </dl>
+
+          {message.otp && (
+            <div className="message-detail-page__otp">
+              <span className="message-detail-page__otp-label">OTP detected</span>
+              <span className="message-detail-page__otp-value">{message.otp}</span>
+              <button
+                type="button"
+                className="message-detail-page__otp-copy"
+                onClick={() => handleCopyOtp(message.otp!)}
+              >
+                Copy
+              </button>
+            </div>
+          )}
+
+          {message.is_spam && (
+            <button
+              type="button"
+              className="message-detail-page__not-spam"
+              onClick={handleMarkNotSpam}
+              disabled={updatingSpam}
+            >
+              {updatingSpam ? 'Updating…' : 'Not spam'}
+            </button>
+          )}
 
           <div className="message-detail-page__body">{message.message}</div>
         </article>

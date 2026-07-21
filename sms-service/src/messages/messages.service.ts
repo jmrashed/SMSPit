@@ -8,6 +8,8 @@ import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
 import { ExportMessagesQueryDto } from './dto/export-messages-query.dto';
 import { Message, MessageStatus } from './entities/message.entity';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
+import { AiClient } from '../ai/ai-client';
+import { QueuePublisher } from '../queue/queue-publisher';
 
 const EXPORT_BATCH_SIZE = 500;
 
@@ -27,14 +29,25 @@ export class MessagesService {
     @InjectRepository(Message)
     private readonly messagesRepository: Repository<Message>,
     private readonly realtimeGateway: RealtimeGateway,
+    private readonly aiClient: AiClient,
+    private readonly queuePublisher: QueuePublisher,
   ) {}
 
   async create(dto: CreateMessageDto, orgId: number | null): Promise<Message> {
+    const [otp, category, isSpam] = await Promise.all([
+      this.aiClient.detectOtp(dto.message),
+      this.aiClient.classify(dto.message),
+      this.aiClient.detectSpam(dto.message),
+    ]);
+
     const message = this.messagesRepository.create({
       id: `sms_${randomBytes(8).toString('hex')}`,
       to: dto.to,
       from: dto.from,
       body: dto.message,
+      otp,
+      category,
+      isSpam,
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
       orgId,
@@ -43,6 +56,7 @@ export class MessagesService {
 
     const saved = await this.messagesRepository.save(message);
     this.realtimeGateway.broadcastMessageCreated(saved);
+    await this.queuePublisher.publishMessageCaptured(saved);
 
     return saved;
   }
@@ -62,7 +76,7 @@ export class MessagesService {
   // to/from/created_after/created_before fields, just with different
   // pagination on top.
   private buildFilterWhere(
-    query: Pick<ListMessagesQueryDto, 'to' | 'from' | 'created_after' | 'created_before'>,
+    query: Pick<ListMessagesQueryDto, 'to' | 'from' | 'category' | 'is_spam' | 'created_after' | 'created_before'>,
     orgId: number | null,
   ): FindOptionsWhere<Message> {
     // A NULL org_id is its own bucket ("ungrouped"), not a wildcard --
@@ -72,6 +86,8 @@ export class MessagesService {
 
     if (query.to) where.to = query.to;
     if (query.from) where.from = query.from;
+    if (query.category) where.category = query.category;
+    if (query.is_spam !== undefined) where.isSpam = query.is_spam;
 
     if (query.created_after && query.created_before) {
       where.createdAt = Between(new Date(query.created_after), new Date(query.created_before));
@@ -132,6 +148,11 @@ export class MessagesService {
       to: original.to,
       from: original.from,
       body: original.body,
+      // Same body as the original -- reuse its detected OTP/category/spam
+      // verdict rather than re-calling ai-service for an identical input.
+      otp: original.otp,
+      category: original.category,
+      isSpam: original.isSpam,
       status: MessageStatus.CAPTURED,
       replayedFrom: original.id,
       orgId,
@@ -141,8 +162,17 @@ export class MessagesService {
     const saved = await this.messagesRepository.save(replay);
     this.logger.log(`Replayed message ${original.id} as ${saved.id}`);
     this.realtimeGateway.broadcastMessageCreated(saved);
+    await this.queuePublisher.publishMessageCaptured(saved);
 
     return saved;
+  }
+
+  // Manual override (Day 73) -- lets a user correct ai-service's spam
+  // verdict directly on the message record, e.g. "mark as not spam".
+  async setSpam(id: string, isSpam: boolean, orgId: number | null): Promise<Message> {
+    const message = await this.findOne(id, orgId);
+    message.isSpam = isSpam;
+    return this.messagesRepository.save(message);
   }
 
   async remove(dto: DeleteMessagesDto, orgId: number | null): Promise<number> {

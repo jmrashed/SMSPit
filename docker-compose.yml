@@ -1,8 +1,4 @@
 services:
-  # ai-service and worker don't have Dockerfiles yet (Day 79) -- adding a
-  # `build:` entry for them here would break `docker compose up` today.
-  # They're wired in on that checklist day.
-
   gateway:
     build: ./gateway
     ports:
@@ -54,10 +50,33 @@ services:
       REDIS_PORT: 6379
       CORS_ORIGIN: "*"
       AUTH_SERVICE_URL: "http://auth-service:80"
+      AI_SERVICE_URL: "http://ai-service:8001"
     depends_on:
       - postgres
       - redis
       - auth-service
+    networks:
+      - smspit
+
+  ai-service:
+    build: ./ai-service
+    ports:
+      - "${AI_SERVICE_PORT}:8001"
+    environment:
+      PORT: 8001
+      CORS_ORIGIN: "*"
+    networks:
+      - smspit
+
+  worker:
+    build: ./worker
+    environment:
+      AI_SERVICE_URL: "http://ai-service:8001"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - ai-service
     networks:
       - smspit
 
@@ -73,6 +92,10 @@ services:
       # directly -- its routes aren't rewritten to match the gateway's
       # /auth/* -> /api/* convention.
       VITE_AUTH_SERVICE_URL: "http://localhost:${AUTH_SERVICE_PORT}"
+      # Same reasoning as VITE_AUTH_SERVICE_URL above -- ai-service isn't
+      # routed through the gateway either (Day 79), and the "generate
+      # test data" button (Day 75) calls it directly, unauthenticated.
+      VITE_AI_SERVICE_URL: "http://localhost:${AI_SERVICE_PORT}"
       # sms-service requires an API key as of Day 35. There's still no
       # automated way to generate the first one here -- the /api-keys
       # page itself needs no key (auth-service's key endpoints are

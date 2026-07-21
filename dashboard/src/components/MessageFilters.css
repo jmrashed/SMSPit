@@ -14,7 +14,8 @@
   color: var(--text);
 }
 
-.message-filters__field input {
+.message-filters__field input,
+.message-filters__field select {
   font: inherit;
   font-size: 15px;
   padding: 6px 10px;
@@ -24,7 +25,8 @@
   color: var(--text-h);
 }
 
-.message-filters__field input:focus-visible {
+.message-filters__field input:focus-visible,
+.message-filters__field select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }

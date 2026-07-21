@@ -1,17 +1,20 @@
 # Redis usage
 
-Design decisions for how Redis is used across SMSPit. This is a design doc, not an implementation — pub/sub is wired up when `sms-service`'s WebSocket feed lands (v0.2, [checklist.md](../checklist.md) Days 40–47) and consumed by `worker` (v0.4, Days 77–78).
+Design decisions for how Redis is used across SMSPit.
 
-## Pub/sub channel naming convention
+**Realized architecture (updated Day 78 — see [checklist.md](../checklist.md)):** the dashboard's live-update needs (v0.2, Days 40–47) turned out not to need Redis pub/sub at all — `sms-service`'s `RealtimeGateway` broadcasts directly to connected WebSocket clients in-process, since a single `sms-service` instance is sufficient for this self-hosted tool. Redis's only realized role is the Streams-backed job queue below, plus the synchronous, non-blocking AI enrichment calls `sms-service` makes directly to `ai-service` on capture (OTP/classification/spam — Days 68/71/73), which don't go through Redis at all. The queue is additive infrastructure for `worker`'s own async workloads (e.g. reprocessing, batch jobs, retries) built on top of the same `sms.messages.created` events.
+
+## Streams channel naming convention
 
 Dot-separated, hierarchical, matching the `<domain>.<resource>.<event>` shape so channels can map directly onto NATS subjects if/when the queue migrates (see below):
 
-| Channel | Published by | Consumed by | Event |
+| Stream | Published by | Consumed by | Event |
 |---|---|---|---|
-| `sms.messages.created` | `sms-service` | dashboard (via WebSocket relay), `worker` | A message was captured |
-| `sms.messages.updated` | `worker` | dashboard (via WebSocket relay) | AI enrichment (OTP/classification/spam) finished for a message |
+| `sms.messages.created` | `sms-service` (`QueuePublisher`, Day 78) | `worker` (`internal/consumer`, Day 78) | A message was captured (fields: `id`, `to`, `from`, `message`, `org_id`) |
 
-No organization/tenant scoping in the channel name for v0.1 — multi-tenancy (API keys, orgs) isn't part of v0.1 scope (see [README roadmap](../README.md#roadmap)). Once auth lands in v0.2, channels scope to `sms.messages.{org_id}.created` / `...updated`; `sms-service`'s WebSocket layer subscribes per-connection to the channel matching the authenticated org.
+`worker` reads via a consumer group (`XREADGROUP`, group `worker`) and acks each entry after calling `ai-service` — see `worker/internal/consumer`. Publishing is best-effort: a Redis outage degrades to "no job queued," never blocks the capture request (same non-blocking philosophy as the `AiClient` calls).
+
+No organization/tenant scoping in the stream name for v0.1–v0.4 — multi-tenancy (API keys, orgs) isn't part of the streamed payload yet (see [README roadmap](../README.md#roadmap)). Revisit if/when `worker` needs org-scoped processing.
 
 ## Caching strategy for v0.1
 

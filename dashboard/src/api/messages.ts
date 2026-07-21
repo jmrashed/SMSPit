@@ -4,7 +4,7 @@ import type { Message, MessageListResponse } from '../types/message';
 function toQueryString(params: object): string {
   const query = new URLSearchParams();
 
-  for (const [key, value] of Object.entries(params) as [string, string | number | undefined][]) {
+  for (const [key, value] of Object.entries(params) as [string, string | number | boolean | undefined][]) {
     if (value !== undefined && value !== '') {
       query.set(key, String(value));
     }
@@ -17,6 +17,8 @@ function toQueryString(params: object): string {
 export interface ListMessagesParams {
   to?: string;
   from?: string;
+  category?: string;
+  is_spam?: boolean;
   limit?: number;
   offset?: number;
   created_after?: string;
@@ -59,5 +61,12 @@ export function createMessage(params: CreateMessageParams): Promise<Message> {
   return apiFetch<Message>('/api/v1/messages', {
     method: 'POST',
     body: JSON.stringify(params),
+  });
+}
+
+export function setMessageSpam(id: string, isSpam: boolean): Promise<Message> {
+  return apiFetch<Message>(`/api/v1/messages/${id}/spam`, {
+    method: 'PATCH',
+    body: JSON.stringify({ is_spam: isSpam }),
   });
 }

@@ -299,66 +299,66 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
 
 ## Phase 4 — v0.4: AI OTP Detection, Classification, Spam Detection, Test Data Generator (Days 66–80)
 
-- [ ] **Day 66: Scaffold `ai-service` (FastAPI)**
-  - [ ] Initialize the FastAPI project structure
-  - [ ] Set up base routing and a health check
-  - [ ] Configure `.env` and dependency management
-- [ ] **Day 67: Implement OTP detection endpoint**
-  - [ ] Implement regex-based OTP extraction as a baseline
-  - [ ] Expose `POST /detect-otp`
-  - [ ] Add tests with sample OTP messages
-- [ ] **Day 68: Integrate OTP detection into ingestion**
-  - [ ] Call ai-service from sms-service on message capture
-  - [ ] Store the detected OTP value on the message record
-  - [ ] Handle ai-service downtime gracefully (non-blocking)
-- [ ] **Day 69: Highlight OTP in the dashboard**
-  - [ ] Display the detected OTP prominently on message detail
-  - [ ] Add copy-to-clipboard for the OTP value
-  - [ ] Add a visual badge on the list view for OTP messages
-- [ ] **Day 70: Implement classification endpoint**
-  - [ ] Implement rule-based or ML classification (transactional/marketing/OTP)
-  - [ ] Expose `POST /classify`
-  - [ ] Add tests
-- [ ] **Day 71: Show classification tags in the dashboard**
-  - [ ] Display the classification badge on list and detail views
-  - [ ] Add a filter by classification type
-  - [ ] Verify tag colors are accessible/consistent
-- [ ] **Day 72: Implement spam detection endpoint**
-  - [ ] Implement spam scoring logic/model
-  - [ ] Expose `POST /detect-spam`
-  - [ ] Add tests with spam and legitimate samples
-- [ ] **Day 73: Flag spam in the dashboard**
-  - [ ] Add a visual indicator for flagged spam messages
-  - [ ] Add a filter to show/hide spam
-  - [ ] Add a manual override (mark as not spam)
-- [ ] **Day 74: Implement AI test-data generator endpoint**
-  - [ ] Implement generation of synthetic SMS samples (OTP, marketing, etc.)
-  - [ ] Support configurable count/type params
-  - [ ] Add tests
-- [ ] **Day 75: Build "generate test data" UI**
-  - [ ] Add a button/form in the dashboard to trigger generation
-  - [ ] Show generated messages appearing in the inbox
-  - [ ] Add safeguards against accidental mass generation in production
-- [ ] **Day 76: Write tests for `ai-service`**
-  - [ ] Add unit tests for each endpoint
-  - [ ] Add coverage reporting
-  - [ ] Add tests for edge cases (empty/very long messages)
-- [ ] **Day 77: Scaffold `worker` (Go)**
-  - [ ] Initialize the Go module for the worker
-  - [ ] Set up the base job consumer loop
-  - [ ] Add graceful shutdown handling
-- [ ] **Day 78: Wire worker to the queue**
-  - [ ] Choose and configure the queue (Redis Streams/NATS/Kafka)
-  - [ ] Implement job publishing from sms-service on capture
-  - [ ] Implement worker consumption calling ai-service for async processing
-- [ ] **Day 79: Write Dockerfiles for `ai-service` and `worker`**
-  - [ ] Write the Dockerfile for ai-service (Python base)
-  - [ ] Write the Dockerfile for worker (Go binary)
-  - [ ] Update `docker-compose.yml` with the new services and queue
+- [x] **Day 66: Scaffold `ai-service` (FastAPI)**
+  - [x] Initialize the FastAPI project structure
+  - [x] Set up base routing and a health check
+  - [x] Configure `.env` and dependency management
+- [x] **Day 67: Implement OTP detection endpoint**
+  - [x] Implement regex-based OTP extraction as a baseline
+  - [x] Expose `POST /detect-otp`
+  - [x] Add tests with sample OTP messages
+- [x] **Day 68: Integrate OTP detection into ingestion**
+  - [x] Call ai-service from sms-service on message capture
+  - [x] Store the detected OTP value on the message record
+  - [x] Handle ai-service downtime gracefully (non-blocking)
+- [x] **Day 69: Highlight OTP in the dashboard**
+  - [x] Display the detected OTP prominently on message detail
+  - [x] Add copy-to-clipboard for the OTP value
+  - [x] Add a visual badge on the list view for OTP messages
+- [x] **Day 70: Implement classification endpoint**
+  - [x] Implement rule-based or ML classification (transactional/marketing/OTP)
+  - [x] Expose `POST /classify`
+  - [x] Add tests
+- [x] **Day 71: Show classification tags in the dashboard**
+  - [x] Display the classification badge on list and detail views
+  - [x] Add a filter by classification type
+  - [x] Verify tag colors are accessible/consistent
+- [x] **Day 72: Implement spam detection endpoint**
+  - [x] Implement spam scoring logic/model
+  - [x] Expose `POST /detect-spam`
+  - [x] Add tests with spam and legitimate samples
+- [x] **Day 73: Flag spam in the dashboard**
+  - [x] Add a visual indicator for flagged spam messages
+  - [x] Add a filter to show/hide spam
+  - [x] Add a manual override (mark as not spam)
+- [x] **Day 74: Implement AI test-data generator endpoint**
+  - [x] Implement generation of synthetic SMS samples (OTP, marketing, etc.)
+  - [x] Support configurable count/type params
+  - [x] Add tests
+- [x] **Day 75: Build "generate test data" UI**
+  - [x] Add a button/form in the dashboard to trigger generation
+  - [x] Show generated messages appearing in the inbox
+  - [x] Add safeguards against accidental mass generation in production
+- [x] **Day 76: Write tests for `ai-service`**
+  - [x] Add unit tests for each endpoint
+  - [x] Add coverage reporting
+  - [x] Add tests for edge cases (empty/very long messages)
+- [x] **Day 77: Scaffold `worker` (Go)**
+  - [x] Initialize the Go module for the worker
+  - [x] Set up the base job consumer loop
+  - [x] Add graceful shutdown handling
+- [x] **Day 78: Wire worker to the queue**
+  - [x] Choose and configure the queue (Redis Streams/NATS/Kafka)
+  - [x] Implement job publishing from sms-service on capture
+  - [x] Implement worker consumption calling ai-service for async processing
+- [x] **Day 79: Write Dockerfiles for `ai-service` and `worker`**
+  - [x] Write the Dockerfile for ai-service (Python base)
+  - [x] Write the Dockerfile for worker (Go binary)
+  - [x] Update `docker-compose.yml` with the new services and queue
 - [ ] **Day 80: Tag and release v0.4**
-  - [ ] Update `CHANGELOG.md`
-  - [ ] Tag the release (`v0.4.0`)
-  - [ ] Update README with the AI features overview
+  - [x] Update `CHANGELOG.md`
+  - [ ] Tag the release (`v0.4.0`) — not done: CLAUDE.md requires an explicit commit/tag request; changes are uncommitted, ready when asked
+  - [x] Update README with the AI features overview
 
 ---
 

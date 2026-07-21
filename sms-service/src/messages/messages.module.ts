@@ -5,9 +5,11 @@ import { MessagesService } from './messages.service';
 import { Message } from './entities/message.entity';
 import { AuthModule } from '../auth/auth.module';
 import { RealtimeModule } from '../realtime/realtime.module';
+import { AiModule } from '../ai/ai.module';
+import { QueueModule } from '../queue/queue.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message]), AuthModule, RealtimeModule],
+  imports: [TypeOrmModule.forFeature([Message]), AuthModule, RealtimeModule, AiModule, QueueModule],
   controllers: [MessagesController],
   providers: [MessagesService],
   exports: [MessagesService],

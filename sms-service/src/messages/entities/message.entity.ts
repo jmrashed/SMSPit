@@ -22,6 +22,24 @@ export class Message {
   @Column()
   body: string;
 
+  // Populated by MessagesService calling ai-service's /detect-otp on
+  // capture (Day 68) -- null when no OTP was detected or ai-service
+  // was unreachable (detection is best-effort, never blocks capture).
+  @Column({ type: 'varchar', nullable: true })
+  otp: string | null;
+
+  // Populated by MessagesService calling ai-service's /classify on
+  // capture (Day 71) -- one of otp/transactional/marketing/other, null
+  // when ai-service was unreachable.
+  @Column({ type: 'varchar', nullable: true })
+  category: string | null;
+
+  // Populated by MessagesService calling ai-service's /detect-spam on
+  // capture (Day 73); also the target of the manual "mark as not spam"
+  // override endpoint. Null when ai-service was unreachable.
+  @Column({ name: 'is_spam', type: 'boolean', nullable: true })
+  isSpam: boolean | null;
+
   // Laravel's Schema::enum() on Postgres creates a varchar column with a
   // CHECK constraint, not a native Postgres enum type -- map it as varchar
   // here to match the actual column type from the auth-service migration.

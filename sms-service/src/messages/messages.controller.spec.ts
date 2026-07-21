@@ -13,10 +13,24 @@ function fakeRequest(orgId: number | null = 42): Request {
 
 describe('MessagesController', () => {
   let controller: MessagesController;
-  let service: { create: jest.Mock; findAll: jest.Mock; findOne: jest.Mock; replay: jest.Mock; remove: jest.Mock };
+  let service: {
+    create: jest.Mock;
+    findAll: jest.Mock;
+    findOne: jest.Mock;
+    replay: jest.Mock;
+    remove: jest.Mock;
+    setSpam: jest.Mock;
+  };
 
   beforeEach(async () => {
-    service = { create: jest.fn(), findAll: jest.fn(), findOne: jest.fn(), replay: jest.fn(), remove: jest.fn() };
+    service = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      replay: jest.fn(),
+      remove: jest.fn(),
+      setSpam: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MessagesController],
@@ -36,6 +50,9 @@ describe('MessagesController', () => {
       to: '+8801700000000',
       from: 'SMSPit',
       body: 'Your OTP is 845231',
+      otp: null,
+      category: null,
+      isSpam: null,
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
       orgId: 42,
@@ -65,6 +82,9 @@ describe('MessagesController', () => {
       to: '+8801700000000',
       from: 'SMSPit',
       message: 'Your OTP is 845231',
+      otp: null,
+      category: null,
+      is_spam: null,
       status: 'captured',
       replayed_from: null,
       org_id: 42,
@@ -78,6 +98,9 @@ describe('MessagesController', () => {
       to: '+8801700000000',
       from: 'SMSPit',
       body: 'newer',
+      otp: null,
+      category: null,
+      isSpam: null,
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
       orgId: 42,
@@ -95,6 +118,9 @@ describe('MessagesController', () => {
           to: '+8801700000000',
           from: 'SMSPit',
           message: 'newer',
+          otp: null,
+          category: null,
+          is_spam: null,
           status: 'captured',
           replayed_from: null,
           org_id: 42,
@@ -121,6 +147,9 @@ describe('MessagesController', () => {
       to: '+8801700000000',
       from: 'SMSPit',
       body: 'Your OTP is 845231',
+      otp: null,
+      category: null,
+      isSpam: null,
       status: MessageStatus.CAPTURED,
       replayedFrom: null,
       orgId: 42,
@@ -146,6 +175,9 @@ describe('MessagesController', () => {
       to: '+8801700000000',
       from: 'SMSPit',
       body: 'Your OTP is 845231',
+      otp: null,
+      category: null,
+      isSpam: null,
       status: MessageStatus.CAPTURED,
       replayedFrom: 'sms_abc123',
       orgId: 42,
@@ -161,6 +193,9 @@ describe('MessagesController', () => {
       to: '+8801700000000',
       from: 'SMSPit',
       message: 'Your OTP is 845231',
+      otp: null,
+      category: null,
+      is_spam: null,
       status: 'captured',
       replayed_from: 'sms_abc123',
       org_id: 42,
@@ -181,5 +216,27 @@ describe('MessagesController', () => {
 
     expect(service.remove).toHaveBeenCalledWith({ ids: ['sms_1', 'sms_2', 'sms_3'] }, 42);
     expect(result).toEqual({ deleted_count: 3 });
+  });
+
+  it('overrides the spam verdict via PATCH :id/spam', async () => {
+    const updated: Message = {
+      id: 'sms_abc123',
+      to: '+8801700000000',
+      from: 'SMSPit',
+      body: 'WIN FREE CASH!!!',
+      otp: null,
+      category: 'marketing',
+      isSpam: false,
+      status: MessageStatus.CAPTURED,
+      replayedFrom: null,
+      orgId: 42,
+      createdAt: new Date('2026-07-19T00:00:00.000Z'),
+    };
+    service.setSpam.mockResolvedValue(updated);
+
+    const result = await controller.setSpam('sms_abc123', { is_spam: false }, fakeRequest());
+
+    expect(service.setSpam).toHaveBeenCalledWith('sms_abc123', false, 42);
+    expect(result.is_spam).toBe(false);
   });
 });

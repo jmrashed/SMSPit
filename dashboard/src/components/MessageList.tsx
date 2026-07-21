@@ -2,6 +2,9 @@ import type { KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Message } from '../types/message';
 import { StatusBadge } from './StatusBadge';
+import { OtpBadge } from './OtpBadge';
+import { ClassificationBadge } from './ClassificationBadge';
+import { SpamBadge } from './SpamBadge';
 import './MessageList.css';
 
 function formatTimestamp(iso: string): string {
@@ -52,6 +55,9 @@ export function MessageList({ messages }: { messages: Message[] }) {
             </td>
             <td data-label="Status">
               <StatusBadge status={message.status} />
+              {message.otp && <OtpBadge />}
+              {message.category && <ClassificationBadge category={message.category} />}
+              {message.is_spam && <SpamBadge />}
             </td>
             <td data-label="Captured">{formatTimestamp(message.created_at)}</td>
           </tr>

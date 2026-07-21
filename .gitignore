@@ -28,6 +28,7 @@ __pycache__/
 venv/
 *.egg-info/
 .pytest_cache/
+.coverage
 
 # Env / secrets
 .env

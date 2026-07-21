@@ -1,0 +1,76 @@
+.generate-test-data {
+  position: relative;
+  display: inline-block;
+}
+
+.generate-test-data__trigger {
+  font: inherit;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.generate-test-data__trigger:hover:not(:disabled) {
+  background: var(--accent-border);
+}
+
+.generate-test-data__panel {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  width: 240px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.generate-test-data__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.generate-test-data__field input,
+.generate-test-data__field select {
+  font: inherit;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+}
+
+.generate-test-data__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.generate-test-data__submit {
+  font: inherit;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.generate-test-data__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

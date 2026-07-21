@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import { Type } from 'class-transformer';
-import { IsInt, IsISO8601, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsIn, IsInt, IsISO8601, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class ListMessagesQueryDto {
   @IsOptional()
@@ -23,6 +23,15 @@ export class ListMessagesQueryDto {
   @IsOptional()
   @IsString()
   from?: string;
+
+  @IsOptional()
+  @IsIn(['otp', 'transactional', 'marketing', 'other'])
+  category?: string;
+
+  @IsOptional()
+  @Transform(({ value }: { value: string }) => value === 'true')
+  @IsBoolean()
+  is_spam?: boolean;
 
   @IsOptional()
   @IsISO8601()
