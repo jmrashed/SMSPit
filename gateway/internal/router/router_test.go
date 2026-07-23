@@ -280,3 +280,26 @@ func TestRoutesToAuthServiceWithPathRewrite(t *testing.T) {
 		t.Fatalf("expected status 200, got %d", rec.Code)
 	}
 }
+
+func TestRoutesToProviderAdaptersWithoutRequiringAnAPIKey(t *testing.T) {
+	smsBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.URL.Path != "/providers/messagebird/messages" {
+			t.Errorf("expected path /providers/messagebird/messages forwarded unchanged, got %s", req.URL.Path)
+		}
+		w.WriteHeader(http.StatusCreated)
+	}))
+	defer smsBackend.Close()
+
+	r := New(config.Config{SMSServiceURL: smsBackend.URL, AuthServiceURL: "http://example.invalid"})
+
+	// No Authorization header -- provider adapters mimic real providers'
+	// own (unauthenticated-by-SMSPit) wire format, so this must not 401
+	// like /api/v1/* does.
+	req := httptest.NewRequest(http.MethodPost, "/providers/messagebird/messages", nil)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("expected status 201, got %d", rec.Code)
+	}
+}

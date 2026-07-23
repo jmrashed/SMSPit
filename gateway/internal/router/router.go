@@ -61,6 +61,17 @@ func New(cfg config.Config) http.Handler {
 	r.With(gwmiddleware.RequireAPIKey(authClient), rateLimiter.Middleware).
 		Handle("/api/v1/*", proxy.New(cfg.SMSServiceURL, "", ""))
 
+	// Provider-compatible adapters (Day 51+) live at /providers/* on
+	// sms-service, outside its /api/v1 prefix (see
+	// docs/api/provider-compatibility.md#url-path-convention). Left
+	// unguarded like sms-service's own adapters: these mimic each real
+	// provider's own (unauthenticated-by-SMSPit) wire format so an
+	// existing provider SDK can point at SMSPit unmodified -- requiring
+	// an SMSPit API key on top would break that. Found missing entirely
+	// during the Day 98 QA pass: every adapter 404'd through the
+	// gateway despite working directly against sms-service.
+	r.Handle("/providers/*", proxy.New(cfg.SMSServiceURL, "", ""))
+
 	// auth-service's routes/api.php is mounted at /api by Laravel, so
 	// gateway's /auth/* is rewritten to /api/* before forwarding. Left
 	// unguarded here: it includes key generation (which can't require a

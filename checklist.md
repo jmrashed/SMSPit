@@ -432,10 +432,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Document docker-compose production deployment steps — [docs/production-deployment.md](docs/production-deployment.md#docker-compose-single-host)
   - [x] Document Kubernetes/Helm production deployment steps — [docs/production-deployment.md](docs/production-deployment.md#kubernetes-helm); fixed a real bug found while writing this: the Helm chart's default `image.repository` values pointed at unpublished `smspit/*` names instead of the Day 96 GHCR names
   - [x] Include an environment variable reference and scaling notes — [docs/production-deployment.md](docs/production-deployment.md#environment-variable-reference); scaling notes flag that Day 86's gateway rate limit is per-instance, not cluster-wide
-- [ ] **Day 98: Run a full end-to-end QA pass**
-  - [ ] Manually verify every feature listed in README against the running system
-  - [ ] Log and fix any bugs found
-  - [ ] Re-run the automated test suite across all services
+- [x] **Day 98: Run a full end-to-end QA pass**
+  - [x] Manually verify every feature listed in README against the running system — see [docs/qa-day98.md](docs/qa-day98.md) for the full pass, run against the live gateway+auth-service+sms-service+dashboard stack
+  - [x] Log and fix any bugs found — found and fixed a real bug: the 3 provider-compatible adapters were completely unreachable through the gateway (missing `/providers/*` route, an entire v0.3 feature never wired up); see [docs/qa-day98.md](docs/qa-day98.md#bug-found-and-fixed)
+  - [x] Re-run the automated test suite across all services — all 6 services + 4 SDKs pass after the fix, see [docs/qa-day98.md](docs/qa-day98.md#automated-test-suites-re-run-after-the-fix)
 - [ ] **Day 99: Update docs for v1.0**
   - [ ] Update README to remove "planned" framing where features are now live
   - [ ] Finalize `CONTRIBUTING.md`
