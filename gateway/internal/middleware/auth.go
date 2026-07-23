@@ -31,6 +31,9 @@ func RequireAPIKey(client *auth.Client) func(http.Handler) http.Handler {
 			r.Header.Set("X-Api-Key-Id", strconv.Itoa(key.ID))
 			r.Header.Set("X-Owner-Id", strconv.Itoa(key.OwnerID))
 			r.Header.Set("X-Api-Key-Scopes", strings.Join(key.Scopes, ","))
+			if key.OrgID != nil {
+				r.Header.Set("X-Org-Id", strconv.Itoa(*key.OrgID))
+			}
 
 			next.ServeHTTP(w, r)
 		})

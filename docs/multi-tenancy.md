@@ -57,3 +57,14 @@ team_user
 ```
 
 Cascade delete on the org/team foreign keys: deleting an organization removes its membership and team rows (and, transitively, team membership) rather than leaving orphans — there's no soft-delete/audit requirement on membership itself (unlike `api_keys.revoked_at`, which exists because *keys* need an audit trail; who was in an org at some past point does not, for this tool's scope).
+
+## Hardening audit (Day 86)
+
+Re-audited every org-scoped query and endpoint added since Day 59 for missing scoping or IDOR risk:
+
+- **sms-service** (`messages`, `templates`, `statistics`, WebSocket broadcasts): every repository/service method filters through the shared `orgWhere`/`buildFilterWhere` helpers, correctly treating a `NULL` org as `IsNull()` rather than `= NULL`. No controller fetches an entity by bare `:id` without first routing through the org-scoped `findOne`, so there are no IDOR gaps.
+- **auth-service** (`organizations`, `teams`): both controllers authorize via `OrganizationPolicy` (membership for read, admin role for mutation) plus an explicit `ensureTeamBelongsToOrganization` check, so a valid but cross-org team/org id 404s instead of leaking data.
+- **Provider adapters** (`providers/messagebird`, `providers/sns`, `providers/vonage`) intentionally accept unauthenticated third-party-shaped webhooks and persist with `org_id = null` — see [docs/api/provider-compatibility.md](api/provider-compatibility.md). This is a deliberate compatibility decision, not a scoping gap.
+- **Test coverage**: `sms-service/test/multi-tenancy.e2e-spec.ts` and `auth-service/tests/Feature/{OrganizationTest,TeamTest}.php` already cover cross-org isolation (list/detail/replay/update/delete all 404 or empty across org boundaries).
+
+The one real gap found: **no rate limiting existed anywhere in the stack.** Fixed by adding a per-tenant fixed-window limiter to the gateway (`gateway/internal/middleware/ratelimit.go`), applied to `/api/v1/*` after `RequireAPIKey` since it needs the resolved identity. It keys on `X-Org-Id` when the API key belongs to an organization, falling back to `X-Owner-Id` for keys with no org (matching the same nullable-org-id tolerance used elsewhere in this doc). Limit defaults to 300 req/min per tenant, configurable via `RATE_LIMIT_PER_MINUTE`. Implemented as an in-memory fixed window (no new dependency) rather than a distributed limiter — acceptable for a single gateway instance; would need a shared store (Redis) if the gateway is ever scaled horizontally.

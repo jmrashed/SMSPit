@@ -9,6 +9,7 @@ services:
       AUTH_SERVICE_URL: "http://auth-service:80"
       CORS_ORIGIN: "*"
       OTEL_EXPORTER_OTLP_ENDPOINT: "jaeger:4318"
+      RATE_LIMIT_PER_MINUTE: 300
     depends_on:
       - sms-service
       - auth-service

@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -46,10 +47,19 @@ func New(cfg config.Config) http.Handler {
 
 	authClient := auth.NewClient(cfg.AuthServiceURL)
 
+	rateLimitPerMinute := cfg.RateLimitPerMinute
+	if rateLimitPerMinute <= 0 {
+		rateLimitPerMinute = 300
+	}
+	rateLimiter := gwmiddleware.NewPerTenantRateLimiter(rateLimitPerMinute, time.Minute)
+
 	// sms-service already serves its API under /api/v1, so the path is
 	// forwarded unchanged. Mirrors sms-service's own ApiKeyGuard, which
 	// only protects its /messages routes, not health/root.
-	r.With(gwmiddleware.RequireAPIKey(authClient)).Handle("/api/v1/*", proxy.New(cfg.SMSServiceURL, "", ""))
+	// Rate limiting runs after RequireAPIKey (Day 86) since it keys off the
+	// X-Org-Id/X-Owner-Id headers that middleware resolves and sets.
+	r.With(gwmiddleware.RequireAPIKey(authClient), rateLimiter.Middleware).
+		Handle("/api/v1/*", proxy.New(cfg.SMSServiceURL, "", ""))
 
 	// auth-service's routes/api.php is mounted at /api by Laravel, so
 	// gateway's /auth/* is rewritten to /api/* before forwarding. Left

@@ -1,13 +1,17 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strconv"
+)
 
 type Config struct {
-	Port           string
-	SMSServiceURL  string
-	AuthServiceURL string
-	CORSOrigin     string
-	OTLPEndpoint   string
+	Port               string
+	SMSServiceURL      string
+	AuthServiceURL     string
+	CORSOrigin         string
+	OTLPEndpoint       string
+	RateLimitPerMinute int
 }
 
 func Load() Config {
@@ -18,6 +22,8 @@ func Load() Config {
 		CORSOrigin:     getEnv("CORS_ORIGIN", "*"),
 		// Host:port only (no scheme) -- otlptracehttp.WithEndpoint's format.
 		OTLPEndpoint: getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", ""),
+		// Per-org request quota per minute on /api/v1/*, Day 86.
+		RateLimitPerMinute: getEnvInt("RATE_LIMIT_PER_MINUTE", 300),
 	}
 }
 
@@ -26,4 +32,16 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func getEnvInt(key string, fallback int) int {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return fallback
+	}
+	return n
 }

@@ -14,6 +14,7 @@ type ValidatedKey struct {
 	ID      int      `json:"id"`
 	Name    string   `json:"name"`
 	OwnerID int      `json:"owner_id"`
+	OrgID   *int     `json:"org_id"`
 	Scopes  []string `json:"scopes"`
 }
 

@@ -230,6 +230,37 @@ func TestCORSExposesContentDispositionForDownloads(t *testing.T) {
 	}
 }
 
+func TestRateLimitAppliesPerOrgAfterAuth(t *testing.T) {
+	authBackend := validatingAuthBackend(t)
+	defer authBackend.Close()
+
+	smsBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer smsBackend.Close()
+
+	r := New(config.Config{SMSServiceURL: smsBackend.URL, AuthServiceURL: authBackend.URL, RateLimitPerMinute: 1})
+
+	makeRequest := func() int {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/messages", nil)
+		req.Header.Set("Authorization", "Bearer valid")
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+		return rec.Code
+	}
+
+	if code := makeRequest(); code != http.StatusOK {
+		t.Fatalf("first request: expected 200, got %d", code)
+	}
+
+	// validatingAuthBackend always resolves to the same owner_id, so the
+	// second request within the window must be throttled by the gateway
+	// before ever reaching sms-service.
+	if code := makeRequest(); code != http.StatusTooManyRequests {
+		t.Fatalf("second request: expected 429 once over the per-org quota, got %d", code)
+	}
+}
+
 func TestRoutesToAuthServiceWithPathRewrite(t *testing.T) {
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path != "/api/api-keys" {

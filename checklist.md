@@ -384,10 +384,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Connect Grafana to the Prometheus datasource — auto-provisioned, see [docker/grafana/provisioning/datasources/prometheus.yml](docker/grafana/provisioning/datasources/prometheus.yml)
   - [x] Build panels for request rate, latency, error rate
   - [x] Build a panel for message volume/OTP detection rate — see [docs/observability.md](docs/observability.md#dashboards-day-85)
-- [ ] **Day 86: Harden multi-tenancy**
-  - [ ] Audit all queries/endpoints for missing org scoping
-  - [ ] Implement per-org rate limiting
-  - [ ] Add an automated test suite for tenant isolation
+- [x] **Day 86: Harden multi-tenancy**
+  - [x] Audit all queries/endpoints for missing org scoping — see [docs/multi-tenancy.md](docs/multi-tenancy.md#hardening-audit-day-86); no gaps found, existing scoping already correct
+  - [x] Implement per-org rate limiting — `gateway/internal/middleware/ratelimit.go`, applied to `/api/v1/*` after auth
+  - [x] Add an automated test suite for tenant isolation — pre-existing `sms-service/test/multi-tenancy.e2e-spec.ts` and `auth-service/tests/Feature/{OrganizationTest,TeamTest}.php` already cover this; added `gateway/internal/middleware/ratelimit_test.go` and a router-level test for the new rate limiter
 - [ ] **Day 87: Security review**
   - [ ] Review secrets management (env vars vs. vault)
   - [ ] Implement API key rotation
