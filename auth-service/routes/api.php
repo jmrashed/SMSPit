@@ -12,6 +12,7 @@ Route::get('/health', function () {
 Route::get('/api-keys', [ApiKeyController::class, 'index']);
 Route::post('/api-keys', [ApiKeyController::class, 'store']);
 Route::delete('/api-keys/{apiKey}', [ApiKeyController::class, 'revoke']);
+Route::post('/api-keys/{apiKey}/rotate', [ApiKeyController::class, 'rotate']);
 
 Route::middleware('api.key')->group(function () {
     Route::get('/api-keys/validate', [ApiKeyController::class, 'validateKey']);

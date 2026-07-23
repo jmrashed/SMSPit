@@ -102,4 +102,46 @@ describe('SnsController', () => {
     expect(messagesService.create).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(400);
   });
+
+  it('rejects a PhoneNumber over 32 characters', async () => {
+    const res = fakeResponse();
+
+    await controller.publish(
+      fakeRequest({ Action: 'Publish', PhoneNumber: '+1'.repeat(20), Message: 'hi' }),
+      res as unknown as Response,
+    );
+
+    expect(messagesService.create).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    const xml = res.send.mock.calls[0][0] as string;
+    expect(xml).toContain('InvalidParameter');
+  });
+
+  it('rejects a Message over 1600 characters', async () => {
+    const res = fakeResponse();
+
+    await controller.publish(
+      fakeRequest({ Action: 'Publish', PhoneNumber: '+15551234567', Message: 'x'.repeat(1601) }),
+      res as unknown as Response,
+    );
+
+    expect(messagesService.create).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    const xml = res.send.mock.calls[0][0] as string;
+    expect(xml).toContain('InvalidParameter');
+  });
+
+  it('rejects a Publish where PhoneNumber/Message are arrays rather than single values', async () => {
+    const res = fakeResponse();
+
+    await controller.publish(
+      fakeRequest({ Action: 'Publish', PhoneNumber: ['+15551234567', '+15557654321'] as unknown as string, Message: 'hi' }),
+      res as unknown as Response,
+    );
+
+    expect(messagesService.create).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    const xml = res.send.mock.calls[0][0] as string;
+    expect(xml).toContain('InvalidParameter');
+  });
 });

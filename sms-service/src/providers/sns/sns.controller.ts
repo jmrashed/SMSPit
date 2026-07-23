@@ -39,6 +39,27 @@ export class SnsController {
       return;
     }
 
+    // The AWS Query API is form-encoded key=value, not JSON, so this
+    // controller reads req.body directly rather than through a DTO +
+    // Nest's ValidationPipe (which would also emit its own JSON error
+    // shape, breaking the XML error contract this adapter mimics). These
+    // checks mirror CreateMessageDto's constraints (sms-service/src/messages/dto/create-message.dto.ts)
+    // by hand instead.
+    if (typeof body.PhoneNumber !== 'string' || typeof body.Message !== 'string') {
+      this.sendError(res, 400, 'InvalidParameter', 'PhoneNumber and Message must be single string values.');
+      return;
+    }
+
+    if (body.PhoneNumber.length > 32) {
+      this.sendError(res, 400, 'InvalidParameter', 'PhoneNumber must not exceed 32 characters.');
+      return;
+    }
+
+    if (body.Message.length > 1600) {
+      this.sendError(res, 400, 'InvalidParameter', 'Message must not exceed 1600 characters.');
+      return;
+    }
+
     // SNS has no per-message sender field (SMSSenderID is account-level,
     // set outside the Publish call) -- default to SMSPit like other
     // adapters do when the source format has no equivalent field.

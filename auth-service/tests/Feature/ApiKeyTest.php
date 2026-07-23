@@ -177,6 +177,78 @@ class ApiKeyTest extends TestCase
         $response->assertJsonPath('code', 'VALIDATION_ERROR');
     }
 
+    public function test_rotates_a_key_returning_a_fresh_secret_and_revoking_the_old_one(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $organization->users()->attach($user->id, ['role' => 'member']);
+        $secret = 'plaintext-secret';
+        $apiKey = ApiKey::factory()->for($user, 'owner')->create([
+            'name' => 'Rotating key',
+            'org_id' => $organization->id,
+            'scopes' => ['messages:read'],
+            'secret_hash' => Hash::make($secret),
+        ]);
+
+        $response = $this->postJson("/api/api-keys/{$apiKey->id}/rotate");
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('name', 'Rotating key');
+        $response->assertJsonPath('org_id', $organization->id);
+        $response->assertJsonPath('scopes', ['messages:read']);
+        $response->assertJsonPath('rotated_from', $apiKey->id);
+        $this->assertArrayNotHasKey('secret_hash', $response->json());
+
+        [$newLookupKey, $newSecret] = explode('.', $response->json('key'));
+        $newApiKey = ApiKey::where('key', $newLookupKey)->first();
+        $this->assertNotNull($newApiKey);
+        $this->assertNotSame($apiKey->id, $newApiKey->id);
+        $this->assertTrue(Hash::check($newSecret, $newApiKey->secret_hash));
+        $this->assertNull($newApiKey->revoked_at);
+
+        // Old key must be revoked so it stops authenticating immediately.
+        $this->assertNotNull($apiKey->fresh()->revoked_at);
+    }
+
+    public function test_rotating_an_already_revoked_key_still_returns_a_live_replacement(): void
+    {
+        $user = User::factory()->create();
+        $apiKey = ApiKey::factory()->for($user, 'owner')->create(['revoked_at' => now()->subHour()]);
+        $originalRevokedAt = $apiKey->revoked_at;
+
+        $response = $this->postJson("/api/api-keys/{$apiKey->id}/rotate");
+
+        $response->assertStatus(201);
+        $this->assertNull($response->json('revoked_at') ?? null);
+        $this->assertTrue($apiKey->fresh()->revoked_at->equalTo($originalRevokedAt));
+
+        [$newLookupKey] = explode('.', $response->json('key'));
+        $newApiKey = ApiKey::where('key', $newLookupKey)->first();
+        $this->assertNull($newApiKey->revoked_at);
+    }
+
+    public function test_rotating_an_unknown_key_returns_404(): void
+    {
+        $response = $this->postJson('/api/api-keys/999999/rotate');
+
+        $response->assertStatus(404);
+    }
+
+    public function test_the_old_key_fails_validation_after_rotation(): void
+    {
+        $user = User::factory()->create();
+        $secret = 'plaintext-secret';
+        $apiKey = ApiKey::factory()->for($user, 'owner')->create(['secret_hash' => Hash::make($secret)]);
+
+        $this->postJson("/api/api-keys/{$apiKey->id}/rotate")->assertStatus(201);
+
+        $response = $this->getJson('/api/api-keys/validate', [
+            'Authorization' => "Bearer {$apiKey->key}.{$secret}",
+        ]);
+
+        $response->assertStatus(401);
+    }
+
     public function test_validate_returns_the_keys_org_id(): void
     {
         $user = User::factory()->create();

@@ -70,6 +70,43 @@ class ApiKeyController extends Controller
     }
 
     /**
+     * Replaces a key with a fresh secret while keeping the same name,
+     * owner, org, and scopes -- the old key is revoked (not deleted, same
+     * as `revoke`) so any in-flight requests using it are auditable
+     * rather than silently orphaned. A rotated *and already revoked* key
+     * still produces a live replacement, mirroring `revoke`'s idempotency
+     * (rotating is always safe to retry).
+     */
+    public function rotate(ApiKey $apiKey): JsonResponse
+    {
+        $key = 'sms_live_'.bin2hex(random_bytes(8));
+        $secret = bin2hex(random_bytes(24));
+
+        $newApiKey = ApiKey::create([
+            'name' => $apiKey->name,
+            'key' => $key,
+            'secret_hash' => Hash::make($secret),
+            'owner_id' => $apiKey->owner_id,
+            'org_id' => $apiKey->org_id,
+            'scopes' => $apiKey->scopes,
+        ]);
+
+        if ($apiKey->revoked_at === null) {
+            $apiKey->forceFill(['revoked_at' => now()])->save();
+        }
+
+        return response()->json([
+            'id' => $newApiKey->id,
+            'name' => $newApiKey->name,
+            'key' => "{$key}.{$secret}",
+            'org_id' => $newApiKey->org_id,
+            'scopes' => $newApiKey->scopes,
+            'rotated_from' => $apiKey->id,
+            'created_at' => $newApiKey->created_at->toIso8601String(),
+        ], 201);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function toResource(ApiKey $apiKey): array

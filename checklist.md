@@ -388,10 +388,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Audit all queries/endpoints for missing org scoping — see [docs/multi-tenancy.md](docs/multi-tenancy.md#hardening-audit-day-86); no gaps found, existing scoping already correct
   - [x] Implement per-org rate limiting — `gateway/internal/middleware/ratelimit.go`, applied to `/api/v1/*` after auth
   - [x] Add an automated test suite for tenant isolation — pre-existing `sms-service/test/multi-tenancy.e2e-spec.ts` and `auth-service/tests/Feature/{OrganizationTest,TeamTest}.php` already cover this; added `gateway/internal/middleware/ratelimit_test.go` and a router-level test for the new rate limiter
-- [ ] **Day 87: Security review**
-  - [ ] Review secrets management (env vars vs. vault)
-  - [ ] Implement API key rotation
-  - [ ] Review and add input sanitization across all endpoints
+- [x] **Day 87: Security review**
+  - [x] Review secrets management (env vars vs. vault) — see [docs/security.md](docs/security.md#secrets-management); env-vars-only is a deliberate decision for this project's scope
+  - [x] Implement API key rotation — `POST /api-keys/{apiKey}/rotate` in auth-service, see [docs/security.md](docs/security.md#api-key-rotation)
+  - [x] Review and add input sanitization across all endpoints — see [docs/security.md](docs/security.md#input-sanitization); fixed the one gap found (SNS adapter accepted unvalidated field types/lengths)
 - [ ] **Day 88: Load testing**
   - [ ] Write load test scripts (k6/Locust) for sms-service and gateway
   - [ ] Run load tests and record baseline throughput/latency
