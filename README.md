@@ -14,7 +14,7 @@
   <a href="https://github.com/jmrashed/SMSPit/issues"><img src="https://img.shields.io/github/issues/jmrashed/SMSPit" alt="Issues"></a>
 </p>
 
-> **Status: v1.0 feature-complete, release pending.** Everything through v0.4 (SMS capture/search/replay, the dashboard, API-key auth, provider-compatible endpoints, multi-tenancy, templates, export, AI detection/classification/spam/test-data) plus all of v1.0's scope — Kubernetes manifests and a Helm chart, OpenTelemetry tracing, Prometheus metrics, Grafana dashboards, hardened multi-tenancy (per-org rate limiting), 4 native SDKs (PHP/Go/Node.js/Python), a full OpenAPI reference, and an extended CI/CD pipeline — are implemented and tested; see the [changelog](CHANGELOG.md) for the version-by-version detail and [docs/qa-day98.md](docs/qa-day98.md) for the pre-release QA pass. The `v1.0.0` tag itself, the published Docker images, and the SDK package registry publishes are the last step (checklist Days 96/100) — not yet done as of this commit. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
+> **Status: v1.0.0 released.** SMS capture/search/replay, the dashboard, API-key auth (with rotation), provider-compatible endpoints, multi-tenancy (organizations/teams, per-org rate limiting), templates, export, AI detection/classification/spam/test-data, Kubernetes manifests and a Helm chart, OpenTelemetry tracing, Prometheus metrics, Grafana dashboards, 4 native SDKs (PHP/Go/Node.js/Python), a full OpenAPI reference, and an extended CI/CD pipeline are all live — see the [changelog](CHANGELOG.md) for the version-by-version detail. SDK package registry publishing (Packagist/pkg.go.dev/npm/PyPI) is the one remaining gap — see [docs/sdks.md](docs/sdks.md#publishing-status). Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
 
 ---
 
@@ -552,7 +552,7 @@ Every service exposes Prometheus metrics (`/metrics`) and emits OpenTelemetry tr
 
 ---
 
-## v1.0 — implemented, release pending
+## v1.0 — shipped
 
 - Kubernetes manifests + Helm chart
 - OpenTelemetry tracing
@@ -566,7 +566,7 @@ Every service exposes Prometheus metrics (`/metrics`) and emits OpenTelemetry tr
 - Production deployment guide
 - End-to-end QA pass (found and fixed a real routing bug — see [docs/qa-day98.md](docs/qa-day98.md))
 
-Not yet done: publishing images/SDKs to their registries and tagging the `v1.0.0` release itself (checklist Days 96/100) — everything else above is implemented and tested.
+SDK package registry publishing (Packagist/pkg.go.dev/npm/PyPI) is the one remaining gap — see [docs/sdks.md](docs/sdks.md#publishing-status).
 
 ---
 

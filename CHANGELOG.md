@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2026-07-24
 
 The v1.0 milestone (checklist Days 81–100): Kubernetes/Helm, full observability, hardened multi-tenancy, native SDKs, a complete OpenAPI reference, an extended CI/CD pipeline, a production deployment guide, and an end-to-end QA pass. No new services — this release hardens and completes the six services shipped through v0.4, rather than adding a seventh.
 
@@ -29,7 +29,7 @@ The v1.0 milestone (checklist Days 81–100): Kubernetes/Helm, full observabilit
 
 ### Known gaps
 
-- Not yet done: pushing the `v1.0.0` tag itself, publishing Docker images to GHCR, and publishing the 4 SDKs to their package registries (Packagist/pkg.go.dev/npm/PyPI) — the mechanisms for all three are wired up and tested, but pushing a tag is a real, visible, hard-to-reverse action against the live repo/registries, done deliberately at release time rather than speculatively mid-checklist. See [docs/registry.md](docs/registry.md) and [docs/sdks.md](docs/sdks.md#publishing-status).
+- Docker images are published to GHCR by CI on this tag push (see [docs/registry.md](docs/registry.md)); the 4 SDKs are not yet published to their package registries (Packagist/pkg.go.dev/npm/PyPI) — no registry credentials in this environment, see [docs/sdks.md](docs/sdks.md#publishing-status).
 - No Docker/Podman/kubectl/helm binary was available in the environment this release was built in — every Docker/Kubernetes-related claim above was verified by an equivalent means (host toolchain builds, live process replication, manifest parsing) rather than a real `docker compose up`/`kubectl apply`/`helm install`. Re-verify the first real deployment against [docs/production-deployment.md](docs/production-deployment.md).
 
 ## [0.4.0] - 2026-07-21

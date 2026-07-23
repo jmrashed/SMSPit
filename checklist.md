@@ -440,7 +440,7 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Update README to remove "planned" framing where features are now live — fixed the ToC anchors, "Planned Features" section, Quick Start, Example Usage heading, Roadmap v1.0 status, and a real doc bug found along the way (`PATCH` vs. actual `PUT` on the template update endpoint)
   - [x] Finalize `CONTRIBUTING.md` — new file, drawn from CLAUDE.md's working conventions
   - [x] Write a `CHANGELOG.md` entry summarizing the v0.1–v1.0 journey — `[1.0.0] - Unreleased` entry in [CHANGELOG.md](CHANGELOG.md)
-- [ ] **Day 100: Tag and release v1.0**
-  - [ ] Final version bump across all services
-  - [ ] Tag `v1.0.0` and publish GitHub release notes
-  - [ ] Announce the release
+- [x] **Day 100: Tag and release v1.0**
+  - [x] Final version bump across all services — `sms-service`, `dashboard` package versions, Helm chart `version`/`appVersion`, OpenAPI spec `info.version`, all to `1.0.0`
+  - [x] Tag `v1.0.0` and publish GitHub release notes
+  - [ ] Announce the release — outside the scope of what an agent can do (no social/community channels to post to); the GitHub release itself is the announcement artifact
