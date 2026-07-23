@@ -2,6 +2,36 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.0] - Unreleased
+
+The v1.0 milestone (checklist Days 81–100): Kubernetes/Helm, full observability, hardened multi-tenancy, native SDKs, a complete OpenAPI reference, an extended CI/CD pipeline, a production deployment guide, and an end-to-end QA pass. No new services — this release hardens and completes the six services shipped through v0.4, rather than adding a seventh.
+
+### The v0.1 → v1.0 journey, briefly
+
+- **v0.1** — the core loop: capture, list/search, replay, a dashboard, Docker. `sms-service` (NestJS) and `dashboard` (React) only.
+- **v0.2** — `auth-service` (Laravel) and `gateway` (Go) join; API-key authentication enforced end to end, statistics, WebSocket live updates.
+- **v0.3** — provider-compatible endpoints (Vonage/SNS/MessageBird), multi-tenancy (organizations/teams), message templates, export. No new services.
+- **v0.4** — `ai-service` (FastAPI) and `worker` (Go) join; OTP detection, classification, spam detection, synthetic test-data generation.
+- **v1.0** — no new services; hardens and completes the six above for production use (this entry).
+
+### Added
+
+- **Multi-tenancy hardening (Day 86)**: audited every org-scoped query/endpoint across `sms-service` and `auth-service` — no gaps found, existing scoping already correct. Added the one real gap: per-org rate limiting at the gateway (`gateway/internal/middleware/ratelimit.go`), an in-memory fixed-window limiter keyed on org id (falling back to owner id), default 300 req/min, configurable via `RATE_LIMIT_PER_MINUTE`.
+- **Security review (Day 87)**: `POST /api-keys/{apiKey}/rotate` in `auth-service` (generates a fresh key/secret, revokes the source key); closed an input-validation gap in the SNS provider adapter (unbounded field lengths/types); documented the env-vars-only secrets management decision (see [docs/security.md](docs/security.md)).
+- **Load testing (Day 88)**: Locust scripts (`scripts/load-test/`) against the gateway found every request serializing to a ~14s median latency floor regardless of load — traced to `scripts/dev-up.sh` starting `auth-service` via `php artisan serve`, single-threaded by default, throttling the whole stack since both the gateway and `sms-service` validate every request against it. Fixed by properly enabling `PHP_CLI_SERVER_WORKERS` (Laravel's `ServeCommand` silently ignores it without `--no-reload`); latency dropped to ~3.2s median, ~7x throughput in the same environment. See [docs/load-testing.md](docs/load-testing.md).
+- **4 native SDKs (Days 89-92)**: PHP (`smspit/sdk`, ext-curl), Go (`github.com/jmrashed/SMSPit/sdks/go`, `net/http`), Node.js (`@smspit/sdk`, global `fetch`), Python (`smspit`, `urllib`) — each with `send`/`list`/`get`/`replay`, no third-party HTTP dependency, and verified live against a running instance, not just mocked tests. Cross-SDK docs at [docs/sdks.md](docs/sdks.md) (Day 93).
+- **Full OpenAPI reference + docs site (Day 94)**: [docs/openapi/openapi.yaml](docs/openapi/openapi.yaml) covers every endpoint across the gateway, `sms-service`, and `auth-service`; validated with Redocly CLI. A Swagger UI docs site ([docs/openapi/site/](docs/openapi/site/)) renders it, verified live with Playwright. Documents 2 real inconsistencies found rather than hiding them (the MessageBird adapter's missing length constraints, and the unauthenticated API key management routes).
+- **Extended CI/CD (Day 95)**: `.github/workflows/ci.yml` gained test jobs for `gateway`, `worker`, `ai-service`, `dashboard`, and all 4 SDKs (previously only `auth-service`'s migration — never its own tests — and `sms-service` ran); a `publish-images` job (GHCR, matrix over all 6 services) gated on `v*` tags; a `deploy-staging` job running the Day 82 Helm chart behind a `staging` GitHub Environment.
+- **Container registry (Day 96)**: GHCR chosen (zero extra secrets — authenticates with the workflow's own `GITHUB_TOKEN`). See [docs/registry.md](docs/registry.md).
+- **Production deployment guide (Day 97)**: [docs/production-deployment.md](docs/production-deployment.md) covers Compose and Kubernetes/Helm deployment, an env var reference, and scaling notes. Found and fixed a real bug while writing it: the Helm chart's default `image.repository` values still pointed at unpublished `smspit/*` names instead of the Day 96 GHCR names.
+- **End-to-end QA pass (Day 98)**: manually verified every major feature against a live stack. Found and fixed a real bug: the 3 provider-compatible adapters were completely unreachable through the gateway (`/providers/*` was never routed — an entire v0.3 feature, invisible to anyone going through the intended public entry point). See [docs/qa-day98.md](docs/qa-day98.md).
+- **Docs refresh for v1.0 (Day 99)**: README's "planned" framing (left over from the v0.1 draft) replaced with accurate status throughout — Features, Quick Start, REST API (including a real `PATCH`→`PUT` template-endpoint documentation bug fix), Roadmap; added [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### Known gaps
+
+- Not yet done: pushing the `v1.0.0` tag itself, publishing Docker images to GHCR, and publishing the 4 SDKs to their package registries (Packagist/pkg.go.dev/npm/PyPI) — the mechanisms for all three are wired up and tested, but pushing a tag is a real, visible, hard-to-reverse action against the live repo/registries, done deliberately at release time rather than speculatively mid-checklist. See [docs/registry.md](docs/registry.md) and [docs/sdks.md](docs/sdks.md#publishing-status).
+- No Docker/Podman/kubectl/helm binary was available in the environment this release was built in — every Docker/Kubernetes-related claim above was verified by an equivalent means (host toolchain builds, live process replication, manifest parsing) rather than a real `docker compose up`/`kubectl apply`/`helm install`. Re-verify the first real deployment against [docs/production-deployment.md](docs/production-deployment.md).
+
 ## [0.4.0] - 2026-07-21
 
 AI OTP detection, classification, spam detection, and test-data generation, per the [v0.4 roadmap](README.md#roadmap). Two new services — `ai-service` (FastAPI) and `worker` (Go) — join the four from v0.3, wired into `docker-compose.yml`.

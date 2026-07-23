@@ -436,10 +436,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Manually verify every feature listed in README against the running system — see [docs/qa-day98.md](docs/qa-day98.md) for the full pass, run against the live gateway+auth-service+sms-service+dashboard stack
   - [x] Log and fix any bugs found — found and fixed a real bug: the 3 provider-compatible adapters were completely unreachable through the gateway (missing `/providers/*` route, an entire v0.3 feature never wired up); see [docs/qa-day98.md](docs/qa-day98.md#bug-found-and-fixed)
   - [x] Re-run the automated test suite across all services — all 6 services + 4 SDKs pass after the fix, see [docs/qa-day98.md](docs/qa-day98.md#automated-test-suites-re-run-after-the-fix)
-- [ ] **Day 99: Update docs for v1.0**
-  - [ ] Update README to remove "planned" framing where features are now live
-  - [ ] Finalize `CONTRIBUTING.md`
-  - [ ] Write a `CHANGELOG.md` entry summarizing the v0.1–v1.0 journey
+- [x] **Day 99: Update docs for v1.0**
+  - [x] Update README to remove "planned" framing where features are now live — fixed the ToC anchors, "Planned Features" section, Quick Start, Example Usage heading, Roadmap v1.0 status, and a real doc bug found along the way (`PATCH` vs. actual `PUT` on the template update endpoint)
+  - [x] Finalize `CONTRIBUTING.md` — new file, drawn from CLAUDE.md's working conventions
+  - [x] Write a `CHANGELOG.md` entry summarizing the v0.1–v1.0 journey — `[1.0.0] - Unreleased` entry in [CHANGELOG.md](CHANGELOG.md)
 - [ ] **Day 100: Tag and release v1.0**
   - [ ] Final version bump across all services
   - [ ] Tag `v1.0.0` and publish GitHub release notes

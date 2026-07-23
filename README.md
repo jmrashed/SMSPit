@@ -14,25 +14,27 @@
   <a href="https://github.com/jmrashed/SMSPit/issues"><img src="https://img.shields.io/github/issues/jmrashed/SMSPit" alt="Issues"></a>
 </p>
 
-> **Status: v0.4.0 released.** SMS capture/search/replay, the dashboard (inbox, detail, statistics, live WebSocket updates, API key management), API-key authentication enforced at both `sms-service` and the `gateway`, provider-compatible endpoints (Vonage, AWS SNS, MessageBird), multi-tenant organizations/teams with scoped data, message templates, message export (CSV/JSON), and AI-powered OTP detection/classification/spam detection/test-data generation (`ai-service`, consumed synchronously on capture and asynchronously by `worker` via a Redis Streams queue) are live — see the [changelog](CHANGELOG.md) for what's actually runnable today. Everything else in this README (Kubernetes) is still the v1.0 roadmap, not yet built. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
+> **Status: v1.0 feature-complete, release pending.** Everything through v0.4 (SMS capture/search/replay, the dashboard, API-key auth, provider-compatible endpoints, multi-tenancy, templates, export, AI detection/classification/spam/test-data) plus all of v1.0's scope — Kubernetes manifests and a Helm chart, OpenTelemetry tracing, Prometheus metrics, Grafana dashboards, hardened multi-tenancy (per-org rate limiting), 4 native SDKs (PHP/Go/Node.js/Python), a full OpenAPI reference, and an extended CI/CD pipeline — are implemented and tested; see the [changelog](CHANGELOG.md) for the version-by-version detail and [docs/qa-day98.md](docs/qa-day98.md) for the pre-release QA pass. The `v1.0.0` tag itself, the published Docker images, and the SDK package registry publishes are the last step (checklist Days 96/100) — not yet done as of this commit. Follow progress in [checklist.md](checklist.md). Per-service stack and feature docs live in [docs/](docs/).
 
 ---
 
 ## Table of Contents
 
 - [Why SMSPit?](#why-smspit)
-- [Planned Features](#planned-features)
+- [Features](#features)
 - [Screenshots](#screenshots)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Quick Start](#quick-start-planned)
-- [Example Usage](#example-planned-usage)
-- [REST API](#rest-api-planned)
+- [Quick Start](#quick-start)
+- [Example Usage](#example-usage)
+- [REST API](#rest-api)
 - [Dashboard Features](#dashboard-features)
+- [AI Features](#ai-features)
 - [Provider Compatibility](#provider-compatibility)
+- [Observability](#observability)
 - [Roadmap](#roadmap)
-- [SDKs](#sdks-planned)
+- [SDKs](#sdks)
 - [Contributing](#contributing)
 - [License](#license)
 - [Inspiration](#inspiration)
@@ -58,44 +60,36 @@ No SMS is actually delivered.
 
 ---
 
-## Planned Features
+## Features
 
-None of these are implemented yet — see the [Roadmap](#roadmap) for what's targeted in each release.
+All shipped — see the [Roadmap](#roadmap) for which release introduced each.
 
 - 📩 Capture outgoing SMS
 - 🔍 Powerful search and filtering
 - ⚡ Real-time dashboard
 - 🔄 Replay SMS requests
-- 📱 OTP detection
-- 📦 REST API
-- 🔑 API Key authentication
+- 📱 OTP detection, classification, and spam detection (AI-powered)
+- 📦 REST API, fully documented via [OpenAPI](docs/openapi/openapi.yaml)
+- 🔑 API Key authentication, rotation, and revocation
 - 📊 Delivery statistics
-- 📁 Export messages
+- 📁 Export messages (CSV/JSON)
 - 🧪 CI/CD friendly
-- 🐳 Docker support
-- 🌐 Multi-tenant ready
+- 🐳 Docker support, Kubernetes manifests, and a Helm chart
+- 🌐 Multi-tenant (organizations, teams, per-org rate limiting)
 - 📡 WebSocket live updates
 - 📜 Request history
-- 🔥 Provider emulation
+- 🔥 Provider emulation (Vonage, AWS SNS, MessageBird)
 - ⚙️ OpenAPI documentation
+- 📈 Prometheus metrics, Grafana dashboards, and OpenTelemetry tracing
+- 🧰 Native SDKs (PHP, Go, Node.js, Python)
 
 ---
 
 # Screenshots
 
-Mockup of the planned dashboard (not a real screenshot yet):
+The inbox — captured messages with AI-detected OTP, category, and spam badges:
 
-```
-Inbox
-
-+---------------------------------------------------------------+
-| To           Message                    Time        Status     |
-+---------------------------------------------------------------+
-| +88017...    Your OTP is 492184         09:24 PM    Captured   |
-| +88018...    Welcome to SMSPit          09:22 PM    Captured   |
-| +88019...    Payment Successful         09:21 PM    Captured   |
-+---------------------------------------------------------------+
-```
+![SMSPit inbox](docs/assets/screenshot-inbox.png)
 
 ---
 
@@ -149,7 +143,7 @@ Inbox
 
 # Project Structure
 
-Service folders and shared directories are already scaffolded; internal service code (marked below) is still planned per [checklist.md](checklist.md).
+All service folders below are fully implemented, not just scaffolded — see [checklist.md](checklist.md) for the day-by-day build history.
 
 ```
 SMSPit/
@@ -235,11 +229,18 @@ SMSPit/
 │   ├── k8s/
 │   └── helm/
 │
-├── scripts/                       # Dev & CI helper scripts (planned)
+├── scripts/                       # Dev & CI helper scripts, plus load-test/ (Day 88)
 │   ├── setup.sh
-│   └── migrate.sh
+│   ├── dev-up.sh
+│   └── load-test/
 │
-├── docker-compose.yml             # wires gateway + auth-service + sms-service + ai-service + worker + dashboard + Postgres + Redis (v0.4)
+├── sdks/                          # Native client SDKs (Days 89-93)
+│   ├── php/
+│   ├── go/
+│   ├── nodejs/
+│   └── python/
+│
+├── docker-compose.yml             # wires gateway + auth-service + sms-service + ai-service + worker + dashboard + Postgres + Redis + Jaeger + Prometheus + Grafana
 ├── checklist.md                   # 100-day build checklist
 ├── CLAUDE.md                      # AI agent working guide
 ├── LICENSE
@@ -250,9 +251,9 @@ SMSPit/
 
 # Quick Start
 
-v0.2 ships `gateway`, `auth-service`, `sms-service`, and `dashboard`; the workflow below covers all four. `docker compose up -d` itself hasn't been run/verified in this environment (no Docker available during development) — see [CHANGELOG.md](CHANGELOG.md#known-gaps).
+`docker-compose.yml` wires up all 8 services (`gateway`, `auth-service`, `sms-service`, `ai-service`, `worker`, `dashboard`, Postgres, Redis) plus the observability stack (Jaeger, Prometheus, Grafana). `docker compose up -d` itself hasn't been run/verified in the environment this was built in (no Docker available during development) — see [CHANGELOG.md](CHANGELOG.md#known-gaps) and [docs/production-deployment.md](docs/production-deployment.md) for what was verified instead, and re-verify against a real `docker compose up -d` before depending on it. `scripts/dev-up.sh` is the Docker-free alternative used throughout this project's own development.
 
-All API requests now require an API key: generate one via `POST /api/api-keys` on `auth-service` (or the dashboard's own `/api-keys` page, which needs no key itself to get in) and pass it as `Authorization: Bearer <key>` against the gateway.
+All API requests require an API key: generate one via `POST /api/api-keys` on `auth-service` (or the dashboard's own `/api-keys` page, which needs no key itself to get in) and pass it as `Authorization: Bearer <key>` against the gateway.
 
 ## Clone
 
@@ -284,7 +285,7 @@ http://localhost:8080
 
 ---
 
-# Example (Planned Usage)
+# Example Usage
 
 The idea: point your app at SMSPit instead of your real SMS provider. No code change beyond configuration — every message gets captured, not delivered.
 
@@ -338,7 +339,7 @@ The message appears instantly in the dashboard — no network call leaves your m
 
 # REST API
 
-Every endpoint below requires `Authorization: Bearer <api key>` as of v0.2, validated against `auth-service` (at the gateway, and again at `sms-service` itself for defense in depth).
+Every endpoint below requires `Authorization: Bearer <api key>` (validated against `auth-service` at the gateway, and again at `sms-service` itself for defense in depth), except the [provider-compatible adapters](#provider-compatibility) and the API key bootstrap/management routes, which are intentionally unauthenticated (see [docs/security.md](docs/security.md)). This is a summary — the full, versioned contract (request/response schemas, every status code) is in [docs/openapi/openapi.yaml](docs/openapi/openapi.yaml), also viewable via [docs/openapi/site/index.html](docs/openapi/site/index.html).
 
 ## Send SMS
 
@@ -422,7 +423,7 @@ Same filters as List Messages (`to`, `from`, `created_after`, `created_before`);
 GET    /api/v1/templates
 POST   /api/v1/templates
 GET    /api/v1/templates/{id}
-PATCH  /api/v1/templates/{id}
+PUT    /api/v1/templates/{id}
 DELETE /api/v1/templates/{id}
 ```
 
@@ -436,13 +437,15 @@ Templates support `{{variable}}` placeholders, filled in at send time.
 GET    /api/organizations
 POST   /api/organizations
 GET    /api/organizations/{id}
-PATCH  /api/organizations/{id}
+PUT    /api/organizations/{id}
 DELETE /api/organizations/{id}
 GET    /api/organizations/{id}/teams
 POST   /api/organizations/{id}/teams
+POST   /api/organizations/{id}/teams/{team}/members
+DELETE /api/organizations/{id}/teams/{team}/members/{user}
 ```
 
-Served by `auth-service`. An API key scoped to an organization only sees that organization's messages, keys, and templates; ungrouped keys (no organization) see only ungrouped data — organization membership is a partition, not a wildcard.
+Served by `auth-service` (paths above as seen directly on `auth-service`; through the gateway, prefix with `/auth` instead of `/api` — e.g. `POST /auth/organizations`). An API key scoped to an organization only sees that organization's messages, keys, and templates; ungrouped keys (no organization) see only ungrouped data — organization membership is a partition, not a wildcard.
 
 ---
 
@@ -502,6 +505,12 @@ These endpoints are unauthenticated by design, matching the "swap the base URL, 
 
 ---
 
+# Observability
+
+Every service exposes Prometheus metrics (`/metrics`) and emits OpenTelemetry traces, wired into `docker-compose.yml` alongside Jaeger, Prometheus, and pre-provisioned Grafana dashboards (request rate/latency/error rate, message volume, OTP detection rate). See [docs/observability.md](docs/observability.md) for the full setup and how it was verified in an environment without Docker.
+
+---
+
 # Roadmap
 
 ## v0.1 — shipped
@@ -543,15 +552,21 @@ These endpoints are unauthenticated by design, matching the "swap the base URL, 
 
 ---
 
-## v1.0
+## v1.0 — implemented, release pending
 
-- Kubernetes
-- Helm
-- OpenTelemetry
-- Prometheus
-- Grafana
-- Multi-tenancy
-- SDKs
+- Kubernetes manifests + Helm chart
+- OpenTelemetry tracing
+- Prometheus metrics + Grafana dashboards
+- Hardened multi-tenancy (org-scoping audit, per-org rate limiting)
+- Security review (secrets management, API key rotation, input validation)
+- Load testing (found and fixed a real concurrency bottleneck — see [docs/load-testing.md](docs/load-testing.md))
+- Native SDKs (PHP, Go, Node.js, Python)
+- Full OpenAPI reference + Swagger UI docs site
+- Extended CI/CD (every service tested on every PR, image publishing, staging deploy)
+- Production deployment guide
+- End-to-end QA pass (found and fixed a real routing bug — see [docs/qa-day98.md](docs/qa-day98.md))
+
+Not yet done: publishing images/SDKs to their registries and tagging the `v1.0.0` release itself (checklist Days 96/100) — everything else above is implemented and tested.
 
 ---
 
@@ -564,15 +579,7 @@ These endpoints are unauthenticated by design, matching the "swap the base URL, 
 
 # Contributing
 
-Contributions are welcome, especially at this early planning stage!
-
-1. Fork the repository
-2. Check [checklist.md](checklist.md) to see what's next in the build order
-3. Create a feature branch
-4. Commit your changes
-5. Open a Pull Request
-
-Formal contribution guidelines will be added as the project takes shape. In the meantime, [checklist.md](checklist.md) is the source of truth for build order and [CLAUDE.md](CLAUDE.md) documents the working conventions used in this repo.
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and PR conventions. [checklist.md](checklist.md) tracks build history and what's still open, and [CLAUDE.md](CLAUDE.md) documents this repo's full working conventions.
 
 ---
 
