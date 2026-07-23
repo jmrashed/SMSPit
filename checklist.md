@@ -420,10 +420,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Generate/write a full OpenAPI spec covering all endpoints — [docs/openapi/openapi.yaml](docs/openapi/openapi.yaml), validated with Redocly CLI (0 errors)
   - [x] Set up a docs site (static site or Swagger UI) to render it — [docs/openapi/site/index.html](docs/openapi/site/index.html), verified rendering live with Playwright (all 8 tag groups, no console errors)
   - [x] Review docs for accuracy against implemented endpoints — see [docs/openapi/README.md](docs/openapi/README.md#known-intentional-divergences) for the 2 real inconsistencies found and documented rather than silently glossed over
-- [ ] **Day 95: Extend CI/CD pipeline**
-  - [ ] Build and test all services on every PR
-  - [ ] Add a CD step to build and push Docker images on tag
-  - [ ] Add a deployment step to a staging environment
+- [x] **Day 95: Extend CI/CD pipeline**
+  - [x] Build and test all services on every PR — added missing jobs for `gateway`, `worker`, `ai-service`, `dashboard`, and the 4 SDKs to `.github/workflows/ci.yml` (previously only auth-service migration + sms-service ran); auth-service's own test suite (`php artisan test`) now actually runs too
+  - [x] Add a CD step to build and push Docker images on tag — `publish-images` job, matrix over all 6 services, pushes to GHCR on `v*` tags
+  - [x] Add a deployment step to a staging environment — `deploy-staging` job runs `helm upgrade --install` against the Day 82 chart, gated behind a `staging` GitHub Environment; unverified end-to-end (no real staging cluster/secret in this environment) — see the job's own comment in the workflow
 - [ ] **Day 96: Publish Docker images**
   - [ ] Set up a container registry (GHCR/Docker Hub)
   - [ ] Tag and push images for all services
