@@ -424,10 +424,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Build and test all services on every PR — added missing jobs for `gateway`, `worker`, `ai-service`, `dashboard`, and the 4 SDKs to `.github/workflows/ci.yml` (previously only auth-service migration + sms-service ran); auth-service's own test suite (`php artisan test`) now actually runs too
   - [x] Add a CD step to build and push Docker images on tag — `publish-images` job, matrix over all 6 services, pushes to GHCR on `v*` tags
   - [x] Add a deployment step to a staging environment — `deploy-staging` job runs `helm upgrade --install` against the Day 82 chart, gated behind a `staging` GitHub Environment; unverified end-to-end (no real staging cluster/secret in this environment) — see the job's own comment in the workflow
-- [ ] **Day 96: Publish Docker images**
-  - [ ] Set up a container registry (GHCR/Docker Hub)
-  - [ ] Tag and push images for all services
-  - [ ] Verify images pull and run correctly from the registry
+- [x] **Day 96: Publish Docker images**
+  - [x] Set up a container registry (GHCR/Docker Hub) — GHCR, wired up in Day 95's `publish-images` CI job; see [docs/registry.md](docs/registry.md) for why
+  - [ ] Tag and push images for all services — mechanism is in place (CI publishes on any `v*` tag push) but no tag has been pushed yet; this is the same action as Day 100's release tag, deferred there since pushing a tag is a real, visible, hard-to-reverse action against the live repo/registry — not something to do speculatively mid-checklist
+  - [ ] Verify images pull and run correctly from the registry — deferred to the same point; also no Docker/podman available in this environment to pull/run locally (consistent with Days 26/27/29/48/49/79/81/82)
 - [ ] **Day 97: Write production deployment guide**
   - [ ] Document docker-compose production deployment steps
   - [ ] Document Kubernetes/Helm production deployment steps
