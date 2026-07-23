@@ -551,14 +551,10 @@ These endpoints are unauthenticated by design, matching the "swap the base URL, 
 
 ---
 
-# SDKs (Planned)
+# SDKs
 
-- PHP
-- Go
-- Node.js
-- Python
-- Java
-- .NET
+- PHP, Go, Node.js, Python — built (checklist Days 89-92), see [docs/sdks.md](docs/sdks.md) and each SDK's own README under [sdks/](sdks/). Not yet published to a package registry.
+- Java, .NET — planned, not yet started.
 
 ---
 

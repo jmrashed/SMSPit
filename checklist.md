@@ -412,10 +412,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Scaffold the SDK package structure — [sdks/python/](sdks/python/), package `smspit`
   - [x] Implement client methods for send/list/replay — `Client.send/list/get/replay`, verified live against the running stack
   - [x] Add a usage example and tests — [sdks/python/examples/send_and_list.py](sdks/python/examples/send_and_list.py), 5 pytest tests in `tests/test_client.py`
-- [ ] **Day 93: Write SDK docs**
-  - [ ] Write a README/usage guide for each SDK
-  - [ ] Add code examples for common flows (send, replay, webhook)
-  - [ ] Publish SDKs to their package registries (or mark as pending)
+- [x] **Day 93: Write SDK docs**
+  - [x] Write a README/usage guide for each SDK — each `sdks/*/README.md` (Days 89-92), plus a cross-SDK overview at [docs/sdks.md](docs/sdks.md)
+  - [x] Add code examples for common flows (send, replay, webhook) — see [docs/sdks.md](docs/sdks.md#common-flow-send-then-replay); "webhook" flow covered via pointing an existing provider SDK at SMSPit's provider-compatible adapters
+  - [x] Publish SDKs to their package registries (or mark as pending) — marked as pending; see [docs/sdks.md](docs/sdks.md#publishing-status) for why (no registry credentials in this environment)
 - [ ] **Day 94: Write OpenAPI reference & docs site**
   - [ ] Generate/write a full OpenAPI spec covering all endpoints
   - [ ] Set up a docs site (static site or Swagger UI) to render it
