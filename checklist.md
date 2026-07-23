@@ -396,10 +396,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Write load test scripts (k6/Locust) for sms-service and gateway — [scripts/load-test/locustfile.py](scripts/load-test/locustfile.py)
   - [x] Run load tests and record baseline throughput/latency — see [docs/load-testing.md](docs/load-testing.md), raw CSVs in `scripts/load-test/results/`
   - [x] Identify and address any bottlenecks found — found and fixed: `scripts/dev-up.sh` started auth-service single-threaded, serializing the whole stack behind it (~14s median latency); fixed by properly enabling `PHP_CLI_SERVER_WORKERS` (~3.2s median after, ~7x throughput). See [docs/load-testing.md](docs/load-testing.md#root-cause).
-- [ ] **Day 89: Build PHP SDK**
-  - [ ] Scaffold the SDK package structure
-  - [ ] Implement client methods for send/list/replay
-  - [ ] Add a usage example and tests
+- [x] **Day 89: Build PHP SDK**
+  - [x] Scaffold the SDK package structure — [sdks/php/](sdks/php/), composer package `smspit/sdk`
+  - [x] Implement client methods for send/list/replay — `Client::send/list/get/replay`, verified live against the running gateway+sms-service+auth-service stack
+  - [x] Add a usage example and tests — [sdks/php/examples/send-and-list.php](sdks/php/examples/send-and-list.php), 5 PHPUnit tests in `sdks/php/tests/`
 - [ ] **Day 90: Build Go SDK**
   - [ ] Scaffold the SDK package structure
   - [ ] Implement client methods for send/list/replay
