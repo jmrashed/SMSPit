@@ -32,6 +32,19 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      # auth-service's Prometheus metrics (Day 84) use a Redis-backed
+      # storage adapter, so even its own test suite needs Redis up --
+      # found missing here when php artisan test was turned on in this
+      # job (previously only the migration ran, never the tests).
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -124,6 +137,19 @@ jobs:
   worker:
     runs-on: ubuntu-latest
     needs: lint
+    services:
+      # worker's consumer tests create a real Redis Streams consumer
+      # group -- found missing here since this job never ran in CI
+      # before Day 95 added it.
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
