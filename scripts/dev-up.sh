@@ -71,7 +71,14 @@ require_free_port "$GATEWAY_PORT" "gateway" GATEWAY_PORT
 require_free_port "$DASHBOARD_PORT" "dashboard" DASHBOARD_PORT
 
 echo "== Starting auth-service on :$AUTH_SERVICE_PORT =="
-spawn bash -c "cd '$ROOT_DIR/auth-service' && exec php artisan serve --port='$AUTH_SERVICE_PORT'" >"$LOG_DIR/auth-service.log" 2>&1
+# PHP's built-in dev server handles one request at a time by default --
+# under any real concurrency (dashboard + gateway + sms-service's own
+# defense-in-depth check all hitting /api-keys/validate) that serializes
+# every request in the whole stack behind it (see docs/load-testing.md
+# for how Day 88's load test found this). PHP_CLI_SERVER_WORKERS spawns
+# multiple workers, but Artisan's ServeCommand only honors it alongside
+# --no-reload (otherwise it warns and silently falls back to one worker).
+spawn bash -c "cd '$ROOT_DIR/auth-service' && PHP_CLI_SERVER_WORKERS='${AUTH_SERVICE_WORKERS:-8}' exec php artisan serve --no-reload --port='$AUTH_SERVICE_PORT'" >"$LOG_DIR/auth-service.log" 2>&1
 
 echo "== Starting sms-service on :$SMS_SERVICE_PORT =="
 spawn bash -c "cd '$ROOT_DIR/sms-service' && PORT='$SMS_SERVICE_PORT' AUTH_SERVICE_URL='$AUTH_URL' exec npm run start:dev" >"$LOG_DIR/sms-service.log" 2>&1

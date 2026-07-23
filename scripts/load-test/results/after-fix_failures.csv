@@ -1,0 +1,4 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+GET,GET /api/v1/statistics,"CatchResponseError('expected 200, got 429: {""code"":""RATE_LIMITED"",""message"":""Too many requests for this organization"",""details"":null}')",8,2026-07-23T21:12:03Z,2026-07-23T21:12:06Z
+POST,POST /api/v1/messages,"CatchResponseError('expected 201, got 429: {""code"":""RATE_LIMITED"",""message"":""Too many requests for this organization"",""details"":null}')",36,2026-07-23T21:12:02Z,2026-07-23T21:12:07Z
+GET,GET /api/v1/messages,"CatchResponseError('expected 200, got 429: {""code"":""RATE_LIMITED"",""message"":""Too many requests for this organization"",""details"":null}')",19,2026-07-23T21:12:02Z,2026-07-23T21:12:07Z
