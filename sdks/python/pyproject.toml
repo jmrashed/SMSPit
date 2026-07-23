@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smspit"
+version = "0.1.0"
+description = "Python client for SMSPit's REST API (send, list, replay messages)."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+include = ["smspit*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

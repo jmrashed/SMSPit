@@ -408,10 +408,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Scaffold the SDK package structure — [sdks/nodejs/](sdks/nodejs/), package `@smspit/sdk`
   - [x] Implement client methods for send/list/replay — `Client.send/list/get/replay`, verified live against the running stack
   - [x] Add a usage example and tests — [sdks/nodejs/examples/send-and-list.ts](sdks/nodejs/examples/send-and-list.ts), 5 Jest tests in `src/index.spec.ts`
-- [ ] **Day 92: Build Python SDK**
-  - [ ] Scaffold the SDK package structure
-  - [ ] Implement client methods for send/list/replay
-  - [ ] Add a usage example and tests
+- [x] **Day 92: Build Python SDK**
+  - [x] Scaffold the SDK package structure — [sdks/python/](sdks/python/), package `smspit`
+  - [x] Implement client methods for send/list/replay — `Client.send/list/get/replay`, verified live against the running stack
+  - [x] Add a usage example and tests — [sdks/python/examples/send_and_list.py](sdks/python/examples/send_and_list.py), 5 pytest tests in `tests/test_client.py`
 - [ ] **Day 93: Write SDK docs**
   - [ ] Write a README/usage guide for each SDK
   - [ ] Add code examples for common flows (send, replay, webhook)
