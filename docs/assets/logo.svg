@@ -1,9 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="SMSPit">
   <title>SMSPit</title>
+  <!-- basin wall -->
   <path d="M13 28 Q13 50 32 50 Q51 50 51 28 L45 28 Q45 43 32 43 Q19 43 19 28 Z" fill="#2A2E3D"/>
+  <!-- basin opening (the pit) -->
   <ellipse cx="32" cy="27.5" rx="19" ry="6.5" fill="#0B0C12"/>
+  <!-- message tail, dropping into the pit -->
   <path d="M23 27 L18 37 L29 28 Z" fill="#D6472A"/>
+  <!-- captured message -->
   <rect x="15" y="7" width="34" height="23" rx="11.5" fill="#FF6A3D"/>
+  <!-- typing dots -->
   <circle cx="24" cy="18.5" r="2.4" fill="#F6F1E7"/>
   <circle cx="32" cy="18.5" r="2.4" fill="#F6F1E7"/>
   <circle cx="40" cy="18.5" r="2.4" fill="#F6F1E7"/>

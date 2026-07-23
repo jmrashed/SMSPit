@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="SMSPit" fill="currentColor">
+  <title>SMSPit</title>
+  <path d="M13 28 Q13 50 32 50 Q51 50 51 28 L45 28 Q45 43 32 43 Q19 43 19 28 Z" opacity="0.55"/>
+  <ellipse cx="32" cy="27.5" rx="19" ry="6.5" opacity="0.85"/>
+  <path d="M23 27 L18 37 L29 28 Z"/>
+  <rect x="15" y="7" width="34" height="23" rx="11.5"/>
+  <circle cx="24" cy="18.5" r="2.4" fill="#fff" opacity="0.9"/>
+  <circle cx="32" cy="18.5" r="2.4" fill="#fff" opacity="0.9"/>
+  <circle cx="40" cy="18.5" r="2.4" fill="#fff" opacity="0.9"/>
+</svg>

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/logo.svg" alt="SMSPit logo" width="72" height="72">
+</p>
+
 # SMSPit
 
 > **The Sandbox for SMS.**
