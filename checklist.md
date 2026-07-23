@@ -416,10 +416,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Write a README/usage guide for each SDK — each `sdks/*/README.md` (Days 89-92), plus a cross-SDK overview at [docs/sdks.md](docs/sdks.md)
   - [x] Add code examples for common flows (send, replay, webhook) — see [docs/sdks.md](docs/sdks.md#common-flow-send-then-replay); "webhook" flow covered via pointing an existing provider SDK at SMSPit's provider-compatible adapters
   - [x] Publish SDKs to their package registries (or mark as pending) — marked as pending; see [docs/sdks.md](docs/sdks.md#publishing-status) for why (no registry credentials in this environment)
-- [ ] **Day 94: Write OpenAPI reference & docs site**
-  - [ ] Generate/write a full OpenAPI spec covering all endpoints
-  - [ ] Set up a docs site (static site or Swagger UI) to render it
-  - [ ] Review docs for accuracy against implemented endpoints
+- [x] **Day 94: Write OpenAPI reference & docs site**
+  - [x] Generate/write a full OpenAPI spec covering all endpoints — [docs/openapi/openapi.yaml](docs/openapi/openapi.yaml), validated with Redocly CLI (0 errors)
+  - [x] Set up a docs site (static site or Swagger UI) to render it — [docs/openapi/site/index.html](docs/openapi/site/index.html), verified rendering live with Playwright (all 8 tag groups, no console errors)
+  - [x] Review docs for accuracy against implemented endpoints — see [docs/openapi/README.md](docs/openapi/README.md#known-intentional-divergences) for the 2 real inconsistencies found and documented rather than silently glossed over
 - [ ] **Day 95: Extend CI/CD pipeline**
   - [ ] Build and test all services on every PR
   - [ ] Add a CD step to build and push Docker images on tag
