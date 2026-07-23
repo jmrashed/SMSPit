@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.1] - 2026-07-24
+
+Fixes CI's `lint` job, which was failing on the exact commit `v1.0.0` was tagged from — a pre-existing gap from Days 88/89 that was only caught after tagging: Locust wrote some `scripts/load-test/results/*.csv` files with CRLF line endings, and `sdks/php/phpunit.xml` used non-multiple-of-2 indentation, both violating `.editorconfig`. Since `lint` gates every other CI job (including `publish-images`), `v1.0.0`'s tag push never actually published Docker images to GHCR. `v1.0.0` itself is left as-is (already tagged and released); this patch release is the one whose CI actually runs green end-to-end. No functional code changes.
+
+### Fixed
+
+- CRLF line endings in `scripts/load-test/results/*.csv`, converted to LF
+- Non-2-space indentation in `sdks/php/phpunit.xml`, reformatted
+
 ## [1.0.0] - 2026-07-24
 
 The v1.0 milestone (checklist Days 81–100): Kubernetes/Helm, full observability, hardened multi-tenancy, native SDKs, a complete OpenAPI reference, an extended CI/CD pipeline, a production deployment guide, and an end-to-end QA pass. No new services — this release hardens and completes the six services shipped through v0.4, rather than adding a seventh.
