@@ -6,7 +6,7 @@ namespace: smspit
 gateway:
   replicaCount: 1
   image:
-    repository: smspit/gateway
+    repository: ghcr.io/jmrashed/smspit-gateway
     tag: latest
     pullPolicy: IfNotPresent
   service:
@@ -19,7 +19,7 @@ gateway:
 authService:
   replicaCount: 1
   image:
-    repository: smspit/auth-service
+    repository: ghcr.io/jmrashed/smspit-auth-service
     tag: latest
     pullPolicy: IfNotPresent
   service:
@@ -31,7 +31,7 @@ authService:
 smsService:
   replicaCount: 1
   image:
-    repository: smspit/sms-service
+    repository: ghcr.io/jmrashed/smspit-sms-service
     tag: latest
     pullPolicy: IfNotPresent
   service:
@@ -43,7 +43,7 @@ smsService:
 aiService:
   replicaCount: 1
   image:
-    repository: smspit/ai-service
+    repository: ghcr.io/jmrashed/smspit-ai-service
     tag: latest
     pullPolicy: IfNotPresent
   service:
@@ -55,7 +55,7 @@ aiService:
 worker:
   replicaCount: 1
   image:
-    repository: smspit/worker
+    repository: ghcr.io/jmrashed/smspit-worker
     tag: latest
     pullPolicy: IfNotPresent
   resources:
@@ -65,7 +65,7 @@ worker:
 dashboard:
   replicaCount: 1
   image:
-    repository: smspit/dashboard
+    repository: ghcr.io/jmrashed/smspit-dashboard
     tag: latest
     pullPolicy: IfNotPresent
   service:

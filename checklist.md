@@ -428,10 +428,10 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Set up a container registry (GHCR/Docker Hub) — GHCR, wired up in Day 95's `publish-images` CI job; see [docs/registry.md](docs/registry.md) for why
   - [ ] Tag and push images for all services — mechanism is in place (CI publishes on any `v*` tag push) but no tag has been pushed yet; this is the same action as Day 100's release tag, deferred there since pushing a tag is a real, visible, hard-to-reverse action against the live repo/registry — not something to do speculatively mid-checklist
   - [ ] Verify images pull and run correctly from the registry — deferred to the same point; also no Docker/podman available in this environment to pull/run locally (consistent with Days 26/27/29/48/49/79/81/82)
-- [ ] **Day 97: Write production deployment guide**
-  - [ ] Document docker-compose production deployment steps
-  - [ ] Document Kubernetes/Helm production deployment steps
-  - [ ] Include an environment variable reference and scaling notes
+- [x] **Day 97: Write production deployment guide**
+  - [x] Document docker-compose production deployment steps — [docs/production-deployment.md](docs/production-deployment.md#docker-compose-single-host)
+  - [x] Document Kubernetes/Helm production deployment steps — [docs/production-deployment.md](docs/production-deployment.md#kubernetes-helm); fixed a real bug found while writing this: the Helm chart's default `image.repository` values pointed at unpublished `smspit/*` names instead of the Day 96 GHCR names
+  - [x] Include an environment variable reference and scaling notes — [docs/production-deployment.md](docs/production-deployment.md#environment-variable-reference); scaling notes flag that Day 86's gateway rate limit is per-instance, not cluster-wide
 - [ ] **Day 98: Run a full end-to-end QA pass**
   - [ ] Manually verify every feature listed in README against the running system
   - [ ] Log and fix any bugs found
