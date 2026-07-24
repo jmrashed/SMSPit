@@ -13,6 +13,9 @@ build/
 coverage/
 *.tsbuildinfo
 
+# VitePress docs site
+docs/.vitepress/cache/
+
 # PHP / Laravel
 vendor/
 storage/*.key

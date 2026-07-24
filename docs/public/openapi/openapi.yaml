@@ -1,0 +1,955 @@
+openapi: 3.0.3
+info:
+  title: SMSPit API
+  description: |
+    Full REST surface across the gateway, sms-service, and auth-service (checklist Day 94).
+    See [docs/api/message-mapping.md](../api/message-mapping.md) for the REST/proto field mapping and
+    [docs/api/provider-compatibility.md](../api/provider-compatibility.md) for the provider-compatible adapters.
+
+    ## Auth
+    Most endpoints require `Authorization: Bearer {key}.{secret}` (an SMSPit API key from `POST /auth/api-keys`).
+    A few are intentionally unauthenticated: the API key bootstrap/management routes (`POST/GET/DELETE /auth/api-keys*`,
+    including `rotate`) and the three provider-compatible adapters under `/providers/*`, which mimic real providers'
+    own (unauthenticated-by-SMSPit) wire formats so an existing provider SDK can point at SMSPit unmodified.
+  version: "1.0.2"
+  license:
+    name: MIT
+    url: https://github.com/jmrashed/SMSPit/blob/main/LICENSE
+servers:
+  - url: http://localhost:8080
+    description: Gateway (recommended entry point -- adds per-org rate limiting and auth enforcement in front of sms-service)
+
+tags:
+  - name: Messages
+    description: Capture, search, replay, and export SMS messages (sms-service, via the gateway)
+  - name: Templates
+    description: Reusable message templates with {{variable}} placeholders
+  - name: Statistics
+    description: Per-org aggregate message counts
+  - name: Provider Adapters
+    description: Drop-in-compatible endpoints for real SMS providers -- point an existing provider SDK's base URL at SMSPit
+  - name: API Keys
+    description: API key issuance, validation, revocation, and rotation (auth-service)
+  - name: Organizations
+    description: Multi-tenant organizations (auth-service)
+  - name: Teams
+    description: Teams within an organization (auth-service)
+  - name: System
+    description: Health checks and metrics scrape targets
+
+paths:
+  # ---------------------------------------------------------------- System
+  /healthz:
+    get:
+      tags: [System]
+      operationId: gatewayHealthCheck
+      summary: Gateway health check
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+
+  /metrics:
+    get:
+      tags: [System]
+      operationId: prometheusScrapeTarget
+      summary: Prometheus scrape target (gateway and sms-service each expose their own)
+      security: []
+      responses:
+        "200":
+          description: Prometheus text exposition format
+          content:
+            text/plain:
+              schema: { type: string }
+
+  # ------------------------------------------------------------- Messages
+  /api/v1/messages:
+    post:
+      tags: [Messages]
+      operationId: captureAMessage
+      summary: Capture a message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateMessageRequest" }
+      responses:
+        "201":
+          description: Captured
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [Messages]
+      operationId: listSearchPaginateCapturedMessages
+      summary: List/search/paginate captured messages
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+        - { name: to, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string, enum: [otp, transactional, marketing, other] } }
+        - { name: is_spam, in: query, schema: { type: boolean } }
+        - { name: created_after, in: query, schema: { type: string, format: date-time } }
+        - { name: created_before, in: query, schema: { type: string, format: date-time } }
+      responses:
+        "200":
+          description: A page of messages
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MessageList" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [Messages]
+      operationId: bulkDeleteMessages
+      summary: Bulk-delete messages (specific ids, or the whole org's inbox with confirm=true)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids: { type: array, items: { type: string }, description: "Specific message ids to delete" }
+                confirm: { type: boolean, description: 'Required true when "ids" is omitted -- guards against an accidental full wipe' }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count: { type: integer }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/messages/export:
+    get:
+      tags: [Messages]
+      operationId: streamedExportOfFilteredMessagesAsCsvOrJson
+      summary: Streamed export of filtered messages as CSV or JSON
+      parameters:
+        - { name: format, in: query, schema: { type: string, enum: [csv, json], default: json } }
+        - { name: to, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string } }
+        - { name: created_after, in: query, schema: { type: string, format: date-time } }
+        - { name: created_before, in: query, schema: { type: string, format: date-time } }
+      responses:
+        "200":
+          description: "Streamed file attachment (Content-Disposition: attachment; filename=\"messages-export.csv|json\")"
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ExportRecord" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/messages/{id}:
+    get:
+      tags: [Messages]
+      operationId: fetchASingleMessage
+      summary: Fetch a single message
+      parameters:
+        - { $ref: "#/components/parameters/MessageId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/v1/messages/{id}/spam:
+    patch:
+      tags: [Messages]
+      operationId: manuallyOverrideTheAiSpamVerdict
+      summary: Manually override the AI spam verdict
+      parameters:
+        - { $ref: "#/components/parameters/MessageId" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [is_spam]
+              properties:
+                is_spam: { type: boolean }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/v1/messages/{id}/replay:
+    post:
+      tags: [Messages]
+      operationId: replayMessage
+      summary: Re-capture a message's original payload as a new, linked message
+      parameters:
+        - { $ref: "#/components/parameters/MessageId" }
+      responses:
+        "201":
+          description: Replayed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------ Templates
+  /api/v1/templates:
+    post:
+      tags: [Templates]
+      operationId: createAMessageTemplate
+      summary: Create a message template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateTemplateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Template" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    get:
+      tags: [Templates]
+      operationId: listTemplates
+      summary: List templates (no pagination)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templates:
+                    type: array
+                    items: { $ref: "#/components/schemas/Template" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/templates/{id}:
+    get:
+      tags: [Templates]
+      operationId: fetchASingleTemplate
+      summary: Fetch a single template
+      parameters:
+        - { $ref: "#/components/parameters/TemplateId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Template" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [Templates]
+      operationId: updateATemplate
+      summary: Update a template (all fields optional -- partial update despite the PUT verb)
+      parameters:
+        - { $ref: "#/components/parameters/TemplateId" }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateTemplateRequest" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Template" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      tags: [Templates]
+      operationId: deleteATemplate
+      summary: Delete a template
+      parameters:
+        - { $ref: "#/components/parameters/TemplateId" }
+      responses:
+        "204": { description: Deleted }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ---------------------------------------------------------------- Stats
+  /api/v1/statistics:
+    get:
+      tags: [Statistics]
+      operationId: getStatistics
+      summary: Aggregate message counts for the caller's org
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total: { type: integer }
+                  by_status: { type: object, additionalProperties: { type: integer } }
+                  by_day:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: { type: string, format: date }
+                        count: { type: integer }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ------------------------------------------------------ Provider Adapters
+  /providers/messagebird/messages:
+    post:
+      tags: [Provider Adapters]
+      operationId: messagebirdCompatibleSend
+      summary: MessageBird-compatible send (POST /messages on the real API)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [originator, recipients, body]
+              properties:
+                originator: { type: string }
+                recipients:
+                  oneOf:
+                    - { type: string, description: "single or comma-separated recipients" }
+                    - { type: array, items: { type: string } }
+                body: { type: string }
+      responses:
+        "201":
+          description: Captured (MessageBird-shaped response, not the native Message schema)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  originator: { type: string }
+                  body: { type: string }
+                  recipients:
+                    type: object
+                    properties:
+                      totalCount: { type: integer, example: 1 }
+                      totalSentCount: { type: integer, example: 1 }
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            recipient: { type: string }
+                            status: { type: string, example: sent }
+                  createdDatetime: { type: string, format: date-time }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /providers/vonage/sms/json:
+    post:
+      tags: [Provider Adapters]
+      operationId: vonageCompatibleSend
+      summary: Vonage (Nexmo classic SMS API)-compatible send
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [from, to, text]
+              properties:
+                from: { type: string }
+                to: { type: string }
+                text: { type: string }
+                api_key: { type: string, description: "Accepted but not validated -- this is a capture sandbox, not a provider" }
+                api_secret: { type: string }
+      responses:
+        "200":
+          description: Captured (Vonage-shaped response)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message-count: { type: string, example: "1" }
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        to: { type: string }
+                        message-id: { type: string }
+                        status: { type: string, example: "0", description: "Vonage's own success code string" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /providers/sns:
+    post:
+      tags: [Provider Adapters]
+      operationId: awsSnsCompatiblePublish
+      summary: AWS SNS-compatible Publish (Query API, direct-to-phone only -- no topic support)
+      security: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [Action, PhoneNumber, Message]
+              properties:
+                Action: { type: string, enum: [Publish] }
+                PhoneNumber: { type: string, maxLength: 32 }
+                Message: { type: string, maxLength: 1600 }
+                TopicArn: { type: string, description: "Rejected with 400 -- topic-based publish is unsupported" }
+      responses:
+        "200":
+          description: Captured
+          content:
+            text/xml:
+              schema:
+                type: string
+                example: |
+                  <PublishResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+                    <PublishResult><MessageId>sms_abc123</MessageId></PublishResult>
+                    <ResponseMetadata><RequestId>...</RequestId></ResponseMetadata>
+                  </PublishResponse>
+        "400":
+          description: "InvalidAction / InvalidParameter (AWS-style XML error, not the standard JSON envelope)"
+          content:
+            text/xml:
+              schema:
+                type: string
+                example: |
+                  <ErrorResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+                    <Error><Type>Sender</Type><Code>InvalidParameter</Code><Message>...</Message></Error>
+                    <RequestId>...</RequestId>
+                  </ErrorResponse>
+
+  # -------------------------------------------------------------- API Keys
+  # Mounted at /auth/* through the gateway (path rewritten to auth-service's /api/*).
+  /auth/api-keys:
+    post:
+      tags: [API Keys]
+      operationId: createAnApiKey
+      summary: Create an API key (unauthenticated -- bootstraps the very first key)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, owner_id]
+              properties:
+                name: { type: string, maxLength: 255 }
+                owner_id: { type: integer, description: "Must reference an existing user" }
+                org_id: { type: integer, nullable: true, description: "owner_id must already be a member of this org" }
+                scopes: { type: array, items: { type: string } }
+      responses:
+        "201":
+          description: Created -- the plaintext secret is only ever shown here
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiKeyCreated" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    get:
+      tags: [API Keys]
+      operationId: listAllApiKeys
+      summary: List all API keys (unauthenticated; not org-scoped -- see docs/security.md)
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_keys:
+                    type: array
+                    items: { $ref: "#/components/schemas/ApiKey" }
+
+  /auth/api-keys/validate:
+    get:
+      tags: [API Keys]
+      operationId: resolveABearerTokenToItsApiKey
+      summary: Resolve a bearer token to its API key (used internally by the gateway and sms-service)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: integer }
+                  name: { type: string }
+                  owner_id: { type: integer }
+                  org_id: { type: integer, nullable: true }
+                  scopes: { type: array, items: { type: string } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/api-keys/{apiKey}:
+    delete:
+      tags: [API Keys]
+      operationId: revokeAnApiKey
+      summary: Revoke an API key (idempotent; unauthenticated)
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/ApiKeyId" }
+      responses:
+        "200":
+          description: Revoked
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiKey" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /auth/api-keys/{apiKey}/rotate:
+    post:
+      tags: [API Keys]
+      operationId: replaceAKeyWithAFreshSecretRevokingTheOriginal
+      summary: Replace a key with a fresh secret, revoking the original (idempotent; unauthenticated)
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/ApiKeyId" }
+      responses:
+        "201":
+          description: Rotated -- the new plaintext secret is only ever shown here
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/ApiKeyCreated" }
+                  - type: object
+                    properties:
+                      rotated_from: { type: integer, description: "id of the now-revoked source key" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------ Organizations
+  /auth/organizations:
+    get:
+      tags: [Organizations]
+      operationId: listOrganizationsTheCallerBelongsTo
+      summary: List organizations the caller belongs to
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organizations:
+                    type: array
+                    items: { $ref: "#/components/schemas/Organization" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [Organizations]
+      operationId: createAnOrganization
+      summary: Create an organization (caller becomes admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, maxLength: 255 }
+                slug: { type: string, maxLength: 255, description: "Auto-derived from name if omitted" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Organization" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/organizations/{organization}:
+    get:
+      tags: [Organizations]
+      operationId: fetchAnOrganization
+      summary: Fetch an organization (any member)
+      parameters:
+        - { $ref: "#/components/parameters/OrganizationId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Organization" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [Organizations]
+      operationId: updateAnOrganization
+      summary: Update an organization (admins only)
+      parameters:
+        - { $ref: "#/components/parameters/OrganizationId" }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, maxLength: 255 }
+                slug: { type: string, maxLength: 255 }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Organization" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      tags: [Organizations]
+      operationId: deleteAnOrganization
+      summary: Delete an organization (admins only)
+      parameters:
+        - { $ref: "#/components/parameters/OrganizationId" }
+      responses:
+        "204": { description: Deleted }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ Teams
+  /auth/organizations/{organization}/teams:
+    get:
+      tags: [Teams]
+      operationId: listTeamsInAnOrganization
+      summary: List teams in an organization (any member)
+      parameters:
+        - { $ref: "#/components/parameters/OrganizationId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teams:
+                    type: array
+                    items: { $ref: "#/components/schemas/Team" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      tags: [Teams]
+      operationId: createATeamInAnOrganization
+      summary: Create a team in an organization (admins only)
+      parameters:
+        - { $ref: "#/components/parameters/OrganizationId" }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, maxLength: 255 }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Team" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/organizations/{organization}/teams/{team}/members:
+    post:
+      tags: [Teams]
+      operationId: addAnOrgMemberToATeam
+      summary: Add an org member to a team (admins only)
+      parameters:
+        - { $ref: "#/components/parameters/OrganizationId" }
+        - { $ref: "#/components/parameters/TeamId" }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id: { type: integer, description: "Must already be a member of the organization" }
+      responses:
+        "200":
+          description: Member added
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Team" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: "Unknown org/team, or team does not belong to this organization" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/organizations/{organization}/teams/{team}/members/{user}:
+    delete:
+      tags: [Teams]
+      operationId: removeAMemberFromATeam
+      summary: Remove a member from a team (admins only, idempotent)
+      parameters:
+        - { $ref: "#/components/parameters/OrganizationId" }
+        - { $ref: "#/components/parameters/TeamId" }
+        - name: user
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Member removed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Team" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: "Unknown org/team/user, or team does not belong to this organization" }
+
+components:
+  securitySchemes:
+    ApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: "{key}.{secret}"
+      description: "An SMSPit API key from POST /auth/api-keys, e.g. sms_live_xxx.yyy"
+
+  parameters:
+    MessageId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+      example: sms_abc123
+    TemplateId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    ApiKeyId:
+      name: apiKey
+      in: path
+      required: true
+      schema: { type: integer }
+    OrganizationId:
+      name: organization
+      in: path
+      required: true
+      schema: { type: integer }
+    TeamId:
+      name: team
+      in: path
+      required: true
+      schema: { type: integer }
+
+  schemas:
+    Message:
+      type: object
+      properties:
+        id: { type: string, example: sms_abc123 }
+        to: { type: string }
+        from: { type: string }
+        message: { type: string }
+        otp: { type: string, nullable: true }
+        category: { type: string, nullable: true, enum: [otp, transactional, marketing, other, null] }
+        is_spam: { type: boolean, nullable: true }
+        status: { type: string, example: captured }
+        replayed_from: { type: string, nullable: true }
+        org_id: { type: integer, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    MessageList:
+      type: object
+      properties:
+        messages:
+          type: array
+          items: { $ref: "#/components/schemas/Message" }
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+
+    CreateMessageRequest:
+      type: object
+      required: [to, from, message]
+      properties:
+        to: { type: string, maxLength: 32 }
+        from: { type: string, maxLength: 32 }
+        message: { type: string, maxLength: 1600 }
+
+    ExportRecord:
+      type: object
+      properties:
+        id: { type: string }
+        to: { type: string }
+        from: { type: string }
+        message: { type: string }
+        status: { type: string }
+        replayed_from: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    Template:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        body: { type: string }
+        variables: { type: array, items: { type: string } }
+        org_id: { type: integer, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    CreateTemplateRequest:
+      type: object
+      required: [name, body]
+      properties:
+        name: { type: string, maxLength: 255 }
+        body: { type: string, maxLength: 1600, description: "Supports {{variable}} placeholders" }
+        variables: { type: array, items: { type: string } }
+
+    UpdateTemplateRequest:
+      type: object
+      properties:
+        name: { type: string, maxLength: 255 }
+        body: { type: string, maxLength: 1600 }
+        variables: { type: array, items: { type: string } }
+
+    ApiKey:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        key: { type: string, description: "Public lookup identifier, not the secret" }
+        owner_id: { type: integer }
+        org_id: { type: integer, nullable: true }
+        scopes: { type: array, items: { type: string } }
+        last_used_at: { type: string, format: date-time, nullable: true }
+        revoked_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    ApiKeyCreated:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        key: { type: string, description: "Full '{key}.{secret}' -- shown once, never retrievable again" }
+        org_id: { type: integer, nullable: true }
+        scopes: { type: array, items: { type: string } }
+        created_at: { type: string, format: date-time }
+
+    Organization:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        role: { type: string, enum: [admin, member], description: "The caller's own role in this org" }
+        created_at: { type: string, format: date-time }
+
+    Team:
+      type: object
+      properties:
+        id: { type: integer }
+        organization_id: { type: integer }
+        name: { type: string }
+        members:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              email: { type: string }
+        created_at: { type: string, format: date-time }
+
+    ErrorResponse:
+      type: object
+      properties:
+        code: { type: string, example: NOT_FOUND }
+        message: { type: string }
+        details:
+          description: "Per-field validation messages on 400s, otherwise null"
+          nullable: true
+          type: array
+          items: { type: string }
+
+  responses:
+    BadRequest:
+      description: Validation failure
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Unauthorized:
+      description: Missing, invalid, or revoked API key
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Forbidden:
+      description: Authenticated, but not authorized for this action (e.g. not an org admin)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+    NotFound:
+      description: Resource not found (or not visible to this org/caller)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ValidationError:
+      description: Laravel-style validation failure
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items: { type: string }
+    RateLimited:
+      description: Per-org request quota exceeded (gateway, Day 86)
+      headers:
+        Retry-After:
+          schema: { type: integer }
+          description: Seconds until the quota window resets
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+security:
+  - ApiKey: []
