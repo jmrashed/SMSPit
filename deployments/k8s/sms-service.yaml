@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: sms-service
-          image: smspit/sms-service:latest
+          image: ghcr.io/jmrashed/smspit-sms-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000

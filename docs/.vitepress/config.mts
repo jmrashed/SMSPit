@@ -4,26 +4,44 @@ export default defineConfig({
   title: 'SMSPit',
   description: 'The Sandbox for SMS — self-hosted SMS capture, search, replay, and debug for local dev, testing, and CI/CD.',
   cleanUrls: true,
-  ignoreDeadLinks: true,
+  ignoreDeadLinks: [
+    // Absolute links out to the GitHub repo (mirrored-file source links,
+    // CONTRIBUTING.md, raw example files) -- these 404 in a local `vitepress
+    // dev`/`build` check since they're real network requests, not local
+    // files, but they're correct once deployed. Everything else is a real
+    // local link and must resolve, or the build fails.
+    /^https:\/\/github\.com\//,
+  ],
   head: [['link', { rel: 'icon', href: '/assets/logo.svg' }]],
 
   themeConfig: {
     logo: '/assets/logo.svg',
     nav: [
-      { text: 'Guide', link: '/architecture' },
+      { text: 'Getting Started', link: '/getting-started' },
+      { text: 'Services', link: '/gateway' },
       { text: 'API Reference', link: '/openapi/site/index.html', target: '_blank' },
       { text: 'SDKs', link: '/sdks' },
+      { text: 'Operations', link: '/production-deployment' },
       { text: 'Changelog', link: '/changelog' },
     ],
 
     sidebar: [
       {
-        text: 'Guide',
+        text: 'Getting Started',
         items: [
-          { text: 'Introduction', link: '/' },
+          { text: 'Getting Started', link: '/getting-started' },
+          { text: 'Local Development Reference', link: '/local-dev-setup' },
+          { text: 'FAQ', link: '/faq' },
+          { text: 'Troubleshooting', link: '/troubleshooting' },
+        ],
+      },
+      {
+        text: 'Core Concepts',
+        items: [
           { text: 'Architecture', link: '/architecture' },
-          { text: 'Local Development Setup', link: '/local-dev-setup' },
-          { text: 'ADR: Tech Stack', link: '/adr/0001-tech-stack' },
+          { text: 'Multi-tenancy', link: '/multi-tenancy' },
+          { text: 'Redis and Queues', link: '/redis' },
+          { text: 'Glossary', link: '/glossary' },
         ],
       },
       {
@@ -38,11 +56,19 @@ export default defineConfig({
         ],
       },
       {
-        text: 'API',
+        text: 'API Reference',
         items: [
+          { text: 'OpenAPI Reference ↗', link: '/openapi/site/index.html' },
+          { text: 'OpenAPI Implementation Notes', link: '/openapi/README' },
           { text: 'Message Mapping', link: '/api/message-mapping' },
           { text: 'Provider Compatibility', link: '/api/provider-compatibility' },
-          { text: 'OpenAPI Reference ↗', link: '/openapi/site/index.html' },
+          { text: 'WebSocket API', link: '/websocket' },
+          { text: 'Templates', link: '/templates' },
+          { text: 'Export', link: '/export' },
+          { text: 'API Key Rotation', link: '/api-key-rotation' },
+          { text: 'Organizations and Teams', link: '/organizations-and-teams' },
+          { text: 'Rate Limiting', link: '/rate-limiting' },
+          { text: 'Generate Test Data', link: '/generate-test-data' },
         ],
       },
       {
@@ -58,26 +84,26 @@ export default defineConfig({
       {
         text: 'Operations',
         items: [
-          { text: 'Observability', link: '/observability' },
-          { text: 'Security', link: '/security' },
-          { text: 'Multi-tenancy', link: '/multi-tenancy' },
-          { text: 'Load Testing', link: '/load-testing' },
-          { text: 'Redis', link: '/redis' },
-          { text: 'QA Pass (Day 98)', link: '/qa-day98' },
-        ],
-      },
-      {
-        text: 'Deployment',
-        items: [
-          { text: 'Production Deployment Guide', link: '/production-deployment' },
-          { text: 'Container Registry', link: '/registry' },
+          { text: 'Production Deployment', link: '/production-deployment' },
           { text: 'Kubernetes', link: '/kubernetes' },
           { text: 'Helm Chart', link: '/helm' },
+          { text: 'Security', link: '/security' },
+          { text: 'Observability', link: '/observability' },
+          { text: 'Load Testing', link: '/load-testing' },
+          { text: 'Testing', link: '/testing' },
+          { text: 'Upgrading', link: '/upgrading' },
         ],
       },
       {
-        text: 'Reference',
-        items: [{ text: 'Changelog', link: '/changelog' }],
+        text: 'Project',
+        items: [
+          { text: 'Changelog', link: '/changelog' },
+          { text: 'Container Registry', link: '/registry' },
+          { text: 'QA Pass', link: '/qa-pass' },
+          { text: 'ADR: Tech Stack', link: '/adr/0001-tech-stack' },
+          { text: 'Contributing ↗', link: 'https://github.com/jmrashed/SMSPit/blob/main/CONTRIBUTING.md' },
+          { text: 'Docs Index', link: '/README' },
+        ],
       },
     ],
 

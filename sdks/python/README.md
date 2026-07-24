@@ -2,7 +2,7 @@
 
 Python client for SMSPit's native REST API. Built on `urllib` (stdlib only) -- no third-party HTTP dependency (`requests` etc.).
 
-**Status:** send/list/get/replay implemented (checklist Day 92). Not yet published to PyPI (checklist Day 93).
+**Status:** send/list/get/replay implemented. Not yet published to PyPI.
 
 ## Install (editable, until published)
 

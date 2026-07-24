@@ -96,30 +96,35 @@ The inbox — captured messages with AI-detected OTP, category, and spam badges:
 # Architecture
 
 ```
-                   +----------------------+
-                   |    API Gateway (Go)  |
-                   +----------+-----------+
-                              |
-          +-------------------+-------------------+
-          |                   |                   |
-          |                   |                   |
-+---------v------+   +--------v-------+   +-------v-------+
-| Auth Service   |   | SMS Service    |   | AI Service    |
-| Laravel        |   | Node.js        |   | Python        |
-+----------------+   +----------------+   +---------------+
-                              |
-                       Redis / NATS / Kafka
-                              |
-                    +---------v----------+
-                    | Worker Service (Go)|
-                    +---------+----------+
-                              |
-                        PostgreSQL
-                              |
-                    +---------v----------+
-                    |  React Dashboard   |
-                    +--------------------+
+                    +----------------------+
+                    |    API Gateway (Go)  |
+                    +----------+-----------+
+                               |
+              +----------------+----------------+
+              |                                  |
+    +---------v------+                 +--------v-------+
+    | Auth Service   |                 | SMS Service    |
+    | Laravel        |                 | Node.js        |
+    +----------------+                 +--------+-------+
+                                                 |         \
+                                                 |          \  (sync, on capture)
+                                          Redis Streams   +--v------------+
+                                                 |          | AI Service   |
+                                        +--------v--------+ | Python       |
+                                        | Worker (Go)     |-+--------------+
+                                        +-----------------+   ^
+                                       (async, classify only,      |
+                                        no write-back)  -----------+
+
+                        PostgreSQL: shared instance, schema owned by Auth Service
+
+                    +----------------------+
+                    |  React Dashboard     |
+                    |  (REST + WebSocket)  |
+                    +----------------------+
 ```
+
+The gateway only reverse-proxies to `auth-service` and `sms-service` — `ai-service` is never proxied; it's called directly by `sms-service` (synchronously, on capture) and `worker` (asynchronously, off the queue). See [docs/architecture.md](docs/architecture.md) for the full request flow.
 
 ---
 
@@ -143,7 +148,7 @@ The inbox — captured messages with AI-detected OTP, category, and spam badges:
 
 # Project Structure
 
-All service folders below are fully implemented, not just scaffolded — see [checklist.md](checklist.md) for the day-by-day build history.
+All service folders below are fully implemented, not just scaffolded — see [checklist.md](checklist.md) for the full build history.
 
 ```
 SMSPit/
@@ -229,19 +234,19 @@ SMSPit/
 │   ├── k8s/
 │   └── helm/
 │
-├── scripts/                       # Dev & CI helper scripts, plus load-test/ (Day 88)
+├── scripts/                       # Dev & CI helper scripts, plus load-test/
 │   ├── setup.sh
 │   ├── dev-up.sh
 │   └── load-test/
 │
-├── sdks/                          # Native client SDKs (Days 89-93)
+├── sdks/                          # Native client SDKs
 │   ├── php/
 │   ├── go/
 │   ├── nodejs/
 │   └── python/
 │
 ├── docker-compose.yml             # wires gateway + auth-service + sms-service + ai-service + worker + dashboard + Postgres + Redis + Jaeger + Prometheus + Grafana
-├── checklist.md                   # 100-day build checklist
+├── checklist.md                   # Build checklist
 ├── CLAUDE.md                      # AI agent working guide
 ├── LICENSE
 └── README.md
@@ -572,7 +577,7 @@ SDK package registry publishing (Packagist/pkg.go.dev/npm/PyPI) is the one remai
 
 # SDKs
 
-- PHP, Go, Node.js, Python — built (checklist Days 89-92), see [docs/sdks.md](docs/sdks.md) and each SDK's own README under [sdks/](sdks/). Not yet published to a package registry.
+- PHP, Go, Node.js, Python — built, see [docs/sdks.md](docs/sdks.md) and each SDK's own README under [sdks/](sdks/). Not yet published to a package registry.
 - Java, .NET — planned, not yet started.
 
 ---

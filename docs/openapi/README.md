@@ -1,4 +1,4 @@
-# OpenAPI reference (Day 94)
+# OpenAPI reference
 
 [openapi.yaml](openapi.yaml) is a full OpenAPI 3.0 spec for every public HTTP endpoint across the gateway, sms-service, and auth-service: messages (capture/list/get/replay/export/spam-override/delete), templates, statistics, the three provider-compatible adapters, API keys (including rotation), organizations, and teams.
 

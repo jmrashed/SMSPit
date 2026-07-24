@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: smspit/gateway:latest
+          image: ghcr.io/jmrashed/smspit-gateway:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

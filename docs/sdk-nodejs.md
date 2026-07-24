@@ -1,10 +1,10 @@
-> Mirrored from [`sdks/nodejs/`](https://github.com/jmrashed/SMSPit/tree/main/sdks/nodejs/) in the main repo — relative links/paths below refer to that location, not this docs site.
+> Mirrored from [`sdks/nodejs/`](https://github.com/jmrashed/SMSPit/tree/main/sdks/nodejs) in the main repo — that's the source of truth; update there and re-sync this page.
 
 # @smspit/sdk (Node.js)
 
 Node.js/TypeScript client for SMSPit's native REST API. Built on the global `fetch` (Node 18+) -- no third-party HTTP dependency.
 
-**Status:** send/list/get/replay implemented (checklist Day 91). Not yet published to npm (checklist Day 93).
+**Status:** send/list/get/replay implemented. Not yet published to npm.
 
 ## Install (local path, until published)
 
@@ -28,7 +28,7 @@ await client.replay(message.id);
 const inbox = await client.list({ limit: 20 });
 ```
 
-See [examples/send-and-list.ts](examples/send-and-list.ts) for a runnable example (`SMSPIT_API_KEY=... npm run example`).
+See [`examples/send-and-list.ts`](https://github.com/jmrashed/SMSPit/blob/main/sdks/nodejs/examples/send-and-list.ts) for a runnable example (`SMSPIT_API_KEY=... npm run example`).
 
 ## Development
 

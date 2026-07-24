@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: worker
-          image: smspit/worker:latest
+          image: ghcr.io/jmrashed/smspit-worker:latest
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:

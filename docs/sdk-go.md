@@ -1,10 +1,10 @@
-> Mirrored from [`sdks/go/`](https://github.com/jmrashed/SMSPit/tree/main/sdks/go/) in the main repo — relative links/paths below refer to that location, not this docs site.
+> Mirrored from [`sdks/go/`](https://github.com/jmrashed/SMSPit/tree/main/sdks/go) in the main repo — that's the source of truth; update there and re-sync this page.
 
 # smspit (Go)
 
 Go client for SMSPit's native REST API. Built on `net/http` only -- no third-party dependency.
 
-**Status:** send/list/get/replay implemented (checklist Day 90). Not yet tagged/published as a versioned module (checklist Day 93).
+**Status:** send/list/get/replay implemented. Not yet tagged/published as a versioned module.
 
 ## Install (until tagged, use a `replace` directive)
 
@@ -24,7 +24,7 @@ _, err = client.Replay(message.ID)
 page, err := client.List(smspit.ListParams{Limit: 20})
 ```
 
-See [examples/send-and-list/main.go](examples/send-and-list/main.go) for a runnable example (`SMSPIT_API_KEY=... go run ./examples/send-and-list`).
+See [`examples/send-and-list/main.go`](https://github.com/jmrashed/SMSPit/blob/main/sdks/go/examples/send-and-list/main.go) for a runnable example (`SMSPIT_API_KEY=... go run ./examples/send-and-list`).
 
 ## Development
 

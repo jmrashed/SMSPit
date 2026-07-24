@@ -2,7 +2,7 @@
 
 Node.js/TypeScript client for SMSPit's native REST API. Built on the global `fetch` (Node 18+) -- no third-party HTTP dependency.
 
-**Status:** send/list/get/replay implemented (checklist Day 91). Not yet published to npm (checklist Day 93).
+**Status:** send/list/get/replay implemented. Not yet published to npm.
 
 ## Install (local path, until published)
 

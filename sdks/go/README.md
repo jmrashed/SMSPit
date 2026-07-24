@@ -2,7 +2,7 @@
 
 Go client for SMSPit's native REST API. Built on `net/http` only -- no third-party dependency.
 
-**Status:** send/list/get/replay implemented (checklist Day 90). Not yet tagged/published as a versioned module (checklist Day 93).
+**Status:** send/list/get/replay implemented. Not yet tagged/published as a versioned module.
 
 ## Install (until tagged, use a `replace` directive)
 

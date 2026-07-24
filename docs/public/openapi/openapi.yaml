@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: SMSPit API
   description: |
-    Full REST surface across the gateway, sms-service, and auth-service (checklist Day 94).
+    Full REST surface across the gateway, sms-service, and auth-service.
     See [docs/api/message-mapping.md](../api/message-mapping.md) for the REST/proto field mapping and
     [docs/api/provider-compatibility.md](../api/provider-compatibility.md) for the provider-compatible adapters.
 
@@ -942,7 +942,7 @@ components:
                   type: array
                   items: { type: string }
     RateLimited:
-      description: Per-org request quota exceeded (gateway, Day 86)
+      description: Per-org request quota exceeded (enforced at the gateway)
       headers:
         Retry-After:
           schema: { type: integer }

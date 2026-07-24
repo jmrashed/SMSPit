@@ -2,7 +2,7 @@
 
 PHP client for SMSPit's native REST API. No third-party HTTP client dependency (built on ext-curl) so it doesn't pull Guzzle or similar into a consuming project.
 
-**Status:** send/list/get/replay implemented (checklist Day 89). Not yet published to Packagist (checklist Day 93).
+**Status:** send/list/get/replay implemented. Not yet published to Packagist.
 
 ## Install (local path, until published)
 

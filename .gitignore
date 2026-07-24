@@ -52,3 +52,5 @@ venv/
 
 # scripts/dev-up.sh output (includes a plaintext dev API key)
 .dev-logs/
+.vercel
+.env*

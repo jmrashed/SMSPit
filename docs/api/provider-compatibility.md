@@ -80,7 +80,7 @@ SigV4 signature headers are accepted but not verified. Response is XML (AWS's de
 
 Explicitly out of scope for v0.3's adapters — a payload using these either 400s or degrades to the documented fallback, not a silent misread:
 
-- **Bulk/multi-recipient sends** (MessageBird's array `recipients`, SNS topic `Publish`). SMSPit's capture model is one message per call; only the first recipient is captured, and this is called out in each adapter's own tests (Day 55).
+- **Bulk/multi-recipient sends** (MessageBird's array `recipients`, SNS topic `Publish`). SMSPit's capture model is one message per call; only the first recipient is captured, and this is called out in each adapter's own tests.
 - **Delivery receipts / webhooks** each provider offers for the *other* direction (status callbacks). SMSPit captures instead of delivering, so there's nothing to report status on.
 - **Provider-specific auth verification.** Credentials are accepted syntactically (so requests aren't rejected for shape reasons) but never checked — see [Auth](#auth).
 - **Non-SMS message types** (MessageBird/Vonage also support voice, WhatsApp, etc. via adjacent endpoints). Only the SMS-send endpoint of each provider is emulated.

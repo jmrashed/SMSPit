@@ -1,12 +1,12 @@
-# Container registry (Day 96)
+# Container Registry
 
 ## Registry choice
 
-**GHCR (`ghcr.io/jmrashed/smspit-*`)** — decided in Day 95, not a separate choice here. GHCR was picked over Docker Hub because it needs zero extra secrets: the `publish-images` job in [.github/workflows/ci.yml](../.github/workflows/ci.yml) authenticates with the workflow's own `GITHUB_TOKEN`, whereas Docker Hub would need a separate account and access token stored as repo secrets for no real benefit at this project's scale.
+**GHCR (`ghcr.io/jmrashed/smspit-*`)** is the registry. GHCR was picked over Docker Hub because it needs zero extra secrets: the `publish-images` job in [.github/workflows/ci.yml](../.github/workflows/ci.yml) authenticates with the workflow's own `GITHUB_TOKEN`, whereas Docker Hub would need a separate account and access token stored as repo secrets for no real benefit at this project's scale.
 
 ## Image naming
 
-One image per service, all six built from their existing (already-verified, Days 26/27/48/79) Dockerfiles:
+One image per service, all six built from their existing (already-verified) Dockerfiles:
 
 | Service | Image |
 |---|---|
@@ -21,9 +21,9 @@ Each is tagged both `:latest` and `:{tag}` (e.g. `:v0.4.0`) on every `v*` tag pu
 
 ## How publishing actually happens
 
-There is no `docker`/`podman` binary in this working environment (consistent with every prior Docker-related checklist day — see Days 26/27/29/48/49/79/81/82), so images can't be built, pushed, or pulled locally here. The mechanism instead lives entirely in CI: the `publish-images` job (added Day 95) builds and pushes all six on every `v*` tag push, and only runs after every test job across all six services and all four SDKs passes.
+There is no `docker`/`podman` binary in this working environment, so images can't be built, pushed, or pulled locally here. The mechanism instead lives entirely in CI: the `publish-images` job builds and pushes all six on every `v*` tag push, and only runs after every test job across all six services and all four SDKs passes.
 
-**This means "publish the images" and "tag a release" are the same action** — pushing a version tag *is* what triggers a real publish, which is why it was deferred to Day 100 rather than done speculatively mid-checklist.
+**This means "publish the images" and "tag a release" are the same action** — pushing a version tag *is* what triggers a real publish, which is why it's a deliberate release-time action rather than something done speculatively.
 
 ## Status: published (as of v1.0.2)
 

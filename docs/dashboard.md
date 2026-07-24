@@ -1,59 +1,86 @@
 # dashboard
 
-The web UI for SMSPit — inbox, search, replay, statistics, and live updates.
+**Status: Implemented.** The web UI for SMSPit — inbox, search, replay, statistics, and live updates.
+
+![SMSPit dashboard inbox](/assets/screenshot-inbox.png)
 
 ## Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | React |
-| Real-time | WebSocket client |
-| Deployment | Docker (static build served via Dockerfile) |
-
-## Status
-
-Not yet implemented. Core inbox/search planned for v0.1, auth/replay/stats/live updates for v0.2, org/team/template/export UI for v0.3 — see [checklist.md](../checklist.md) Days 21–25, 42, 44, 46–47, 60, 62, 64.
+| Framework | React (Vite) |
+| Real-time | WebSocket client — see [WebSocket API](websocket.md) |
+| Deployment | Docker (static build served via its own Dockerfile) |
 
 ## Responsibilities
 
 - Render captured messages in a searchable, filterable inbox
 - Provide message detail, replay, and export actions
 - Surface statistics and AI-derived tags (OTP, classification, spam)
-- Manage API keys and organization/team context
+- Manage API keys (create/rotate/revoke) and organization/team context
 - Reflect new captures in real time via WebSocket
 
-## Planned Features & Functionality
+## Features
 
 | Feature | Description |
 |---|---|
-| Inbox | List view with status badges, real-time updates |
-| Message detail | Full message + metadata, raw request, headers |
-| Search & filters | By `to`, `from`, date range |
-| Replay | Re-trigger a captured message's delivery pipeline |
-| Statistics | Overview page with volume/delivery metric cards and charts |
-| API key management | List/create/revoke keys, copy-to-clipboard for new keys |
-| Org/team switcher | Scope the dashboard to the active organization |
-| Message templates | Create/select reusable templates |
-| Export | Download messages as CSV/JSON |
-| AI tags | OTP highlight, classification badge, spam flag with manual override |
-| Timeline & API logs | Chronological view of request/message activity |
+| Inbox | List view with status/category/spam badges, real-time updates over WebSocket |
+| Message detail | Full message + metadata, replay button |
+| Search & filters | By `to`, `from`, category, spam status, date range |
+| Replay | Re-captures a message's original payload as a new, linked message |
+| Statistics | Overview page with metric cards and a message-volume chart |
+| API key management | List/create/rotate/revoke keys, copy-to-clipboard for a newly created key — see [API Key Rotation](api-key-rotation.md) |
+| Organization/team switcher | Scopes the dashboard to the active organization — see [Organizations and Teams](organizations-and-teams.md) |
+| Message templates | Create/edit/select reusable `{{variable}}` templates — see [Templates](templates.md) |
+| Export | Download messages as CSV/JSON — see [Export](export.md) |
+| AI tags | OTP highlight with copy-to-clipboard, classification badge, spam flag with a manual "mark as not spam" override |
+| Generate test data | Button to synthesize sample messages via `ai-service` for exercising the UI — see [Generate Test Data](generate-test-data.md) |
 
-## Directory layout (planned)
+## Configuration
+
+| Env var | Purpose |
+|---|---|
+| `VITE_API_BASE_URL` | Gateway URL the dashboard talks to |
+| `VITE_AUTH_SERVICE_URL` | auth-service URL (org/team/key management calls) |
+| `VITE_API_KEY` | Bootstrap API key for local dev (see [Getting Started](getting-started.md)) |
+
+## Directory layout
 
 ```
 dashboard/
 ├── src/
 │   ├── components/
-│   ├── pages/
+│   ├── pages/         # Inbox, MessageDetail, Statistics, ApiKeys, Organizations
 │   ├── hooks/
-│   ├── api/
+│   ├── context/         # OrgContext (active organization)
+│   ├── api/               # REST client
 │   └── App.tsx
 ├── public/
 ├── Dockerfile
 └── package.json
 ```
 
+## Testing
+
+```sh
+cd dashboard
+npm ci
+npm run lint
+npm run build
+```
+
+There is no dashboard unit/component test suite at the time of writing — `lint` + `build` are what CI enforces. See [Testing](testing.md).
+
+## Related documentation
+
+- [Getting Started](getting-started.md) — first-run walkthrough that exercises this UI end to end
+- [WebSocket API](websocket.md)
+- [Organizations and Teams](organizations-and-teams.md)
+- [API Key Rotation](api-key-rotation.md)
+- [Templates](templates.md)
+- [Export](export.md)
+
 ## Depends on
 
-- `sms-service` (REST API, WebSocket)
-- `auth-service` (API key management endpoints)
+- [sms-service](sms-service.md) (REST API, WebSocket)
+- [auth-service](auth-service.md) (API key and organization/team management endpoints)

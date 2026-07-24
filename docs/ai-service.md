@@ -1,51 +1,81 @@
 # ai-service
 
-AI-assisted message intelligence — OTP detection, classification, spam scoring, and synthetic test data.
+**Status: Implemented.** AI-assisted message intelligence — OTP detection, classification, spam scoring, and synthetic test data. Rule-based/regex, not a hosted ML model — see [FAQ](faq.md#is-ai-service-a-real-ml-model).
 
 ## Stack
 
 | Layer | Technology |
 |---|---|
 | Language/Framework | Python / FastAPI |
-| Deployment | Docker, Kubernetes |
-
-## Status
-
-Not yet implemented. Planned for v0.4 — see [checklist.md](../checklist.md) Days 66–76.
+| Deployment | Docker, Kubernetes (see [Kubernetes](kubernetes.md) / [Helm](helm.md)) |
 
 ## Responsibilities
 
-- Detect OTP codes in captured message bodies
-- Classify messages (transactional / marketing / OTP)
-- Score messages for spam likelihood
-- Generate synthetic SMS samples for testing
+- Detect OTP codes in message bodies (regex-based, keyword-adjacent match preferred over a bare digit run)
+- Classify messages into `otp` / `transactional` / `marketing` / `other`
+- Score messages for spam likelihood (keyword/heuristic scoring, flagged at ≥0.5)
+- Generate synthetic SMS samples for exercising the dashboard/API without a real integration — see [Generate Test Data](generate-test-data.md)
 
-## Planned Features & Functionality
+**Not** reachable through the [gateway](gateway.md) — there is no `ai-service` route at the edge. It's called directly, and only by two callers:
+
+- **`sms-service`**, synchronously, on every capture (2s timeout; degrades to `null`/"not detected" rather than failing the capture if unreachable)
+- **`worker`**, asynchronously, off the Redis Streams queue (see [Redis and Queues](redis.md))
+
+## API
 
 | Feature | Endpoint | Notes |
 |---|---|---|
-| OTP detection | `POST /detect-otp` | Regex-based baseline; extracted value stored on the message record |
-| Message classification | `POST /classify` | Rule-based or ML classification into transactional/marketing/OTP |
-| Spam detection | `POST /detect-spam` | Spam score; flagged messages surfaced in the dashboard |
-| Test data generation | Generator endpoint | Produces synthetic OTP/marketing/transactional samples on demand |
+| OTP detection | `POST /detect-otp` | Returns `{ otp: string \| null }` |
+| Message classification | `POST /classify` | Returns `{ category: "otp" \| "transactional" \| "marketing" \| "other" }` |
+| Spam detection | `POST /detect-spam` | Returns `{ is_spam: boolean, score: number }` |
+| Test data generation | `POST /generate-test-data` | See [Generate Test Data](generate-test-data.md) |
 
-## Directory layout (planned)
+No SMSPit API key is required to call ai-service directly — it's an internal helper with no data store of its own, not part of the authenticated API surface.
+
+## Configuration
+
+| Env var | Purpose |
+|---|---|
+| `PORT` | Listen port (default from `.env.example`) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP collector endpoint, see [Observability](observability.md) |
+
+## Directory layout
 
 ```
 ai-service/
 ├── app/
-│   ├── api/
-│   ├── models/
+│   ├── routers/     # detect-otp, classify, detect-spam, generate
+│   ├── schemas/       # pydantic request/response models
+│   ├── services/       # otp_detector.py, classifier.py, spam_detector.py, test_data_generator.py
 │   └── main.py
 ├── tests/
-├── Dockerfile
-└── requirements.txt
+├── requirements.txt
+├── requirements-dev.txt
+└── Dockerfile
 ```
+
+## Testing
+
+```sh
+cd ai-service
+python -m pip install -r requirements-dev.txt
+pytest
+```
+
+See [Testing](testing.md) for the full-repo picture.
+
+## Related documentation
+
+- [Architecture Overview](architecture.md)
+- [sms-service](sms-service.md) — synchronous caller
+- [worker](worker.md) — asynchronous caller
+- [Generate Test Data](generate-test-data.md)
+- [Observability](observability.md)
 
 ## Depends on
 
-- Called by `sms-service` (sync, on capture) and `worker` (async, via queue) — must degrade gracefully (non-blocking) if unavailable
+- Nothing — stateless, no database, no other service calls
 
 ## Depended on by
 
-- `worker`, `sms-service`, `dashboard` (surfaces classification/OTP/spam results)
+- [worker](worker.md), [sms-service](sms-service.md); results surface in [dashboard](dashboard.md) as OTP/classification/spam tags

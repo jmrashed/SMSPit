@@ -1,23 +1,23 @@
-# SDKs (Day 93)
+# SDKs
 
-Four native SDKs (checklist Days 89-92) wrap SMSPit's REST API for `send`/`list`/`get`/`replay`. Each lives in its own folder under `sdks/`, with no cross-SDK code sharing (same "keep services isolated" convention as the main services), and none pulls a third-party HTTP dependency:
+Four native SDKs wrap SMSPit's REST API for `send`/`list`/`get`/`replay`. Each lives in its own folder under `sdks/`, with no cross-SDK code sharing (same "keep services isolated" convention as the main services), and none pulls a third-party HTTP dependency:
 
 | Language | Path | Package name | Built on |
 |---|---|---|---|
-| PHP | [sdks/php/](../sdks/php/) | `smspit/sdk` | ext-curl |
-| Go | [sdks/go/](../sdks/go/) | `github.com/jmrashed/SMSPit/sdks/go` | `net/http` |
-| Node.js | [sdks/nodejs/](../sdks/nodejs/) | `@smspit/sdk` | global `fetch` |
-| Python | [sdks/python/](../sdks/python/) | `smspit` | `urllib` |
+| PHP | [sdks/php/](https://github.com/jmrashed/SMSPit/tree/main/sdks/php) | `smspit/sdk` | ext-curl |
+| Go | [sdks/go/](https://github.com/jmrashed/SMSPit/tree/main/sdks/go) | `github.com/jmrashed/SMSPit/sdks/go` | `net/http` |
+| Node.js | [sdks/nodejs/](https://github.com/jmrashed/SMSPit/tree/main/sdks/nodejs) | `@smspit/sdk` | global `fetch` |
+| Python | [sdks/python/](https://github.com/jmrashed/SMSPit/tree/main/sdks/python) | `smspit` | `urllib` |
 
 Each SDK's own README has full install/usage instructions and a runnable example. This page covers the flows common to all four.
 
 ## Publishing status
 
-**Not yet published to any package registry** (Packagist, pkg.go.dev, npm, PyPI). Each SDK works today via a local path/editable install (see its README), which is enough for in-repo examples and for anyone cloning this repo to use immediately. Publishing needs registry accounts/credentials this environment doesn't have and is a deliberate follow-up, not an oversight — tracked as checklist Day 93's explicitly-allowed "or mark as pending" outcome. The Go SDK is the one exception in spirit: any Go project can already depend on it via `go get github.com/jmrashed/SMSPit/sdks/go` once this repo is public, since Go modules don't need a separate registry publish step -- it just isn't tagged with a version yet.
+**Not yet published to any package registry** (Packagist, pkg.go.dev, npm, PyPI). Each SDK works today via a local path/editable install (see its README), which is enough for in-repo examples and for anyone cloning this repo to use immediately. Publishing needs registry accounts/credentials this environment doesn't have and is a deliberate, tracked follow-up, not an oversight. The Go SDK is the one exception in spirit: any Go project can already depend on it via `go get github.com/jmrashed/SMSPit/sdks/go` once this repo is public, since Go modules don't need a separate registry publish step -- it just isn't tagged with a version yet.
 
 ## Common flow: send, then replay
 
-All four SDKs expose the same three calls for the core loop -- capture a message, look at it again later, and replay it (Day 40's replay endpoint, re-running the original payload as a new linked message):
+All four SDKs expose the same three calls for the core loop -- capture a message, look at it again later, and replay it (re-running the original payload as a new linked message):
 
 ```php
 // PHP
@@ -49,7 +49,7 @@ client.replay(message.id)
 
 ## "Webhook" flow: pointing an existing provider SDK at SMSPit
 
-SMSPit's own SDKs aren't the only way to talk to it. If an application already sends SMS through a real provider's SDK (MessageBird, Vonage, AWS SNS), it can point that *existing* SDK at a local SMSPit instance instead, with no code change -- see [docs/api/provider-compatibility.md](api/provider-compatibility.md) for the full adapter contract (Days 51-55). That's the intended way to capture traffic from an app that isn't using one of these four SDKs directly: swap the provider SDK's base URL, not the calling code.
+SMSPit's own SDKs aren't the only way to talk to it. If an application already sends SMS through a real provider's SDK (MessageBird, Vonage, AWS SNS), it can point that *existing* SDK at a local SMSPit instance instead, with no code change -- see [Provider Compatibility](api/provider-compatibility.md) for the full adapter contract. That's the intended way to capture traffic from an app that isn't using one of these four SDKs directly: swap the provider SDK's base URL, not the calling code.
 
 ## Error handling
 

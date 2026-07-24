@@ -1,4 +1,4 @@
-# End-to-end QA pass (Day 98)
+# End-to-end QA pass
 
 Full stack (`gateway`, `auth-service`, `sms-service`, `dashboard`) started via `scripts/dev-up.sh` with real Postgres/Redis; `ai-service`/`worker` not running (out of scope for this pass, and sms-service is designed to degrade gracefully when they're absent — confirmed below).
 
@@ -26,9 +26,9 @@ Full stack (`gateway`, `auth-service`, `sms-service`, `dashboard`) started via `
 
 ## Bug found and fixed
 
-**The three provider-compatible adapters (`/providers/messagebird/messages`, `/providers/vonage/sms/json`, `/providers/sns`) 404'd through the gateway**, despite working correctly when called directly against sms-service. The gateway (`gateway/internal/router/router.go`) had routes for `/api/v1/*`, `/auth/*`, and `/ws`, but never registered `/providers/*` at all -- an entire v0.3 feature (Days 51-55) was unreachable through the gateway, the intended public entry point for the whole stack.
+**The three provider-compatible adapters (`/providers/messagebird/messages`, `/providers/vonage/sms/json`, `/providers/sns`) 404'd through the gateway**, despite working correctly when called directly against sms-service. The gateway (`gateway/internal/router/router.go`) had routes for `/api/v1/*`, `/auth/*`, and `/ws`, but never registered `/providers/*` at all -- an entire provider-emulation feature was unreachable through the gateway, the intended public entry point for the whole stack.
 
-Root cause: the route was simply never added when the gateway was scaffolded (Day 37-39), since the provider adapters didn't exist yet at that point, and no later day revisited the gateway's route list when they were added.
+Root cause: the route was simply never added when the gateway was first scaffolded, since the provider adapters didn't exist yet at that point, and nothing later revisited the gateway's route list when they were added.
 
 Fix: added `r.Handle("/providers/*", proxy.New(cfg.SMSServiceURL, "", ""))`, left unguarded (no `RequireAPIKey`) to match sms-service's own adapters, which intentionally accept no SMSPit auth so an existing provider SDK can point at SMSPit by swapping its base URL alone. Verified live against the running gateway for all three adapters, and added `TestRoutesToProviderAdaptersWithoutRequiringAnAPIKey` to `gateway/internal/router/router_test.go` as a regression test.
 

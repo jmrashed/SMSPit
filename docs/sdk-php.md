@@ -1,10 +1,10 @@
-> Mirrored from [`sdks/php/`](https://github.com/jmrashed/SMSPit/tree/main/sdks/php/) in the main repo — relative links/paths below refer to that location, not this docs site.
+> Mirrored from [`sdks/php/`](https://github.com/jmrashed/SMSPit/tree/main/sdks/php) in the main repo — that's the source of truth; update there and re-sync this page.
 
 # smspit/sdk (PHP)
 
 PHP client for SMSPit's native REST API. No third-party HTTP client dependency (built on ext-curl) so it doesn't pull Guzzle or similar into a consuming project.
 
-**Status:** send/list/get/replay implemented (checklist Day 89). Not yet published to Packagist (checklist Day 93).
+**Status:** send/list/get/replay implemented. Not yet published to Packagist.
 
 ## Install (local path, until published)
 
@@ -27,7 +27,7 @@ $client->replay($message->id);
 $inbox = $client->list(['limit' => 20]);
 ```
 
-See [examples/send-and-list.php](examples/send-and-list.php) for a runnable example (`SMSPIT_API_KEY=... php examples/send-and-list.php`).
+See [`examples/send-and-list.php`](https://github.com/jmrashed/SMSPit/blob/main/sdks/php/examples/send-and-list.php) for a runnable example (`SMSPIT_API_KEY=... php examples/send-and-list.php`).
 
 ## Development
 

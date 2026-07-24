@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ai-service
-          image: smspit/ai-service:latest
+          image: ghcr.io/jmrashed/smspit-ai-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8001
