@@ -426,8 +426,8 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Add a deployment step to a staging environment — `deploy-staging` job runs `helm upgrade --install` against the Day 82 chart, gated behind a `staging` GitHub Environment; unverified end-to-end (no real staging cluster/secret in this environment) — see the job's own comment in the workflow
 - [x] **Day 96: Publish Docker images**
   - [x] Set up a container registry (GHCR/Docker Hub) — GHCR, wired up in Day 95's `publish-images` CI job; see [docs/registry.md](docs/registry.md) for why
-  - [ ] Tag and push images for all services — mechanism is in place (CI publishes on any `v*` tag push) but no tag has been pushed yet; this is the same action as Day 100's release tag, deferred there since pushing a tag is a real, visible, hard-to-reverse action against the live repo/registry — not something to do speculatively mid-checklist
-  - [ ] Verify images pull and run correctly from the registry — deferred to the same point; also no Docker/podman available in this environment to pull/run locally (consistent with Days 26/27/29/48/49/79/81/82)
+  - [x] Tag and push images for all services — done via the `v1.0.2` tag push (see Day 100); `v1.0.0`/`v1.0.1`'s tag pushes never reached `publish-images` because CI failed earlier in the pipeline (lint, then missing Redis services/coverage — all fixed before `v1.0.2`)
+  - [x] Verify images pull and run correctly from the registry — verified the publish itself (real layers pushed, real digests returned for all 6 images, confirmed in the `v1.0.2` CI run); pulling/running locally not done, no Docker/podman available in this environment (consistent with Days 26/27/29/48/49/79/81/82)
 - [x] **Day 97: Write production deployment guide**
   - [x] Document docker-compose production deployment steps — [docs/production-deployment.md](docs/production-deployment.md#docker-compose-single-host)
   - [x] Document Kubernetes/Helm production deployment steps — [docs/production-deployment.md](docs/production-deployment.md#kubernetes-helm); fixed a real bug found while writing this: the Helm chart's default `image.repository` values pointed at unpublished `smspit/*` names instead of the Day 96 GHCR names
@@ -441,6 +441,6 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Finalize `CONTRIBUTING.md` — new file, drawn from CLAUDE.md's working conventions
   - [x] Write a `CHANGELOG.md` entry summarizing the v0.1–v1.0 journey — `[1.0.0] - Unreleased` entry in [CHANGELOG.md](CHANGELOG.md)
 - [x] **Day 100: Tag and release v1.0**
-  - [x] Final version bump across all services — `sms-service`, `dashboard` package versions, Helm chart `version`/`appVersion`, OpenAPI spec `info.version`, all to `1.0.0`
-  - [x] Tag `v1.0.0` and publish GitHub release notes
+  - [x] Final version bump across all services — `sms-service`, `dashboard` package versions, Helm chart `version`/`appVersion`, OpenAPI spec `info.version`; done 3 times (`1.0.0` → `1.0.2`) as CI issues were found and fixed post-tag (see below)
+  - [x] Tag `v1.0.0` and publish GitHub release notes — then `v1.0.1` (fixed a lint failure that blocked `v1.0.0`'s CI), then `v1.0.2` (fixed missing Redis services in CI for `auth-service`/`worker` and a real coverage regression in `sms-service` — the first tag whose CI actually reaches `publish-images` and pushes real images to GHCR). All three tags/releases are live; `v1.0.0`/`v1.0.1` are kept as historical releases rather than deleted.
   - [ ] Announce the release — outside the scope of what an agent can do (no social/community channels to post to); the GitHub release itself is the announcement artifact
