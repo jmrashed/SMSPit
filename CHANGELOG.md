@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.2] - 2026-07-24
+
+The first release whose CI actually runs fully green end-to-end. After tagging v1.0.1, CI was still broken on that exact commit — gaps that had never surfaced before because the jobs that would have caught them (auth-service's own test suite, the worker job, sms-service's coverage gate) either didn't exist in CI or were never actually enforced until Day 95 turned them on for real.
+
+### Fixed
+
+- `auth-service` and `worker` CI jobs had no Redis service container. `auth-service`'s Prometheus metrics (Day 84) use a Redis-backed storage adapter, and `worker`'s consumer tests create a real Redis Streams consumer group — both need Redis just to run their test suites, not just at runtime.
+- `sms-service`'s coverage thresholds (90%/80%/90%/90%) were failing at 87.8%/78%/86.8%/87.6% because `metrics.controller.ts` and `metrics.middleware.ts` (Day 84) had no tests at all. Added both; coverage is now 91.76%/80.53%/93.4%/91.6%.
+
 ## [1.0.1] - 2026-07-24
 
 Fixes CI's `lint` job, which was failing on the exact commit `v1.0.0` was tagged from — a pre-existing gap from Days 88/89 that was only caught after tagging: Locust wrote some `scripts/load-test/results/*.csv` files with CRLF line endings, and `sdks/php/phpunit.xml` used non-multiple-of-2 indentation, both violating `.editorconfig`. Since `lint` gates every other CI job (including `publish-images`), `v1.0.0`'s tag push never actually published Docker images to GHCR. `v1.0.0` itself is left as-is (already tagged and released); this patch release is the one whose CI actually runs green end-to-end. No functional code changes.
@@ -38,7 +47,7 @@ The v1.0 milestone (checklist Days 81–100): Kubernetes/Helm, full observabilit
 
 ### Known gaps
 
-- Docker images are published to GHCR by CI on this tag push (see [docs/registry.md](docs/registry.md)); the 4 SDKs are not yet published to their package registries (Packagist/pkg.go.dev/npm/PyPI) — no registry credentials in this environment, see [docs/sdks.md](docs/sdks.md#publishing-status).
+- This tag's own CI run did not publish Docker images to GHCR — see [1.0.1] and [1.0.2] below for why, and [1.0.2] for the release whose CI actually reaches that step. The 4 SDKs are not yet published to their package registries (Packagist/pkg.go.dev/npm/PyPI) either — no registry credentials in this environment, see [docs/sdks.md](docs/sdks.md#publishing-status).
 - No Docker/Podman/kubectl/helm binary was available in the environment this release was built in — every Docker/Kubernetes-related claim above was verified by an equivalent means (host toolchain builds, live process replication, manifest parsing) rather than a real `docker compose up`/`kubectl apply`/`helm install`. Re-verify the first real deployment against [docs/production-deployment.md](docs/production-deployment.md).
 
 ## [0.4.0] - 2026-07-21

@@ -11,7 +11,7 @@ info:
     A few are intentionally unauthenticated: the API key bootstrap/management routes (`POST/GET/DELETE /auth/api-keys*`,
     including `rotate`) and the three provider-compatible adapters under `/providers/*`, which mimic real providers'
     own (unauthenticated-by-SMSPit) wire formats so an existing provider SDK can point at SMSPit unmodified.
-  version: "1.0.1"
+  version: "1.0.2"
   license:
     name: MIT
     url: https://github.com/jmrashed/SMSPit/blob/main/LICENSE
