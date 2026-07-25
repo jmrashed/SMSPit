@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import type { Statistics } from '../types/statistics';
 import { getStatistics } from '../api/statistics';
 import { StatCard } from '../components/StatCard';
 import { VolumeChart } from '../components/VolumeChart';
 import { Spinner } from '../components/Spinner';
 import { ErrorBanner } from '../components/ErrorBanner';
-import './StatisticsPage.css';
 
 export function StatisticsPage() {
   const [statistics, setStatistics] = useState<Statistics | null>(null);
@@ -38,35 +36,30 @@ export function StatisticsPage() {
   }, [retryToken]);
 
   return (
-    <main className="statistics-page">
-      <Link to="/" className="statistics-page__back">
-        ← Back to inbox
-      </Link>
-      <header className="statistics-page__header">
-        <h1>Statistics</h1>
-        <p>Message volume and status breakdown.</p>
+    <div className="flex flex-col gap-6">
+      <header>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Statistics</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Message volume and status breakdown.</p>
       </header>
 
       {loading && <Spinner label="Loading statistics…" />}
 
-      {error && (
-        <ErrorBanner message="Couldn't load statistics." onRetry={() => setRetryToken((t) => t + 1)} />
-      )}
+      {error && <ErrorBanner message="Couldn't load statistics." onRetry={() => setRetryToken((t) => t + 1)} />}
 
       {!loading && !error && statistics && (
         <>
-          <div className="statistics-page__cards">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatCard label="Total messages" value={statistics.total} />
             <StatCard label="Captured" value={statistics.by_status.captured ?? 0} tone="good" />
             <StatCard label="Failed" value={statistics.by_status.failed ?? 0} tone="critical" />
           </div>
 
-          <section className="statistics-page__chart">
-            <h2>Message volume</h2>
+          <section className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+            <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Message volume</h2>
             <VolumeChart data={statistics.by_day} />
           </section>
         </>
       )}
-    </main>
+    </div>
   );
 }

@@ -1,5 +1,4 @@
 import type { DailyCount } from '../types/statistics';
-import './VolumeChart.css';
 
 // Fixed design-pixel viewBox (not percentage-based) so the SVG scales
 // uniformly on both axes -- a percentage-width viewBox stretched non-
@@ -32,7 +31,7 @@ function topRoundedBarPath(x: number, y: number, width: number, height: number, 
 
 export function VolumeChart({ data }: { data: DailyCount[] }) {
   if (data.length === 0) {
-    return <p className="volume-chart__empty">No messages captured yet.</p>;
+    return <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">No messages captured yet.</p>;
   }
 
   const maxCount = Math.max(...data.map((d) => d.count), 1);
@@ -40,21 +39,32 @@ export function VolumeChart({ data }: { data: DailyCount[] }) {
   const barWidth = Math.min(BAR_MAX_WIDTH, bandWidth - BAR_GAP);
 
   return (
-    <div className="volume-chart">
+    <div>
       <svg
-        className="volume-chart__svg"
         viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
         role="img"
         aria-label="Message volume by day"
+        className="w-full"
       >
-        <line x1="0" y1={BASELINE_Y} x2={CHART_WIDTH} y2={BASELINE_Y} className="volume-chart__baseline" />
+        <line
+          x1="0"
+          y1={BASELINE_Y}
+          x2={CHART_WIDTH}
+          y2={BASELINE_Y}
+          className="stroke-slate-200 dark:stroke-slate-800"
+          strokeWidth={1}
+        />
         {data.map((point, index) => {
           const barHeight = (point.count / maxCount) * (BASELINE_Y - 12);
           const x = index * bandWidth + (bandWidth - barWidth) / 2;
           const y = BASELINE_Y - barHeight;
           const height = Math.max(barHeight, 0);
           return (
-            <path key={point.date} d={topRoundedBarPath(x, y, barWidth, height, 4)} className="volume-chart__bar">
+            <path
+              key={point.date}
+              d={topRoundedBarPath(x, y, barWidth, height, 4)}
+              className="fill-purple-600 dark:fill-purple-400"
+            >
               <title>
                 {point.date}: {point.count} message{point.count === 1 ? '' : 's'}
               </title>
@@ -62,7 +72,7 @@ export function VolumeChart({ data }: { data: DailyCount[] }) {
           );
         })}
       </svg>
-      <div className="volume-chart__axis">
+      <div className="mt-1 flex text-xs text-slate-500 dark:text-slate-400">
         {data.map((point) => (
           <span key={point.date} style={{ width: `${(bandWidth / CHART_WIDTH) * 100}%` }}>
             {formatShortDate(point.date)}
