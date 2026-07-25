@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { OrgSwitcher } from './OrgSwitcher';
+import { ObservabilityMenu } from './ObservabilityMenu';
 import { ThemeToggle } from './ThemeToggle';
 
 const NAV_LINKS = [
@@ -45,6 +46,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
           <div className="hidden items-center gap-3 md:flex">
             <OrgSwitcher />
+            <ObservabilityMenu />
             <ThemeToggle />
           </div>
 
@@ -81,8 +83,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 {link.label}
               </NavLink>
             ))}
-            <div className="mt-2 border-t border-slate-200 pt-2 dark:border-slate-800">
+            <div className="mt-2 flex items-center gap-3 border-t border-slate-200 pt-2 dark:border-slate-800">
               <OrgSwitcher />
+              <ObservabilityMenu />
             </div>
           </nav>
         )}

@@ -5,6 +5,9 @@ declare global {
       VITE_API_KEY?: string;
       VITE_AUTH_SERVICE_URL?: string;
       VITE_AI_SERVICE_URL?: string;
+      VITE_JAEGER_URL?: string;
+      VITE_PROMETHEUS_URL?: string;
+      VITE_GRAFANA_URL?: string;
     };
   }
 }
@@ -35,6 +38,17 @@ const AI_SERVICE_URL =
 // per-user keys/login -- fine for this self-hosted tool's admin use
 // for now, not a long-term auth story.
 const API_KEY = window.__APP_CONFIG__?.VITE_API_KEY || import.meta.env.VITE_API_KEY;
+
+// Observability tools (Day 83-85) run alongside the app stack but were
+// never linked from the dashboard itself (Day 103) -- exported (not
+// just used internally, unlike the URLs above) since Layout renders
+// them as plain external links, not fetch() targets.
+export const JAEGER_URL =
+  window.__APP_CONFIG__?.VITE_JAEGER_URL || import.meta.env.VITE_JAEGER_URL || 'http://localhost:16686';
+export const PROMETHEUS_URL =
+  window.__APP_CONFIG__?.VITE_PROMETHEUS_URL || import.meta.env.VITE_PROMETHEUS_URL || 'http://localhost:9090';
+export const GRAFANA_URL =
+  window.__APP_CONFIG__?.VITE_GRAFANA_URL || import.meta.env.VITE_GRAFANA_URL || 'http://localhost:3001';
 
 export class ApiError extends Error {
   status: number;

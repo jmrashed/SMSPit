@@ -484,8 +484,9 @@ Found during a post-v1.0 live QA pass of the dashboard (see [docs/dashboard-gap-
   - [x] Add a `/templates` route with list/create/edit/delete, independent of the Compose page's picker — full table view (name, body preview, variables, updated) with inline create/edit form, nav link added
   - [x] Keep Compose's template picker calling the same API, no duplication of logic — went further than just the API layer: extracted the `{{variable}}`-detection regex (previously only defined inline in `TemplatePicker`) into `dashboard/src/lib/templateVariables.ts`, shared by both `TemplatePicker` and the new `TemplatesPage`
   - [x] Tests: `dashboard/e2e/templates.spec.ts` (Playwright, run against the live stack) — create/edit/delete, plus a cross-page check that a template created on `/templates` is immediately visible in Compose's picker (same API, same data)
-- [ ] **Day 103: Observability links**
-  - [ ] Add a nav entry linking out to Jaeger, Prometheus, and Grafana (already running, just not discoverable from the dashboard)
+- [x] **Day 103: Observability links**
+  - [x] Add a nav entry linking out to Jaeger, Prometheus, and Grafana (already running, just not discoverable from the dashboard) — an "Observability" dropdown in the header (desktop) and drawer (mobile), external links via `VITE_JAEGER_URL`/`VITE_PROMETHEUS_URL`/`VITE_GRAFANA_URL`, threaded through `docker-compose.yml` → `docker-entrypoint.sh`'s runtime `config.js` injection → `client.ts`, same pattern as every other dashboard URL
+  - [x] Tests: `dashboard/e2e/observability.spec.ts` — checks the menu's link hrefs/targets, and that each linked tool actually responds (not just DOM presence)
 - [ ] **Day 104: Bulk message actions in Inbox**
   - [ ] Add row multi-select and a bulk delete action wired to the existing `DELETE /api/v1/messages` endpoint
 - [ ] **Day 105: AI Tools page**

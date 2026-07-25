@@ -6,7 +6,7 @@ Update this file in the same change whenever a checklist day's status changes �
 
 Status values: `done`, `in-progress` (partially complete, blocked, or unverifiable in this environment), `pending` (not started).
 
-Last updated: 2026-07-25 (Days 101–102 merged; Days 103–105 pending).
+Last updated: 2026-07-25 (Days 101–103 merged; Days 104–105 pending).
 
 ---
 
@@ -75,7 +75,7 @@ Last updated: 2026-07-25 (Days 101–102 merged; Days 103–105 pending).
 |---|---|---|
 | 101 | done | Org/team management UI shipped (PR merged to `main`). One sub-task deferred: slug-uniqueness 422 shows a generic toast instead of the server's specific message — needs a shared `ApiError` client-layer change (see Known follow-ups) |
 | 102 | done | Standalone `/templates` page shipped, plus extracted shared `detectVariables` helper (`dashboard/src/lib/templateVariables.ts`) so Compose's picker and the new page don't duplicate the `{{variable}}`-detection regex |
-| 103 | pending | Observability nav links (Jaeger/Prometheus/Grafana) |
+| 103 | done | Observability nav links shipped (Jaeger/Prometheus/Grafana), threaded through the same runtime-config-injection pattern as every other dashboard URL |
 | 104 | pending | Bulk message actions (multi-select + bulk delete) in Inbox |
 | 105 | pending | AI Tools page (live otp/classify/spam preview) |
 
