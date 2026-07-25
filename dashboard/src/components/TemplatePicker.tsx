@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { Template } from '../types/template';
 import { createTemplate, deleteTemplate, listTemplates, updateTemplate } from '../api/templates';
 import { useToast } from './Toast';
-import './TemplatePicker.css';
 
 const VARIABLE_PATTERN = /{{\s*([\w.]+)\s*}}/g;
 
@@ -24,6 +23,9 @@ interface TemplateFormState {
 }
 
 const EMPTY_FORM: TemplateFormState = { name: '', body: '' };
+
+const inputClasses =
+  'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white';
 
 export function TemplatePicker({ onInsert }: { onInsert: (body: string) => void }) {
   const { showToast } = useToast();
@@ -112,37 +114,43 @@ export function TemplatePicker({ onInsert }: { onInsert: (body: string) => void 
   }
 
   return (
-    <div className="template-picker">
-      <div className="template-picker__header">
-        <h2>Templates</h2>
-        <button type="button" className="template-picker__new" onClick={startCreate}>
+    <div className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Templates</h2>
+        <button
+          type="button"
+          onClick={startCreate}
+          className="rounded-md border border-slate-200 px-3 py-1 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+        >
           + New template
         </button>
       </div>
 
-      {loading && <p className="template-picker__empty">Loading templates…</p>}
+      {loading && <p className="text-sm text-slate-500 dark:text-slate-400">Loading templates…</p>}
 
       {!loading && templates.length === 0 && editingId === null && (
-        <p className="template-picker__empty">No templates yet. Create one to reuse common message bodies.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          No templates yet. Create one to reuse common message bodies.
+        </p>
       )}
 
       {!loading && templates.length > 0 && (
-        <ul className="template-picker__list">
+        <ul className="flex flex-col gap-1">
           {templates.map((template) => (
             <li
               key={template.id}
-              className={`template-picker__item${
-                selectedId === template.id ? ' template-picker__item--selected' : ''
+              className={`flex items-center justify-between rounded-md px-2 py-1.5 text-sm ${
+                selectedId === template.id ? 'bg-purple-600/10' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <button type="button" className="template-picker__item-name" onClick={() => selectTemplate(template)}>
+              <button type="button" onClick={() => selectTemplate(template)} className="text-left">
                 {template.name}
               </button>
-              <div className="template-picker__item-actions">
-                <button type="button" onClick={() => startEdit(template)}>
+              <div className="flex gap-2 text-xs">
+                <button type="button" onClick={() => startEdit(template)} className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
                   Edit
                 </button>
-                <button type="button" onClick={() => handleDelete(template)}>
+                <button type="button" onClick={() => handleDelete(template)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
                   Delete
                 </button>
               </div>
@@ -152,30 +160,36 @@ export function TemplatePicker({ onInsert }: { onInsert: (body: string) => void 
       )}
 
       {selected && (
-        <div className="template-picker__variables">
+        <div className="flex flex-col gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
           {selected.variables.map((name) => (
-            <label key={name} className="template-picker__variable-row">
+            <label key={name} className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
               {name}
               <input
                 value={variableValues[name] ?? ''}
                 onChange={(e) => setVariableValues((current) => ({ ...current, [name]: e.target.value }))}
                 placeholder={`Value for {{${name}}}`}
+                className={inputClasses}
               />
             </label>
           ))}
-          <button type="button" className="template-picker__insert" onClick={handleInsert}>
+          <button
+            type="button"
+            onClick={handleInsert}
+            className="mt-1 self-start rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-400"
+          >
             Insert into message
           </button>
         </div>
       )}
 
       {editingId !== null && (
-        <form className="template-picker__form" onSubmit={handleFormSubmit}>
+        <form onSubmit={handleFormSubmit} className="flex flex-col gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
           <input
             value={form.name}
             onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))}
             placeholder="Template name"
             required
+            className={inputClasses}
           />
           <textarea
             value={form.body}
@@ -183,11 +197,23 @@ export function TemplatePicker({ onInsert }: { onInsert: (body: string) => void 
             placeholder="Your OTP is {{code}}"
             rows={3}
             required
+            className={inputClasses}
           />
-          <p className="template-picker__hint">Use {'{{variable}}'} placeholders — they're detected automatically.</p>
-          <div className="template-picker__form-actions">
-            <button type="submit">{editingId === 'new' ? 'Create' : 'Save'}</button>
-            <button type="button" onClick={() => setEditingId(null)}>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Use {'{{variable}}'} placeholders — they're detected automatically.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-400"
+            >
+              {editingId === 'new' ? 'Create' : 'Save'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingId(null)}
+              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+            >
               Cancel
             </button>
           </div>
