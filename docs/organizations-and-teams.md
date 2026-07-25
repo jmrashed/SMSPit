@@ -26,9 +26,13 @@ The creating user is automatically made an `admin` of the new organization. `slu
 
 The [dashboard](dashboard.md) has an organization switcher in the header; switching updates which organization's messages/templates/statistics are shown and persists the choice to `localStorage`. There is no API-level "switch" — an API key is permanently bound to whichever organization it was created for (or none); "switching" in the dashboard just changes which of *your* organizations' data you're viewing, using whichever key is active for that org.
 
+### Managing organizations from the dashboard
+
+The [dashboard](dashboard.md)'s Organizations page has full CRUD, not just the switcher: create an org (also the empty-state's primary action if you belong to none yet), and — for `admin`s of the selected org — edit its name or delete it. Deleting requires typing the organization's name to confirm, since it cascades to the org's teams/API keys/messages.
+
 ## Teams
 
-A grouping/UI concept for organizing people within an organization (e.g. "Engineering," "Support") — teams carry no additional data-scoping role of their own; scoping happens at the organization level only.
+A grouping/UI concept for organizing people within an organization (e.g. "Engineering," "Support") — teams carry no additional data-scoping role of their own; scoping happens at the organization level only. The dashboard's Organizations page lets `admin`s create teams and add/remove members directly (`member`s see the team list read-only); there's no edit/delete for a team once created, in the dashboard or the API — see [auth-service](auth-service.md) if you need to rename one for now. Adding a member takes their numeric user ID, since there's no user directory/search endpoint yet to pick someone by name or email.
 
 ### Creating a team and inviting a member
 

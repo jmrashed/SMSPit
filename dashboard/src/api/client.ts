@@ -126,16 +126,26 @@ export async function aiApiFetch<T>(path: string, init?: RequestInit): Promise<T
 // themselves (see auth-service/routes/api.php) -- generating/listing/
 // revoking keys is how you'd bootstrap the very first key.
 export async function authApiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // `...init` must come first: when a caller (e.g. authenticatedAuthApiFetch)
+  // passes its own `headers` object, spreading `init` after `headers` would
+  // replace the whole headers object wholesale, silently dropping
+  // Content-Type -- Laravel then never parses the body as JSON and every
+  // authenticated write becomes a no-op/422 (found while building Day 101).
   const response = await fetch(`${AUTH_SERVICE_URL}${path}`, {
+    ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
-    ...init,
   });
 
   if (!response.ok) {
     throw new ApiError(response.status, `Request to ${path} failed with status ${response.status}`);
+  }
+
+  // DELETE /api/organizations/{id} returns 204 with no body (Day 101).
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json() as Promise<T>;

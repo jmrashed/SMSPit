@@ -30,7 +30,7 @@
 | Replay | Re-captures a message's original payload as a new, linked message |
 | Statistics | Overview page with metric cards and a message-volume chart |
 | API key management | List/create/rotate/revoke keys, copy-to-clipboard for a newly created key — see [API Key Rotation](api-key-rotation.md) |
-| Organization/team switcher | Scopes the dashboard to the active organization — see [Organizations and Teams](organizations-and-teams.md) |
+| Organizations & teams | Switch between your organizations; create/edit/delete an org and create teams/manage members (admin-only) — see [Organizations and Teams](organizations-and-teams.md) |
 | Message templates | Create/edit/select reusable `{{variable}}` templates — see [Templates](templates.md) |
 | Export | Download messages as CSV/JSON — see [Export](export.md) |
 | AI tags | OTP highlight with copy-to-clipboard, classification badge, spam flag with a manual "mark as not spam" override |
@@ -55,8 +55,10 @@ dashboard/
 │   ├── context/         # OrgContext (active organization)
 │   ├── api/               # REST client
 │   └── App.tsx
+├── e2e/                # Playwright specs (Day 101+)
 ├── public/
 ├── Dockerfile
+├── playwright.config.ts
 └── package.json
 ```
 
@@ -70,6 +72,18 @@ npm run build
 ```
 
 There is no dashboard unit/component test suite at the time of writing — `lint` + `build` are what CI enforces. See [Testing](testing.md).
+
+### End-to-end (Playwright)
+
+`dashboard/e2e/` holds Playwright specs that drive the built UI against a live stack (gateway + auth-service + sms-service + dashboard all up via `docker compose up -d`):
+
+```sh
+cd dashboard
+npx playwright install chromium   # first run only
+npm run test:e2e
+```
+
+There's no `webServer` entry in `playwright.config.ts` — these specs exercise the real multi-service stack, not something Vite alone can stand up. Set `E2E_BASE_URL` to point at a non-default dashboard URL.
 
 ## Related documentation
 
