@@ -1,17 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Template } from '../types/template';
 import { createTemplate, deleteTemplate, listTemplates, updateTemplate } from '../api/templates';
+import { detectVariables, VARIABLE_PATTERN } from '../lib/templateVariables';
 import { useToast } from './Toast';
-
-const VARIABLE_PATTERN = /{{\s*([\w.]+)\s*}}/g;
-
-function detectVariables(body: string): string[] {
-  const names = new Set<string>();
-  for (const match of body.matchAll(VARIABLE_PATTERN)) {
-    names.add(match[1]);
-  }
-  return [...names];
-}
 
 function renderBody(body: string, values: Record<string, string>): string {
   return body.replace(VARIABLE_PATTERN, (full, name: string) => values[name] ?? full);

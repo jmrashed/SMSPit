@@ -6,6 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 const NAV_LINKS = [
   { to: '/', label: 'Inbox', end: true },
   { to: '/compose', label: 'Compose', end: false },
+  { to: '/templates', label: 'Templates', end: false },
   { to: '/organizations', label: 'Organizations', end: false },
   { to: '/statistics', label: 'Statistics', end: false },
   { to: '/api-keys', label: 'API keys', end: false },
