@@ -119,6 +119,12 @@ services:
       # POST /api/api-keys directly, then set DASHBOARD_API_KEY in your
       # own .env.
       VITE_API_KEY: "${DASHBOARD_API_KEY:-}"
+      # Observability tools (Days 83-85) -- linked from the dashboard nav
+      # as of Day 103, not proxied through it; these are plain external
+      # links to each tool's own UI.
+      VITE_JAEGER_URL: "http://localhost:${JAEGER_UI_PORT:-16686}"
+      VITE_PROMETHEUS_URL: "http://localhost:${PROMETHEUS_PORT:-9090}"
+      VITE_GRAFANA_URL: "http://localhost:${GRAFANA_PORT:-3001}"
     depends_on:
       - gateway
     networks:
