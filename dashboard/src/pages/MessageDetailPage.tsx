@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { Message } from '../types/message';
 import { getMessage, replayMessage, setMessageSpam } from '../api/messages';
 import { ApiError } from '../api/client';
@@ -9,7 +9,6 @@ import { SpamBadge } from '../components/SpamBadge';
 import { Spinner } from '../components/Spinner';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { useToast } from '../components/Toast';
-import './MessageDetailPage.css';
 
 type LoadState = 'loading' | 'found' | 'not-found' | 'error';
 
@@ -93,11 +92,7 @@ export function MessageDetailPage() {
   }
 
   return (
-    <main className="message-detail-page">
-      <Link to="/" className="message-detail-page__back">
-        ← Back to inbox
-      </Link>
-
+    <div className="flex flex-col gap-4">
       {state === 'loading' && <Spinner label="Loading message…" />}
 
       {state === 'error' && (
@@ -106,47 +101,47 @@ export function MessageDetailPage() {
 
       {state === 'not-found' && (
         <div data-testid="detail-not-found">
-          <h1>Message not found</h1>
-          <p>No message with id "{id}" exists.</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Message not found</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">No message with id "{id}" exists.</p>
         </div>
       )}
 
       {state === 'found' && message && (
-        <article data-testid="detail-found">
-          <header className="message-detail-page__header">
-            <h1>Message detail</h1>
+        <article data-testid="detail-found" className="flex flex-col gap-4">
+          <header className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Message detail</h1>
             <StatusBadge status={message.status} />
             {message.category && <ClassificationBadge category={message.category} />}
             {message.is_spam && <SpamBadge />}
             <button
               type="button"
-              className="message-detail-page__replay"
               onClick={handleReplay}
               disabled={replaying}
+              className="ml-auto rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-60 dark:bg-purple-500 dark:hover:bg-purple-400"
             >
               {replaying ? 'Replaying…' : 'Replay'}
             </button>
           </header>
 
-          <dl className="message-detail-page__meta">
-            <dt>ID</dt>
-            <dd>{message.id}</dd>
-            <dt>To</dt>
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 rounded-lg border border-slate-200 p-4 text-sm sm:grid-cols-2 dark:border-slate-800">
+            <dt className="text-slate-500 dark:text-slate-400">ID</dt>
+            <dd className="break-all">{message.id}</dd>
+            <dt className="text-slate-500 dark:text-slate-400">To</dt>
             <dd>{message.to}</dd>
-            <dt>From</dt>
+            <dt className="text-slate-500 dark:text-slate-400">From</dt>
             <dd>{message.from}</dd>
-            <dt>Captured</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Captured</dt>
             <dd>{new Date(message.created_at).toLocaleString()}</dd>
           </dl>
 
           {message.otp && (
-            <div className="message-detail-page__otp">
-              <span className="message-detail-page__otp-label">OTP detected</span>
-              <span className="message-detail-page__otp-value">{message.otp}</span>
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-900 dark:bg-purple-950/40">
+              <span className="text-sm font-medium text-purple-800 dark:text-purple-300">OTP detected</span>
+              <span className="rounded bg-white px-2 py-1 font-mono text-sm dark:bg-slate-900">{message.otp}</span>
               <button
                 type="button"
-                className="message-detail-page__otp-copy"
                 onClick={() => handleCopyOtp(message.otp!)}
+                className="rounded-md border border-purple-300 px-3 py-1 text-sm font-medium text-purple-700 hover:bg-purple-100 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/40"
               >
                 Copy
               </button>
@@ -156,17 +151,19 @@ export function MessageDetailPage() {
           {message.is_spam && (
             <button
               type="button"
-              className="message-detail-page__not-spam"
               onClick={handleMarkNotSpam}
               disabled={updatingSpam}
+              className="self-start rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-100 disabled:opacity-60 dark:border-slate-700 dark:hover:bg-slate-800"
             >
               {updatingSpam ? 'Updating…' : 'Not spam'}
             </button>
           )}
 
-          <div className="message-detail-page__body">{message.message}</div>
+          <div className="whitespace-pre-wrap rounded-lg border border-slate-200 p-4 text-sm dark:border-slate-800">
+            {message.message}
+          </div>
         </article>
       )}
-    </main>
+    </div>
   );
 }
