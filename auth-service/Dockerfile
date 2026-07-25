@@ -8,8 +8,11 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev
 
 FROM php:8.3-fpm-alpine AS runtime
-RUN apk add --no-cache nginx supervisor postgresql-dev oniguruma-dev \
-    && docker-php-ext-install pdo pdo_pgsql mbstring bcmath
+RUN apk add --no-cache nginx supervisor postgresql-dev oniguruma-dev $PHPIZE_DEPS \
+    && docker-php-ext-install pdo pdo_pgsql mbstring bcmath \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del $PHPIZE_DEPS
 
 WORKDIR /var/www/html
 COPY --from=composer-build /app ./

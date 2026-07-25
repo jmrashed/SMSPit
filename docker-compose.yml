@@ -34,9 +34,12 @@ services:
       SESSION_DRIVER: database
       QUEUE_CONNECTION: database
       CACHE_STORE: database
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
     depends_on:
       - postgres
+      - redis
       - jaeger
     networks:
       - smspit
