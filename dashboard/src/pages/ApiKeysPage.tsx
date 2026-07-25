@@ -1,11 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
 import type { ApiKey } from '../types/apiKey';
 import { createApiKey, listApiKeys, revokeApiKey } from '../api/apiKeys';
 import { Spinner } from '../components/Spinner';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { useToast } from '../components/Toast';
-import './ApiKeysPage.css';
 
 function formatTimestamp(iso: string | null): string {
   return iso ? new Date(iso).toLocaleString() : '—';
@@ -90,107 +88,144 @@ export function ApiKeysPage() {
     showToast('Copied to clipboard.', 'success');
   }
 
+  const inputClasses =
+    'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white';
+
   return (
-    <main className="api-keys-page">
-      <Link to="/" className="api-keys-page__back">
-        ← Back to inbox
-      </Link>
-      <header className="api-keys-page__header">
-        <h1>API keys</h1>
-        <p>Create and manage API keys used to authenticate against SMSPit's API.</p>
+    <div className="flex flex-col gap-6">
+      <header>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">API keys</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Create and manage API keys used to authenticate against SMSPit's API.
+        </p>
       </header>
 
       {newlyCreatedKey && (
-        <div className="api-keys-page__new-key" data-testid="new-key-banner">
+        <div
+          data-testid="new-key-banner"
+          className="flex flex-col gap-3 rounded-lg border border-green-200 bg-green-50 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-green-900 dark:bg-green-950/40"
+        >
           <div>
-            <strong>New key created — copy it now, it won't be shown again:</strong>
-            <code>{newlyCreatedKey}</code>
+            <strong className="block text-sm text-green-900 dark:text-green-300">
+              New key created — copy it now, it won't be shown again:
+            </strong>
+            <code className="mt-1 block break-all rounded bg-white px-2 py-1 text-xs dark:bg-slate-900">{newlyCreatedKey}</code>
           </div>
-          <div className="api-keys-page__new-key-actions">
-            <button type="button" onClick={() => handleCopy(newlyCreatedKey)}>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleCopy(newlyCreatedKey)}
+              className="rounded-md border border-green-300 px-3 py-1.5 text-sm font-medium hover:bg-green-100 dark:border-green-800 dark:hover:bg-green-900/40"
+            >
               Copy
             </button>
-            <button type="button" onClick={() => setNewlyCreatedKey(null)}>
+            <button
+              type="button"
+              onClick={() => setNewlyCreatedKey(null)}
+              className="rounded-md border border-slate-200 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+            >
               Dismiss
             </button>
           </div>
         </div>
       )}
 
-      <form className="api-keys-page__form" onSubmit={handleCreate}>
-        <input
-          type="text"
-          placeholder="Key name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          aria-label="Key name"
-        />
-        <input
-          type="number"
-          placeholder="Owner ID"
-          value={ownerId}
-          onChange={(e) => setOwnerId(e.target.value)}
-          aria-label="Owner ID"
-          min={1}
-        />
-        <button type="submit" disabled={creating}>
+      <form onSubmit={handleCreate} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <label className="flex flex-1 flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
+          Key name
+          <input
+            type="text"
+            placeholder="Key name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            aria-label="Key name"
+            className={inputClasses}
+          />
+        </label>
+        <label className="flex flex-1 flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
+          Owner ID
+          <input
+            type="number"
+            placeholder="Owner ID"
+            value={ownerId}
+            onChange={(e) => setOwnerId(e.target.value)}
+            aria-label="Owner ID"
+            min={1}
+            className={inputClasses}
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={creating}
+          className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-60 dark:bg-purple-500 dark:hover:bg-purple-400"
+        >
           {creating ? 'Creating…' : 'Create key'}
         </button>
       </form>
 
       {loading && <Spinner label="Loading API keys…" />}
 
-      {error && (
-        <ErrorBanner message="Couldn't load API keys." onRetry={() => setRetryToken((t) => t + 1)} />
-      )}
+      {error && <ErrorBanner message="Couldn't load API keys." onRetry={() => setRetryToken((t) => t + 1)} />}
 
       {!loading && !error && (
-        <table className="api-keys-page__table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Key</th>
-              <th>Owner</th>
-              <th>Status</th>
-              <th>Last used</th>
-              <th>Created</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {apiKeys.length === 0 && (
-              <tr>
-                <td colSpan={7} className="api-keys-page__empty">
-                  No API keys yet.
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                <th className="py-2 pr-4 font-medium">Name</th>
+                <th className="py-2 pr-4 font-medium">Key</th>
+                <th className="py-2 pr-4 font-medium">Owner</th>
+                <th className="py-2 pr-4 font-medium">Status</th>
+                <th className="py-2 pr-4 font-medium">Last used</th>
+                <th className="py-2 pr-4 font-medium">Created</th>
+                <th className="py-2 font-medium"></th>
               </tr>
-            )}
-            {apiKeys.map((apiKey) => (
-              <tr key={apiKey.id}>
-                <td>{apiKey.name}</td>
-                <td>
-                  <code>{apiKey.key}</code>
-                </td>
-                <td>{apiKey.owner_id}</td>
-                <td>
-                  <span className={`api-keys-page__status api-keys-page__status--${apiKey.revoked_at ? 'revoked' : 'active'}`}>
-                    {apiKey.revoked_at ? 'Revoked' : 'Active'}
-                  </span>
-                </td>
-                <td>{formatTimestamp(apiKey.last_used_at)}</td>
-                <td>{formatTimestamp(apiKey.created_at)}</td>
-                <td>
-                  {!apiKey.revoked_at && (
-                    <button type="button" onClick={() => handleRevoke(apiKey)}>
-                      Revoke
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {apiKeys.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center text-slate-500 dark:text-slate-400">
+                    No API keys yet.
+                  </td>
+                </tr>
+              )}
+              {apiKeys.map((apiKey) => (
+                <tr key={apiKey.id} className="border-b border-slate-100 dark:border-slate-900">
+                  <td className="py-3 pr-4">{apiKey.name}</td>
+                  <td className="py-3 pr-4">
+                    <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">{apiKey.key}</code>
+                  </td>
+                  <td className="py-3 pr-4">{apiKey.owner_id}</td>
+                  <td className="py-3 pr-4">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        apiKey.revoked_at
+                          ? 'bg-slate-500/10 text-slate-600 dark:bg-slate-400/15 dark:text-slate-300'
+                          : 'bg-green-600/10 text-green-700 dark:bg-green-400/15 dark:text-green-400'
+                      }`}
+                    >
+                      {apiKey.revoked_at ? 'Revoked' : 'Active'}
+                    </span>
+                  </td>
+                  <td className="py-3 pr-4 text-slate-500 dark:text-slate-400">{formatTimestamp(apiKey.last_used_at)}</td>
+                  <td className="py-3 pr-4 text-slate-500 dark:text-slate-400">{formatTimestamp(apiKey.created_at)}</td>
+                  <td className="py-3">
+                    {!apiKey.revoked_at && (
+                      <button
+                        type="button"
+                        onClick={() => handleRevoke(apiKey)}
+                        className="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/40"
+                      >
+                        Revoke
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
