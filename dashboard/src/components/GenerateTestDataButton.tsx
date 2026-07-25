@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { generateTestData } from '../api/generate';
 import { createMessage } from '../api/messages';
 import { useToast } from './Toast';
-import './GenerateTestDataButton.css';
 
 // Capped well below ai-service's own limit (50) and gated behind a
 // confirmation for anything past a handful -- this writes real rows via
@@ -56,14 +55,18 @@ export function GenerateTestDataButton() {
   }
 
   return (
-    <div className="generate-test-data">
-      <button type="button" className="generate-test-data__trigger" onClick={() => setOpen((o) => !o)}>
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-400"
+      >
         Generate test data
       </button>
 
       {open && (
-        <div className="generate-test-data__panel">
-          <label className="generate-test-data__field">
+        <div className="absolute right-0 z-20 mt-2 w-72 rounded-lg border border-slate-200 bg-white p-4 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          <label className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
             Count (max {MAX_COUNT})
             <input
               type="number"
@@ -71,12 +74,17 @@ export function GenerateTestDataButton() {
               max={MAX_COUNT}
               value={count}
               onChange={(e) => setCount(Math.min(MAX_COUNT, Math.max(1, Number(e.target.value) || 1)))}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
             />
           </label>
 
-          <label className="generate-test-data__field">
+          <label className="mt-3 flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
             Type
-            <select value={type} onChange={(e) => setType(e.target.value)}>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            >
               {TYPE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -85,13 +93,15 @@ export function GenerateTestDataButton() {
             </select>
           </label>
 
-          <p className="generate-test-data__hint">Generated messages are captured into the inbox immediately.</p>
+          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+            Generated messages are captured into the inbox immediately.
+          </p>
 
           <button
             type="button"
-            className="generate-test-data__submit"
             onClick={handleGenerate}
             disabled={generating}
+            className="mt-3 w-full rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-60 dark:bg-purple-500 dark:hover:bg-purple-400"
           >
             {generating ? 'Generating…' : 'Generate'}
           </button>

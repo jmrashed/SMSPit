@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import type { Message } from '../types/message';
 import { listMessages } from '../api/messages';
 import { MessageList } from '../components/MessageList';
@@ -8,11 +7,9 @@ import { MessageListSkeleton } from '../components/MessageListSkeleton';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useMessageSocket } from '../hooks/useMessageSocket';
-import { OrgSwitcher } from '../components/OrgSwitcher';
 import { ExportButton } from '../components/ExportButton';
 import { GenerateTestDataButton } from '../components/GenerateTestDataButton';
 import { EMPTY_FILTERS, type MessageFilters as MessageFiltersState } from '../types/filters';
-import './InboxPage.css';
 
 // Date-only inputs mean "before end of day" should include the whole
 // selected day, not just midnight.
@@ -61,40 +58,29 @@ export function InboxPage() {
   useMessageSocket(() => setRetryToken((t) => t + 1));
 
   return (
-    <main className="inbox-page">
-      <header className="inbox-page__header">
-        <div className="inbox-page__header-row">
-          <h1>Inbox</h1>
-          <div className="inbox-page__nav-links">
-            <OrgSwitcher />
-            <Link to="/compose" className="inbox-page__stats-link">
-              Compose
-            </Link>
-            <Link to="/organizations" className="inbox-page__stats-link">
-              Organizations
-            </Link>
-            <Link to="/statistics" className="inbox-page__stats-link">
-              Statistics
-            </Link>
-            <Link to="/api-keys" className="inbox-page__stats-link">
-              API keys
-            </Link>
-          </div>
-        </div>
-        <p>Messages captured by SMSPit instead of being delivered.</p>
+    <div className="flex flex-col gap-6">
+      <header>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Inbox</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Messages captured by SMSPit instead of being delivered.
+        </p>
       </header>
-      <div className="inbox-page__toolbar">
+
+      <div className="flex flex-col gap-4 rounded-lg border border-slate-200 p-4 dark:border-slate-800">
         <MessageFilters filters={filters} onChange={setFilters} />
-        <ExportButton
-          filters={{
-            to: debouncedFilters.to,
-            from: debouncedFilters.from,
-            created_after: debouncedFilters.createdAfter || undefined,
-            created_before: debouncedFilters.createdBefore ? endOfDay(debouncedFilters.createdBefore) : undefined,
-          }}
-        />
-        <GenerateTestDataButton />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <ExportButton
+            filters={{
+              to: debouncedFilters.to,
+              from: debouncedFilters.from,
+              created_after: debouncedFilters.createdAfter || undefined,
+              created_before: debouncedFilters.createdBefore ? endOfDay(debouncedFilters.createdBefore) : undefined,
+            }}
+          />
+          <GenerateTestDataButton />
+        </div>
       </div>
+
       {error && (
         <ErrorBanner
           message="Couldn't load messages. Check that sms-service is running."
@@ -102,6 +88,6 @@ export function InboxPage() {
         />
       )}
       {!error && (loading ? <MessageListSkeleton /> : <MessageList messages={messages} />)}
-    </main>
+    </div>
   );
 }
