@@ -101,6 +101,12 @@ These gate progression through the workflow above — don't advance to the next 
 - Any Playwright test the AI creates lives in that service's own `e2e/` folder (e.g. `dashboard/e2e/`, `sms-service/e2e/`) — colocated with the service under test, per the "each service owns its folder" rule, never a shared top-level e2e directory.
 - Playwright specs are committed and pushed to the current branch as part of that change (subject to the same workflow as any other checklist-day work above).
 
+## Implementation tracker
+
+- `implementation-tracker.md` is an AI-agent-internal working doc — a per-day status table (done / in-progress / pending) plus a running list of known follow-ups, kept more current and more granular than `checklist.md`'s checkboxes. It is not user-facing documentation and doesn't replace `checklist.md` (build order/scope) or the README (product description).
+- **Update it in the same change** whenever a checklist day's status changes — when starting a day (mark `in-progress`), when finishing one (mark `done`, or `in-progress`/`pending` with a reason if something couldn't be fully verified in this environment), and whenever a new deferred/follow-up item is discovered mid-task.
+- Include this update as part of the "Relevant documentation is updated" delivery quality gate — don't merge a checklist-day PR with a stale tracker.
+
 ## Definition of done for a checklist day
 
 A day counts as complete when: the code/docs described in its sub-tasks exist, relevant tests pass, `checklist.md` is updated, and the change is committed, pushed, and merged to `main` via the checklist-day branch & PR workflow above. Don't claim a day is "done" based on typecheck/build success alone if the day's sub-tasks call for runtime behavior (e.g. "verify the image builds and runs locally") — actually run it.

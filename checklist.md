@@ -480,9 +480,10 @@ Found during a post-v1.0 live QA pass of the dashboard (see [docs/dashboard-gap-
   - [x] Found and fixed one more bug during self-review (not in the original plan): `OrganizationsPage` rendered its own `<OrgSwitcher />` inline, duplicating the one `Layout.tsx` already shows globally in the header — removed the redundant one and show the selected org's name as a heading instead
   - [x] Found and fixed a second bug during self-review: `EditOrganizationControls`/`DeleteOrganizationControl` initialized local form state from the `organization` prop only once — opening Edit on org A, then switching orgs via the header switcher without closing the form, then saving, would PUT org A's stale text to org B's id. Fixed with `key={selectedOrg.id}` on both to force a remount (and full state reset) on org switch.
   - [x] Tests: `dashboard/e2e/organizations.spec.ts` (Playwright, run against the live docker-compose stack) covers create/edit/delete org, the delete-fallback regression above, create-team, and add/remove-member — all passing. Not covered: the admin-vs-member visibility gate (would need a second, non-admin-scoped API key as a test fixture, which the current seed/setup doesn't provide) and the slug-collision/dual-422 cases noted above as follow-ups.
-- [ ] **Day 102: Standalone Templates page**
-  - [ ] Add a `/templates` route with list/create/edit/delete, independent of the Compose page's picker
-  - [ ] Keep Compose's template picker calling the same API, no duplication of logic
+- [x] **Day 102: Standalone Templates page**
+  - [x] Add a `/templates` route with list/create/edit/delete, independent of the Compose page's picker — full table view (name, body preview, variables, updated) with inline create/edit form, nav link added
+  - [x] Keep Compose's template picker calling the same API, no duplication of logic — went further than just the API layer: extracted the `{{variable}}`-detection regex (previously only defined inline in `TemplatePicker`) into `dashboard/src/lib/templateVariables.ts`, shared by both `TemplatePicker` and the new `TemplatesPage`
+  - [x] Tests: `dashboard/e2e/templates.spec.ts` (Playwright, run against the live stack) — create/edit/delete, plus a cross-page check that a template created on `/templates` is immediately visible in Compose's picker (same API, same data)
 - [ ] **Day 103: Observability links**
   - [ ] Add a nav entry linking out to Jaeger, Prometheus, and Grafana (already running, just not discoverable from the dashboard)
 - [ ] **Day 104: Bulk message actions in Inbox**
