@@ -68,10 +68,39 @@ Match each service's internal structure to its ecosystem's conventions (e.g. Nes
 ## Git conventions
 
 - **Never add a `Co-Authored-By` trailer to commit messages in this repo.** Plain commit messages only — this overrides any default harness convention.
-- Only commit when explicitly asked. Never push without explicit confirmation.
 - Prefer small, scoped commits (e.g. one per checklist day or sub-task) over bundling unrelated changes.
 - Commit messages should explain *why*, not restate the diff — the checklist item name is context, not the message itself.
+- The blanket "only commit/push when explicitly asked" default is **overridden** for checklist-day work by the Checklist-day branch & PR workflow below — that workflow's commit/push/PR/merge steps are pre-authorized and don't need per-day confirmation. Outside that workflow (ad hoc fixes, exploratory changes, anything not tied to a checklist day), the default still applies: ask before committing or pushing.
+
+## Checklist-day branch & PR workflow
+
+Each checklist day is worked on its own branch and shipped through a PR, end to end, without needing per-day confirmation:
+
+1. **Branch**: when explicitly asked to start a checklist day, first sync `main` (`git checkout main && git pull`) so the new branch isn't built on stale history, then create `feat/day-N` off it for that day's work, where `N` is the checklist day number (e.g. `feat/day-101`).
+2. **Implement** the day's sub-tasks per the usual conventions in this file (tests, checklist updates, etc.).
+3. **Review**: once the day's task is done, review the change yourself in both a code-reviewer and a QA capacity (correctness, security, test coverage, and that the day's acceptance criteria actually work) before shipping — use the `code-review` skill for the code-review pass, and the `verify` skill (or manual runtime check) for the QA pass. See "Delivery quality gates" below for what must pass before moving on.
+4. **Commit and push** the change to `feat/day-N` on the current branch. Before pushing, double-check `git status`/`git diff` for anything that looks like a secret or credential, even in an innocuous-looking file — don't push it.
+5. **Open a PR** from `feat/day-N` into `main`, with a description covering what changed, why, and how it was tested/verified (not just the checklist item name).
+6. **Merge the PR** into `main` via squash merge once it's open and all quality gates pass — this is pre-authorized for checklist-day PRs; don't wait for manual approval. If the merge isn't clean (conflicts with `main`), stop and ask rather than force-resolving.
+7. **Clean up**: after a successful merge, delete the `feat/day-N` branch (local and remote), then check out `main` and pull so the working directory is ready for the next day.
+
+## Delivery quality gates
+
+These gate progression through the workflow above — don't advance to the next step (and never merge) until they're satisfied for the current day's change:
+
+- **Tests pass.** Run the affected service's own test suite (`npm test`, `go test ./...`, `php artisan test`, `pytest`) and any new Playwright specs; a red suite blocks commit, push, and merge.
+- **Build/typecheck succeeds** for every service touched (e.g. `tsc`, `go build ./...`, framework-equivalent). Passing typecheck alone is not sufficient if the day calls for runtime verification — actually run/exercise the feature per "Definition of done" below.
+- **Code review finds no unresolved CONFIRMED issues.** If the `code-review` pass surfaces a blocking finding, fix it and re-review before continuing — don't ship past a known bug to hit the branch/PR/merge steps.
+- **`checklist.md` is updated** in the same change, at the sub-task granularity actually completed.
+- **Relevant documentation is updated** wherever the change makes it stale or incomplete — e.g. a service's own `README.md`, API docs, `.env.example`, the root `README.md`'s architecture/roadmap sections — but only where it's actually suitable and necessary; don't add docs for internal/unstable details that don't warrant them.
+- **No unrelated scope.** The commit/PR contains only the current day's work — don't bundle in fixes or exploration from other days.
+- **Stop and ask instead of merging** if anything is ambiguous, the day's requirements conflict with existing code, or a test/build failure isn't a quick fix — the auto-merge authorization covers routine, passing checklist-day work, not judgment calls.
+
+## Playwright tests
+
+- Any Playwright test the AI creates lives in that service's own `e2e/` folder (e.g. `dashboard/e2e/`, `sms-service/e2e/`) — colocated with the service under test, per the "each service owns its folder" rule, never a shared top-level e2e directory.
+- Playwright specs are committed and pushed to the current branch as part of that change (subject to the same workflow as any other checklist-day work above).
 
 ## Definition of done for a checklist day
 
-A day counts as complete when: the code/docs described in its sub-tasks exist, relevant tests pass, `checklist.md` is updated, and (if the day says so) the change is committed. Don't claim a day is "done" based on typecheck/build success alone if the day's sub-tasks call for runtime behavior (e.g. "verify the image builds and runs locally") — actually run it.
+A day counts as complete when: the code/docs described in its sub-tasks exist, relevant tests pass, `checklist.md` is updated, and the change is committed, pushed, and merged to `main` via the checklist-day branch & PR workflow above. Don't claim a day is "done" based on typecheck/build success alone if the day's sub-tasks call for runtime behavior (e.g. "verify the image builds and runs locally") — actually run it.

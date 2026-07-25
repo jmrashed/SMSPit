@@ -16,6 +16,11 @@ coverage/
 # VitePress docs site
 docs/.vitepress/cache/
 
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
 # PHP / Laravel
 vendor/
 storage/*.key

@@ -9,6 +9,12 @@ interface OrgContextValue {
   loading: boolean;
   selectedOrgId: number | null;
   setSelectedOrgId: (id: number | null) => void;
+  // Re-fetches the org list -- needed after any create/update/delete
+  // mutation (Day 101), since the initial fetch only ever runs once on
+  // mount. `selectId` lets a caller pin the selection to a specific org
+  // (e.g. the one just created) instead of falling back to "first in
+  // the list", which isn't necessarily the new one.
+  refetch: (selectId?: number | null) => Promise<void>;
 }
 
 const OrgContext = createContext<OrgContextValue | null>(null);
@@ -23,34 +29,6 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [selectedOrgId, setSelectedOrgIdState] = useState<number | null>(readStoredOrgId);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    listOrganizations()
-      .then((response) => {
-        if (cancelled) return;
-        setOrganizations(response.organizations);
-        setLoading(false);
-
-        // The previously-selected org may no longer exist/be a member
-        // of -- fall back to the first available one, or none.
-        const stored = readStoredOrgId();
-        const stillValid = stored !== null && response.organizations.some((org) => org.id === stored);
-        if (!stillValid) {
-          setSelectedOrgIdState(response.organizations[0]?.id ?? null);
-        }
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        console.error('Failed to load organizations', err);
-        setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   function setSelectedOrgId(id: number | null) {
     setSelectedOrgIdState(id);
     if (id === null) {
@@ -60,8 +38,37 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function refetch(selectId?: number | null): Promise<void> {
+    setLoading(true);
+    try {
+      const response = await listOrganizations();
+      setOrganizations(response.organizations);
+
+      if (selectId !== undefined) {
+        setSelectedOrgId(selectId !== null && response.organizations.some((org) => org.id === selectId) ? selectId : null);
+        return;
+      }
+
+      // The previously-selected org may no longer exist/be a member
+      // of -- fall back to the first available one, or none.
+      const stored = readStoredOrgId();
+      const stillValid = stored !== null && response.organizations.some((org) => org.id === stored);
+      if (!stillValid) {
+        setSelectedOrgId(response.organizations[0]?.id ?? null);
+      }
+    } catch (err: unknown) {
+      console.error('Failed to load organizations', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refetch();
+  }, []);
+
   return (
-    <OrgContext.Provider value={{ organizations, loading, selectedOrgId, setSelectedOrgId }}>
+    <OrgContext.Provider value={{ organizations, loading, selectedOrgId, setSelectedOrgId, refetch }}>
       {children}
     </OrgContext.Provider>
   );

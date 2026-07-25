@@ -444,3 +444,48 @@ Serial, day-by-day task list to take SMSPit from an empty repo to a v1.0 release
   - [x] Final version bump across all services — `sms-service`, `dashboard` package versions, Helm chart `version`/`appVersion`, OpenAPI spec `info.version`; done 3 times (`1.0.0` → `1.0.2`) as CI issues were found and fixed post-tag (see below)
   - [x] Tag `v1.0.0` and publish GitHub release notes — then `v1.0.1` (fixed a lint failure that blocked `v1.0.0`'s CI), then `v1.0.2` (fixed missing Redis services in CI for `auth-service`/`worker` and a real coverage regression in `sms-service` — the first tag whose CI actually reaches `publish-images` and pushes real images to GHCR). All three tags/releases are live; `v1.0.0`/`v1.0.1` are kept as historical releases rather than deleted.
   - [ ] Announce the release — outside the scope of what an agent can do (no social/community channels to post to); the GitHub release itself is the announcement artifact
+
+---
+
+## Phase 6 — v1.1: Dashboard Feature Completeness (Days 101–105)
+
+Found during a post-v1.0 live QA pass of the dashboard (see [docs/dashboard-gap-analysis.md](docs/dashboard-gap-analysis.md)): several backend capabilities that already existed (org/team management, bulk delete, ai-service detection) had no dashboard UI, and templates/observability had no dedicated surface. All 5 days below are dashboard-only — no new backend endpoints required, all APIs already exist.
+
+- [x] **Day 101: Organization & team management UI**
+  - [x] Extend `api/organizations.ts` with `createOrganization`, `updateOrganization`, `deleteOrganization`, `createTeam`, `addTeamMember`, `removeTeamMember` — all via `authenticatedAuthApiFetch` (these sit behind the `api.key` middleware group in `routes/api.php`, same as the existing `listOrganizations`/`listTeams`; the unauthenticated `authApiFetch` helper is only for the api-keys bootstrap endpoints and would be the wrong one to copy from)
+    - [x] `POST /api/organizations`, `PUT /api/organizations/{id}`, `DELETE /api/organizations/{id}`, `POST /api/organizations/{id}/teams`, `POST .../teams/{id}/members`, `DELETE .../teams/{id}/members/{userId}`
+    - [x] Found and fixed a real, pre-existing bug while wiring these up: `authApiFetch` (`dashboard/src/api/client.ts`) spread `...init` *after* its default `headers`, so any caller passing its own `headers` (which `authenticatedAuthApiFetch` always does, for `Authorization`) silently clobbered `Content-Type` — Laravel then never parsed the JSON body, so every authenticated write through this path was a no-op or 422. This blocked Day 101 outright; fixed the spread order.
+  - [x] Add `refetch()` to `OrgContext` (currently fetches `listOrganizations()` once in a mount-only `useEffect` with no way to re-trigger it) — required for every mutation below to actually appear in `OrgSwitcher` (header) without a full page reload
+  - [x] "Create organization" form (name only; slug auto-derived server-side from name per `StoreOrganizationRequest::prepareForValidation`)
+    - [x] Client-side required + max-255 validation on `name` before submit, matching `StoreOrganizationRequest`'s rule — avoid a round-trip for an empty/oversized field the server will reject anyway
+    - [x] Shown as the primary CTA in the existing empty state ("You're not a member of any organization yet") instead of the current curl instruction
+    - [x] Also reachable once orgs already exist (persistent "+ New organization" button next to the switcher)
+    - [x] On success: call `OrgContext.refetch()`, select the new org, toast confirmation
+    - [ ] Slug-uniqueness 422 shows a generic "Failed to create organization" toast, not the server's specific message — `ApiError` (`client.ts`) never captures the response body on throw, only `status`, so there's currently no way for any caller in the app to surface a specific server validation message. Fixing that is a shared-client-layer change affecting every API call in the dashboard, not a Day 101-scoped fix; left as a follow-up.
+  - [x] Edit/delete organization, admin-only (`selectedOrg.role === 'admin'`) — the backend's `apiResource('organizations', ...)` already exposes `update`/`destroy` (see `UpdateOrganizationRequest`) but the dashboard had zero UI for either; in scope now that we're building org management
+    - [x] Edit: name via a form pre-filled from the selected org; on success `refetch()` and toast. Slug is not editable from this form — the UI never surfaces slugs anywhere (not even on create, which auto-derives it), so there was no existing pattern to extend; deferred with the same follow-up as above.
+    - [x] Delete: strong confirmation (type-the-org-name-to-confirm, not a plain `window.confirm`) — deleting an org cascades to its teams/api-keys/messages; on success `refetch()` with no explicit `selectId`, which falls back to another available org (or `null` if none remain) rather than force-clearing the selection — caught via a dedicated regression test after an early version force-nulled the selection and left the page blank when other orgs still existed
+  - [x] "Create team" form scoped to the selected organization
+    - [x] Client-side required + max-255 validation on `name`, matching `StoreTeamRequest`
+    - [x] Only rendered when `selectedOrg.role === 'admin'` — mirrors the server's `OrganizationPolicy::update` check, so members don't see a control that would 403
+    - [x] Members (`role === 'member'`) see the existing read-only team list with no management affordances
+    - [x] On success: refresh the team list for the current org, toast confirmation
+    - [x] No team edit/delete in this round — `TeamController` only exposes `index`/`store`/`addMember`/`removeMember` (no `update`/`destroy`, no `UpdateTeamRequest`); adding those would be new backend work, out of scope for this dashboard-only phase
+  - [x] Member add/remove controls, admin-only (same role gate as team creation)
+    - [x] "Add member" input takes a numeric user ID (no user directory/search endpoint exists yet to pick from by name/email — out of scope here)
+    - [x] Both failure modes (`exists:users,id` vs. "must be a member of the organization before joining one of its teams") currently collapse into one combined toast message rather than two distinct ones — both are 422s from `AddTeamMemberRequest`/the controller's own `abort()`, and (same root cause as above) `ApiError` doesn't carry the response body to tell them apart client-side without the shared client-layer follow-up
+    - [x] "Remove" button per listed team member, with a confirm step (removal is immediate, no undo)
+    - [x] On success: refresh that team's member list in place (avoid a full-page reload)
+  - [x] Loading/empty/error states for all forms follow the existing `Spinner`/`ErrorBanner`/`useToast` conventions already used elsewhere in the dashboard
+  - [x] Found and fixed one more bug during self-review (not in the original plan): `OrganizationsPage` rendered its own `<OrgSwitcher />` inline, duplicating the one `Layout.tsx` already shows globally in the header — removed the redundant one and show the selected org's name as a heading instead
+  - [x] Found and fixed a second bug during self-review: `EditOrganizationControls`/`DeleteOrganizationControl` initialized local form state from the `organization` prop only once — opening Edit on org A, then switching orgs via the header switcher without closing the form, then saving, would PUT org A's stale text to org B's id. Fixed with `key={selectedOrg.id}` on both to force a remount (and full state reset) on org switch.
+  - [x] Tests: `dashboard/e2e/organizations.spec.ts` (Playwright, run against the live docker-compose stack) covers create/edit/delete org, the delete-fallback regression above, create-team, and add/remove-member — all passing. Not covered: the admin-vs-member visibility gate (would need a second, non-admin-scoped API key as a test fixture, which the current seed/setup doesn't provide) and the slug-collision/dual-422 cases noted above as follow-ups.
+- [ ] **Day 102: Standalone Templates page**
+  - [ ] Add a `/templates` route with list/create/edit/delete, independent of the Compose page's picker
+  - [ ] Keep Compose's template picker calling the same API, no duplication of logic
+- [ ] **Day 103: Observability links**
+  - [ ] Add a nav entry linking out to Jaeger, Prometheus, and Grafana (already running, just not discoverable from the dashboard)
+- [ ] **Day 104: Bulk message actions in Inbox**
+  - [ ] Add row multi-select and a bulk delete action wired to the existing `DELETE /api/v1/messages` endpoint
+- [ ] **Day 105: AI Tools page**
+  - [ ] Add a page to paste arbitrary text and see live otp/classify/spam output from ai-service, independent of captured messages (messages only persist the final category/is_spam, not a score, so this is the only way to see live detection detail)
